@@ -1,0 +1,12 @@
+# Jangan commit kredensial asli
+config/config.php
+
+# File sistem operasi/editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Upload pengguna (jika ada fitur unggah foto profil barber, dsb.)
+uploads/*
+!uploads/.gitkeep
