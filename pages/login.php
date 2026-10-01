@@ -9,6 +9,12 @@ require_once __DIR__ . '/../config/config.php';
 <div class="row justify-content-center">
   <div class="col-md-4">
     <h1 class="h4 mb-3 text-center">Masuk ke Kataji Barber</h1>
+    <?php if (isset($_GET['error'])): ?>
+    <?php if (isset($_GET['expired'])): ?>
+  <div class="alert alert-warning">Sesi Anda sudah habis, silakan login kembali.</div>
+<?php endif; ?>
+  <div class="alert alert-danger">Username atau password salah.</div>
+<?php endif; ?>
     <form method="post" action="login_process.php">
       <div class="mb-3">
         <label class="form-label">Username</label>
