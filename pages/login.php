@@ -14,7 +14,7 @@
         <!-- Logo khusus di bagian login -->
         <div class="login-card-logo">
             <img
-                src="/kataji-barber/assets/img/logo-kataji.jpeg"
+                src="/KELOMPOK-5/assets/img/logo-kataji.jpeg"
                 alt="Logo Kataji Barber"
             >
         </div>
