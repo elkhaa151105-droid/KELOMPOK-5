@@ -46,7 +46,7 @@ body:has(.login-page) main.container {
 
     box-sizing: border-box;
 
-    background-image: url("../img/login-bg.jpeg");
+    background-image: url("../img/login-bg.jpg");
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
