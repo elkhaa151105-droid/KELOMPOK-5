@@ -175,6 +175,47 @@ body:has(.login-page) main.container {
         0 0 0 3px rgba(37, 37, 122, 0.08);
 }
 
+.login-card .alert {
+    margin-bottom: 18px;
+    border-radius: 9px;
+    font-size: 12px;
+}
+
+/* =========================
+   PASSWORD TOGGLE
+========================= */
+
+.password-wrapper {
+    position: relative;
+}
+
+.password-wrapper input {
+    padding-right: 45px;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+
+    border: none;
+    background: transparent;
+
+    color: #777777;
+
+    cursor: pointer;
+
+    font-size: 16px;
+
+    padding: 0;
+
+    line-height: 1;
+}
+
+.password-toggle:hover {
+    color: #25257a;
+}
 
 /* =========================
    LUPA PASSWORD
@@ -199,7 +240,6 @@ body:has(.login-page) main.container {
 .login-forgot a:hover {
     text-decoration: underline;
 }
-
 
 /* =========================
    BUTTON

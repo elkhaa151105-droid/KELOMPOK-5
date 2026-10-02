@@ -14,7 +14,7 @@ require_once __DIR__ . '/../config/config.php';
 
 function require_login(): void {
     if (empty($_SESSION['id_user'])) {
-        header('Location: /kataji-barber/pages/login.php');
+        header('Location: /KELOMPOK-5/pages/login.php');
         exit;
     }
 }
@@ -40,14 +40,14 @@ define('SESSION_LIFETIME', 1800);
 
 function require_login(): void {
     if (empty($_SESSION['id_user'])) {
-        header('Location: /kataji-barber/pages/login.php');
+        header('Location: /KELOMPOK-5/pages/login.php');
         exit;
     }
 
     if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > SESSION_LIFETIME)) {
         session_unset();
         session_destroy();
-        header('Location: /kataji-barber/pages/login.php?expired=1');
+        header('Location: /KELOMPOK-5/pages/login.php?expired=1');
         exit;
     }
 
