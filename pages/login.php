@@ -1,20 +1,14 @@
 <?php
 // require_once __DIR__ . '/../config/config.php';
-
-// Logika login akan dikerjakan oleh Backend Developer.
 ?>
 
 <?php include __DIR__ . '/../includes/header.php'; ?>
 
 <div class="login-page">
-
-    <!-- Card Login -->
     <div class="login-card">
-
-        <!-- Logo khusus di bagian login -->
         <div class="login-card-logo">
             <img
-                src="/KELOMPOK-5/assets/img/logo-kataji.jpeg"
+                src="/KELOMPOK-5/assets/img/logo-kataji.png"
                 alt="Logo Kataji Barber"
             >
         </div>
@@ -25,60 +19,88 @@
             Silakan masuk untuk mengakses sistem Kataji Barber.
         </p>
 
+        <?php if (isset($_GET['expired'])): ?>
+            <div class="alert alert-warning">
+                Sesi Anda sudah habis, silakan login kembali.
+            </div>
+        <?php endif; ?>
+
+<?php if (isset($_GET['error'])): ?>
+    <div class="alert alert-danger">
+        Username atau password salah.
+    </div>
+<?php endif; ?>
+
+<?php if (isset($_GET['username_empty'])): ?>
+    <div class="alert alert-danger">
+        Username/email wajib diisi.
+    </div>
+<?php endif; ?>
+
+<?php if (isset($_GET['password_empty'])): ?>
+    <div class="alert alert-danger">
+        Password wajib diisi.
+    </div>
+<?php endif; ?>
+
+<?php if (isset($_GET['both_empty'])): ?>
+    <div class="alert alert-danger">
+        Username/email dan password wajib diisi.
+    </div>
+<?php endif; ?>
+
         <form method="post" action="login_process.php">
-
-            <!-- Username -->
             <div class="login-field">
-                <label for="username">
-                    Email / Username
-                </label>
-
+                <label for="username">Email / Username</label>
                 <input
                     type="text"
                     id="username"
                     name="username"
                     placeholder="Masukkan email atau username"
-                    required
+                    
                 >
+                
             </div>
 
-            <!-- Password -->
             <div class="login-field">
-                <label for="password">
-                    Password
-                </label>
+                <label for="password">Password</label>
 
-                <input
-                    type="password"
-                    id="password"
-                    name="password"
-                    placeholder="Masukkan password"
-                    required
-                >
-            </div>
+                <div class="password-wrapper">
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        placeholder="Masukkan password"
+                        
+                    >
 
-            <!-- Lupa Password -->
+                    <button
+                        type="button"
+                        class="password-toggle"
+                        id="passwordToggle"
+                    >
+                        👁
+                    </button>
+                </div>
+
+               
+            </div>                
+                        
+
             <div class="login-forgot">
-                <a href="#">
-                    Lupa Password?
-                </a>
+                <a href="#">Lupa Password?</a>
             </div>
 
-            <!-- Tombol Login -->
             <button type="submit" class="login-button">
                 Masuk
             </button>
-
         </form>
 
-        <!-- Daftar Member -->
         <div class="login-register">
-            Belum punya akun?
-            <a href="#">Daftar Member</a>
+            Akun dibuat oleh Owner. Barber lupa password? Hubungi Owner
+            
         </div>
-
     </div>
-
 </div>
 
 <?php include __DIR__ . '/../includes/footer.php'; ?>
