@@ -45,8 +45,7 @@ body:has(.login-page) main.container {
     padding: 40px 4%;
 
     box-sizing: border-box;
-
-    background-image: url("../img/login-bg.jpeg");
+    background-image: url("../img/login-bg.jpg");
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -176,6 +175,49 @@ body:has(.login-page) main.container {
 }
 
 
+.login-card .alert {
+    margin-bottom: 18px;
+    border-radius: 9px;
+    font-size: 12px;
+}
+
+/* =========================
+   PASSWORD TOGGLE
+========================= */
+
+.password-wrapper {
+    position: relative;
+}
+
+.password-wrapper input {
+    padding-right: 45px;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+
+    border: none;
+    background: transparent;
+
+    color: #777777;
+
+    cursor: pointer;
+
+    font-size: 16px;
+
+    padding: 0;
+
+    line-height: 1;
+}
+
+.password-toggle:hover {
+    color: #25257a;
+}
+
+
 /* =========================
    LUPA PASSWORD
 ========================= */
@@ -208,11 +250,10 @@ body:has(.login-page) main.container {
 .login-button {
     width: 100%;
     height: 43px;
-
     border: none;
     border-radius: 9px;
+    background: #17186b;
 
-    background: #18186b;
 
     color: #ffffff;
 
@@ -275,4 +316,73 @@ body:has(.login-page) main.container {
 
         padding: 30px 25px;
     }
+
+}
+
+/* =========================
+   ACCESS DENIED
+   ========================= */
+
+.access-denied-page {
+    min-height: 70vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.access-denied-card {
+    width: 100%;
+    max-width: 430px;
+    padding: 40px 35px;
+    text-align: center;
+    background: #ffffff;
+    border: 1px solid #E2E4F0;
+    border-radius: 18px;
+    box-shadow: 0 8px 25px rgba(23, 24, 107, 0.08);
+}
+
+.access-denied-icon {
+    width: 58px;
+    height: 58px;
+    margin: 0 auto 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #FBEAEA;
+    color: #D64545;
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.access-denied-card h1 {
+    margin-bottom: 10px;
+    color: #17186B;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.access-denied-card p {
+    margin-bottom: 25px;
+    color: #6B6B6B;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.access-denied-button {
+    display: inline-block;
+    padding: 11px 22px;
+    border-radius: 9px;
+    background: #17186B;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: 0.2s;
+}
+
+.access-denied-button:hover {
+    background: #3B3DA8;
+    color: #ffffff;
+
 }
