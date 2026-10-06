@@ -1,8 +1,50 @@
+/* ======================================================
+   KATAJI BARBER - STYLE SYSTEM
+   Frontend: Faqih Huddin SM
+   Sesuai Acuan UI/UX Figma
+====================================================== */
+
+:root {
+    --primary-navy: #17186B;
+    --secondary-indigo: #3B3DA8;
+    --lavender: #B9BCFF;
+    --bg-main: #F4F5F9;
+    --white: #FFFFFF;
+    --text-main: #1A1A1A;
+    --text-secondary: #6B6B6B;
+    --border-color: #E2E4F0;
+    --soft-bg: #F3F4FA;
+    --success: #2E9E5B;
+    --success-bg: #E6F4EC;
+    --warning: #D99B00;
+    --warning-bg: #FEF7D9;
+    --error: #D64545;
+    --error-bg: #FBEAEA;
+    --sidebar-width: 190px;
+}
+
 /* =========================
-   LOGIN PAGE
+   BASE & RESET
 ========================= */
 
-/* Background dan halaman login */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    -webkit-font-smoothing: antialiased;
+}
+
+
+/* =========================
+   LOGIN PAGE (STANDALONE)
+========================= */
+
 body:has(.login-page) {
     margin: 0;
     padding: 0;
@@ -10,257 +52,227 @@ body:has(.login-page) {
     overflow: hidden;
 }
 
-/* Sembunyikan navbar pada halaman login */
 body:has(.login-page) .navbar {
     display: none;
 }
 
-/* Sembunyikan footer pada halaman login */
 body:has(.login-page) footer {
     display: none;
 }
 
-/* Hilangkan container Bootstrap */
 body:has(.login-page) main.container {
     max-width: none;
     margin: 0;
     padding: 0 !important;
 }
 
-
-/* =========================
-   BACKGROUND FULL SCREEN
-========================= */
-
 .login-page {
     width: 100%;
-    height: 100vh;
-
+    min-height: 100vh;
     position: relative;
-
     display: flex;
     align-items: center;
-    justify-content: flex-end;
-
-    padding: 40px 4%;
-
+    justify-content: space-between;
+    padding: 40px 9%;
     box-sizing: border-box;
-
-    background-image: url("../img/login-bg.jpg");
+    background-image: linear-gradient(rgba(10, 12, 50, 0.45), rgba(10, 12, 50, 0.45)), url("../img/login-bg.jpg");
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
 }
 
+/* Hero Branding Kiri (Desktop) */
+.login-hero {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    max-width: 480px;
+    z-index: 2;
+}
 
-/* =========================
-   LOGIN CARD
-========================= */
+.login-hero-logo img {
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    background: #FFFFFF;
+    padding: 6px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    margin-bottom: 20px;
+    object-fit: contain;
+}
 
+.login-hero-title {
+    font-size: 38px;
+    font-weight: 800;
+    color: #FFFFFF;
+    text-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
+    margin: 0 0 6px;
+    letter-spacing: 1.5px;
+}
+
+.login-hero-subtitle {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #B9BCFF;
+    letter-spacing: 2px;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+    margin: 0;
+}
+
+/* Card Login Kanan */
 .login-card {
     width: 100%;
-    max-width: 430px;
-
-    padding: 35px 38px;
-
+    max-width: 410px;
+    padding: 32px 34px;
     box-sizing: border-box;
-
     background: #ffffff;
-
     border-radius: 20px;
-
-    box-shadow:
-        0 10px 30px rgba(0, 0, 0, 0.15);
-
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
     position: relative;
     z-index: 2;
 }
 
-
-/* =========================
-   LOGO LOGIN
-========================= */
-
 .login-card-logo {
     display: flex;
     justify-content: center;
-
-    margin-bottom: 10px;
+    margin-bottom: 8px;
 }
 
 .login-card-logo img {
-    width: 70px;
-    height: 70px;
-
+    width: 56px;
+    height: 56px;
     object-fit: contain;
 }
 
-
-/* =========================
-   JUDUL
-========================= */
-
 .login-card h1 {
-    margin: 5px 0 5px;
-
+    margin: 4px 0 4px;
     text-align: center;
-
-    color: #15154a;
-
-    font-size: 27px;
+    color: #17186B;
+    font-size: 24px;
     font-weight: 700;
 }
 
 .login-description {
-    max-width: 330px;
-
-    margin: 0 auto 25px;
-
+    max-width: 320px;
+    margin: 0 auto 20px;
     text-align: center;
-
     color: #777777;
-
-    font-size: 12px;
+    font-size: 11.5px;
     line-height: 1.5;
 }
 
-
-/* =========================
-   FORM
-========================= */
-
 .login-field {
-    margin-bottom: 16px;
+    margin-bottom: 14px;
 }
 
 .login-field label {
     display: block;
-
-    margin-bottom: 6px;
-
+    margin-bottom: 5px;
     color: #333333;
-
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
 }
 
-.login-field input {
-    width: 100%;
-    height: 43px;
-
-    padding: 0 13px;
-
+/* Input Berikon Sesuai Figma */
+.input-with-icon {
+    display: flex;
+    align-items: center;
+    border: 1.5px solid #DDDFE9;
+    border-radius: 9px;
+    background: #FFFFFF;
+    height: 44px;
+    padding: 0 12px;
     box-sizing: border-box;
+    transition: all 0.2s ease;
+}
 
-    border: 1px solid #dddddf;
-    border-radius: 9px;
+.input-with-icon .field-icon {
+    display: flex;
+    align-items: center;
+    color: #8C8FA7;
+    margin-right: 10px;
+    flex-shrink: 0;
+}
 
-    background: #ffffff;
-
-    color: #333333;
-
-    font-size: 12px;
-
+.input-with-icon input {
+    border: none;
     outline: none;
-}
-
-.login-field input::placeholder {
-    color: #aaaaaa;
-}
-
-.login-field input:focus {
-    border-color: #25257a;
-
-    box-shadow:
-        0 0 0 3px rgba(37, 37, 122, 0.08);
-}
-
-.login-card .alert {
-    margin-bottom: 18px;
-    border-radius: 9px;
+    background: transparent;
+    width: 100%;
     font-size: 12px;
+    color: #333333;
+    font-family: inherit;
+    padding: 0;
 }
 
-/* =========================
-   PASSWORD TOGGLE
-========================= */
-
-.password-wrapper {
-    position: relative;
+.input-with-icon input::placeholder {
+    color: #A6A9BC;
 }
 
-.password-wrapper input {
-    padding-right: 45px;
+.input-with-icon:focus-within {
+    border-color: #17186B;
+    box-shadow: 0 0 0 3px rgba(23, 24, 107, 0.08);
+}
+
+/* Error State Sesuai Mockup Error Figma */
+.input-with-icon.has-error {
+    border-color: #E75A5A !important;
+    background-color: #FDEBEB !important;
+}
+
+.login-inline-error {
+    color: #E75A5A;
+    font-size: 10.5px;
+    font-weight: 500;
+    margin-top: 5px;
+    text-align: left;
 }
 
 .password-toggle {
-    position: absolute;
-    right: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-
     border: none;
     background: transparent;
-
-    color: #777777;
-
+    color: #8C8FA7;
     cursor: pointer;
-
     font-size: 16px;
-
     padding: 0;
-
     line-height: 1;
+    display: flex;
+    align-items: center;
+    transition: color 0.2s;
 }
 
 .password-toggle:hover {
-    color: #25257a;
+    color: #17186B;
 }
-
-/* =========================
-   LUPA PASSWORD
-========================= */
 
 .login-forgot {
     display: flex;
     justify-content: flex-end;
-
-    margin-top: -5px;
-    margin-bottom: 17px;
+    margin-top: 5px;
+    margin-bottom: 16px;
 }
 
 .login-forgot a {
-    color: #25257a;
-
+    color: #17186B;
     font-size: 11px;
-
     text-decoration: none;
+    font-weight: 500;
 }
 
 .login-forgot a:hover {
     text-decoration: underline;
 }
 
-/* =========================
-   BUTTON
-========================= */
-
 .login-button {
     width: 100%;
-    height: 43px;
-
+    height: 42px;
     border: none;
     border-radius: 9px;
-
-    background: #17186b;
-
+    background: #17186B;
     color: #ffffff;
-
-    font-size: 14px;
+    font-size: 13.5px;
     font-weight: 600;
-
     cursor: pointer;
-
     transition: 0.2s;
 }
 
@@ -268,58 +280,53 @@ body:has(.login-page) main.container {
     background: #111154;
 }
 
-
-/* =========================
-   REGISTER
-========================= */
-
 .login-register {
-    margin-top: 15px;
-
+    margin-top: 14px;
     text-align: center;
-
-    color: #999999;
-
+    color: #888888;
     font-size: 10px;
+    line-height: 1.4;
 }
 
-.login-register a {
-    color: #25257a;
-
-    font-weight: 600;
-
-    text-decoration: none;
-}
-
-.login-register a:hover {
-    text-decoration: underline;
-}
-
-
-/* =========================
-   RESPONSIVE
-========================= */
-
-@media (max-width: 768px) {
-
+@media (max-width: 900px) {
     .login-page {
+        flex-direction: column;
         justify-content: center;
+        align-items: center;
+        padding: 30px 20px;
+        overflow-y: auto;
+    }
 
-        padding: 20px;
+    .login-hero {
+        align-items: center;
+        text-align: center;
+        margin-bottom: 24px;
+    }
 
-        background-position: center;
+    .login-hero-logo img {
+        width: 75px;
+        height: 75px;
+        margin-bottom: 10px;
+    }
+
+    .login-hero-title {
+        font-size: 24px;
+    }
+
+    .login-hero-subtitle {
+        font-size: 11px;
     }
 
     .login-card {
-        max-width: 400px;
-
-        padding: 30px 25px;
+        max-width: 380px;
+        padding: 26px 22px;
     }
 }
 
+
 /* =========================
-   ACCESS DENIED
-   ========================= */
+   ACCESS DENIED (JOB 3.3)
+========================= */
 
 .access-denied-page {
     min-height: 70vh;
@@ -382,4 +389,645 @@ body:has(.login-page) main.container {
 .access-denied-button:hover {
     background: #3B3DA8;
     color: #ffffff;
+}
+
+
+/* ======================================================
+   MAIN APPLICATION LAYOUT (FIGMA ACCURACY)
+====================================================== */
+
+.app-layout {
+    display: flex;
+    min-height: 100vh;
+    background-color: var(--bg-main);
+}
+
+
+/* =========================
+   SIDEBAR
+========================= */
+
+.app-sidebar {
+    width: var(--sidebar-width);
+    min-width: var(--sidebar-width);
+    height: 100vh;
+    background-color: var(--primary-navy);
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+/* Scrollbar halus untuk sidebar */
+.app-sidebar::-webkit-scrollbar {
+    width: 4px;
+}
+.app-sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+}
+
+/* Logo & Brand */
+.sidebar-logo {
+    padding: 22px 14px 14px;
+    text-align: center;
+}
+
+.sidebar-brand-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+}
+
+.sidebar-brand-link img {
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    object-fit: contain;
+    display: block;
+}
+
+.sidebar-brand-text {
+    display: block;
+    margin-top: 6px;
+    color: #FFFFFF;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+}
+
+/* Menu Navigasi */
+.sidebar-menu {
+    display: flex;
+    flex-direction: column;
+    padding: 8px 12px;
+    gap: 4px;
+    flex: 1;
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    padding: 8px 14px;
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+    font-size: 11.5px;
+    font-weight: 500;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.sidebar-link:hover {
+    color: #FFFFFF;
+    background-color: rgba(255, 255, 255, 0.12);
+}
+
+/* Menu Aktif (Sesuai Figma: Kapsul Lavender Halus) */
+.sidebar-link.active {
+    color: #FFFFFF;
+    background: rgba(185, 188, 255, 0.24);
+    border: 1px solid rgba(185, 188, 255, 0.45);
+    font-weight: 600;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+/* Tombol Keluar (Pill Merah Sesuai Figma) */
+.sidebar-bottom {
+    padding: 16px 14px 22px;
+    margin-top: auto;
+}
+
+.sidebar-logout {
+    display: block;
+    width: 100%;
+    padding: 8px 14px;
+    text-align: center;
+    background-color: var(--error);
+    color: #FFFFFF;
+    font-size: 11.5px;
+    font-weight: 600;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+}
+
+.sidebar-logout:hover {
+    background-color: #B83333;
+    color: #FFFFFF;
+}
+
+
+/* =========================
+   APP MAIN & CONTENT
+========================= */
+
+.app-main {
+    margin-left: var(--sidebar-width);
+    width: calc(100% - var(--sidebar-width));
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--bg-main);
+}
+
+.app-content {
+    flex: 1;
+    padding: 24px 34px 34px;
+    max-width: 1350px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.app-footer {
+    display: none;
+}
+
+
+/* ======================================================
+   DASHBOARD COMPONENTS (PRESISI UI/UX FIGMA)
+====================================================== */
+
+.dashboard-page {
+    width: 100%;
+}
+
+/* 1. DASHBOARD HEADING */
+.dashboard-heading {
+    margin-bottom: 18px;
+}
+
+.dashboard-heading h1 {
+    font-size: 25px;
+    font-weight: 800;
+    color: var(--text-main);
+    margin: 0 0 2px;
+    letter-spacing: -0.3px;
+}
+
+.dashboard-heading p {
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    margin: 0;
+    font-weight: 500;
+}
+
+
+/* 2. SUMMARY CARDS (GRID 4 KOLOM) */
+.dashboard-summary {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 18px;
+}
+
+.summary-card {
+    background: var(--white);
+    border-radius: 14px;
+    padding: 14px 16px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 2px 8px rgba(23, 24, 107, 0.04);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 84px;
+}
+
+.summary-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    margin-bottom: 5px;
+}
+
+.summary-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-main);
+}
+
+.summary-title {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--text-main);
+    white-space: nowrap;
+}
+
+.summary-value {
+    font-size: 21px;
+    font-weight: 800;
+    color: var(--text-main);
+    line-height: 1.2;
+}
+
+
+/* 3. REKAP KEUANGAN CARD */
+.dashboard-section {
+    background: var(--white);
+    border-radius: 14px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 2px 8px rgba(23, 24, 107, 0.04);
+    margin-bottom: 18px;
+}
+
+.rekap-card {
+    padding: 16px 22px;
+}
+
+.rekap-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+}
+
+.rekap-header h2 {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-main);
+    margin: 0;
+}
+
+.period-filter {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.filter-btn {
+    border: none;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 10.5px;
+    font-weight: 600;
+    cursor: pointer;
+    background: transparent;
+    color: var(--text-secondary);
+    transition: all 0.2s ease;
+}
+
+.filter-btn:hover {
+    color: var(--primary-navy);
+}
+
+.filter-btn.active {
+    background: var(--primary-navy);
+    color: #FFFFFF;
+}
+
+.financial-metrics {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+}
+
+.metric-item {
+    text-align: left;
+}
+
+.metric-label {
+    display: block;
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+    font-weight: 500;
+}
+
+.metric-val {
+    display: block;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+
+/* 4. BARBER HARI INI (KOMPAK & PROPORSIONAL, FOTO TIDAK GEPENG) */
+.barber-section {
+    margin-bottom: 18px;
+}
+
+.section-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-main);
+    margin: 0 0 12px;
+}
+
+.barber-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.barber-card {
+    width: 185px;
+    background: var(--white);
+    border-radius: 14px;
+    padding: 14px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 2px 8px rgba(23, 24, 107, 0.04);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+.barber-photo-box {
+    width: 100%;
+    height: 110px;
+    background: #E5E5E5;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Memastikan foto apapun yang dimasukkan tidak gepeng/terdistorsi */
+.barber-photo-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    border-radius: 10px;
+    display: block;
+}
+
+.barber-details {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.barber-name {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--text-main);
+    margin: 0 0 3px;
+    letter-spacing: 0.3px;
+}
+
+.barber-specialty {
+    font-size: 10.5px;
+    color: var(--text-secondary);
+    margin: 0 0 10px;
+    line-height: 1.35;
+}
+
+.barber-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 12px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.badge-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.badge-hadir {
+    background: var(--success-bg);
+    color: var(--success);
+}
+.badge-hadir .badge-dot {
+    background: var(--success);
+}
+
+.badge-izin {
+    background: var(--warning-bg);
+    color: var(--warning);
+}
+.badge-izin .badge-dot {
+    background: var(--warning);
+}
+
+.badge-tidak-hadir {
+    background: var(--error-bg);
+    color: var(--error);
+}
+.badge-tidak-hadir .badge-dot {
+    background: var(--error);
+}
+
+
+/* 5. PERMINTAAN RESET PASSWORD */
+.reset-section {
+    padding: 16px 22px;
+}
+
+.reset-card-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-main);
+    margin: 0 0 12px;
+    border-bottom: 1px solid #ECEEF6;
+    padding-bottom: 10px;
+}
+
+.reset-card-body {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 2px 0;
+}
+
+.reset-user-name {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.btn-reset-password {
+    background: var(--primary-navy);
+    color: #FFFFFF;
+    border: none;
+    border-radius: 8px;
+    padding: 7px 18px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.btn-reset-password:hover {
+    background-color: var(--secondary-indigo);
+}
+
+
+/* ======================================================
+   MODAL DIALOG KONFIRMASI (JOB 4.1 AC2)
+====================================================== */
+
+.kataji-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(10, 12, 50, 0.55);
+    backdrop-filter: blur(4px);
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.kataji-modal-box {
+    background: #FFFFFF;
+    border-radius: 18px;
+    max-width: 420px;
+    width: 100%;
+    padding: 28px 24px;
+    text-align: center;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+    animation: modalPop 0.25s ease-out;
+}
+
+@keyframes modalPop {
+    from {
+        transform: scale(0.92);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.kataji-modal-icon {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background: #FEF7D9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+}
+
+.kataji-modal-box h3 {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text-main);
+    margin: 0 0 8px;
+}
+
+.kataji-modal-box p {
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin: 0 0 22px;
+}
+
+.kataji-modal-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.btn-modal-cancel {
+    flex: 1;
+    padding: 10px 16px;
+    background: #F3F4FA;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 9px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btn-modal-cancel:hover {
+    background: #E5E7F2;
+    color: var(--text-main);
+}
+
+.btn-modal-confirm {
+    flex: 1;
+    padding: 10px 16px;
+    background: var(--primary-navy);
+    color: #FFFFFF;
+    border: none;
+    border-radius: 9px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btn-modal-confirm:hover {
+    background: var(--secondary-indigo);
+}
+
+
+/* ======================================================
+   FORM VALIDATION FEEDBACK SYSTEM (SEMUA FORM)
+====================================================== */
+
+.is-invalid {
+    border-color: var(--error) !important;
+    background-color: var(--error-bg) !important;
+}
+
+.field-error-text {
+    display: none;
+    color: var(--error);
+    font-size: 11px;
+    font-weight: 500;
+    margin-top: 4px;
+    text-align: left;
+}
+
+
+/* =========================
+   RESPONSIVE LAYOUT
+========================= */
+
+@media (max-width: 1024px) {
+    .dashboard-summary {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .financial-metrics {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    :root {
+        --sidebar-width: 70px;
+    }
+    .sidebar-brand-text,
+    .sidebar-link span {
+        display: none;
+    }
+    .sidebar-link {
+        justify-content: center;
+        padding: 10px 0;
+    }
+    .app-content {
+        padding: 18px 16px;
+    }
+    .financial-metrics {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
