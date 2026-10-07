@@ -41,6 +41,11 @@ $_SESSION['role'] = $user['role'];
 $_SESSION['login_time'] = time();
 $_SESSION['last_activity'] = time();
 
-// Redirect ke dashboard (routing per-role nanti ditangani di dalam dashboard.php)
+// Redirect sesuai role
+if ($user['role'] === 'barber') {
+    header('Location: /KELOMPOK-5/pages/catat-transaksi.php');
+    exit;
+}
+
 header('Location: /KELOMPOK-5/pages/dashboard.php');
 exit;

@@ -71,13 +71,12 @@ $role = $_SESSION['role'] ?? '';
             </a>
 
             <!-- KASIR -->
-            <a
-                href="/KELOMPOK-5/pages/transaksi.php"
-                class="sidebar-link <?= $current_page === 'transaksi.php' ? 'active' : '' ?>"
-            >
-                <span>Kasir</span>
-            </a>
-
+<a
+    href="/KELOMPOK-5/pages/catat-transaksi.php"
+    class="sidebar-link <?= $current_page === 'catat-transaksi.php' ? 'active' : '' ?>"
+>
+    <span>Kasir</span>
+</a>
             <!-- PELANGGAN -->
             <a
                 href="/KELOMPOK-5/pages/pelanggan.php"
