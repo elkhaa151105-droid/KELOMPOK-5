@@ -4,6 +4,7 @@
  */
 
 document.addEventListener('DOMContentLoaded', function () {
+    console.log('SCRIPT KATAJI TERLOAD');
 
     // ======================================================
     // 1. VALIDASI FORM LOGIN
@@ -361,5 +362,172 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         };
     }
+// ======================================================
+// 6. INTERAKSI KASIR - PILIH LAYANAN (JOB 4.1)
+// ======================================================
+
+const serviceCards = document.querySelectorAll('.service-card');
+const selectedServicesContainer = document.getElementById('selectedServices');
+const kasirTotal = document.getElementById('kasirTotal');
+
+console.log('Jumlah service:', serviceCards.length);
+console.log('selectedServices:', selectedServicesContainer);
+console.log('kasirTotal:', kasirTotal);
+
+// Menyimpan layanan yang dipilih
+const selectedServices = {};
+
+// Format angka menjadi Rupiah
+function formatRupiah(value) {
+    return 'Rp' + Number(value).toLocaleString('id-ID');
+}
+
+// Menampilkan layanan yang dipilih
+function renderSelectedServices() {
+    if (!selectedServicesContainer || !kasirTotal) return;
+
+    const items = Object.values(selectedServices);
+
+    // Jika belum ada layanan
+    if (items.length === 0) {
+        selectedServicesContainer.innerHTML = `
+            <p class="empty-service">Belum ada layanan dipilih</p>
+        `;
+
+        kasirTotal.textContent = 'Rp0';
+
+        serviceCards.forEach(card => {
+            card.classList.remove('selected');
+        });
+
+        return;
+    }
+
+    let total = 0;
+
+    selectedServicesContainer.innerHTML = items.map(item => {
+        const subtotal = item.price * item.qty;
+        total += subtotal;
+
+        return `
+            <div class="selected-service-row" data-service="${item.name}">
+                <span>${item.name} ${item.qty}x</span>
+                <span>${formatRupiah(subtotal)}</span>
+                <button
+                    type="button"
+                    class="selected-service-remove"
+                    data-action="remove"
+                    data-service="${item.name}"
+                    aria-label="Hapus ${item.name}">
+                    ×
+                </button>
+            </div>
+        `;
+    }).join('');
+
+    // Tampilkan total
+    kasirTotal.textContent = formatRupiah(total);
+
+    // Tandai card layanan yang sedang dipilih
+    serviceCards.forEach(card => {
+        const serviceName = card.dataset.service;
+
+        if (selectedServices[serviceName]) {
+            card.classList.add('selected');
+        } else {
+            card.classList.remove('selected');
+        }
+    });
+}
+
+// Notifikasi transaksi berhasil
+function showSuccessNotification() {
+    const notification = document.createElement('div');
+
+    notification.className = 'transaction-success';
+    notification.textContent = 'Transaksi Berhasil';
+
+    document.body.appendChild(notification);
+
+    setTimeout(() => {
+        notification.classList.add('show');
+    }, 10);
+
+    setTimeout(() => {
+        notification.classList.remove('show');
+
+        setTimeout(() => {
+            notification.remove();
+        }, 300);
+    }, 2500);
+}
+
+// Klik layanan
+serviceCards.forEach(card => {
+    card.addEventListener('click', function () {
+
+        const serviceName = this.dataset.service;
+        const servicePrice = Number(this.dataset.price);
+
+        console.log('Service diklik:', serviceName, servicePrice);
+
+        // Jika layanan sudah dipilih, quantity bertambah
+        if (selectedServices[serviceName]) {
+            selectedServices[serviceName].qty += 1;
+        } 
+        
+        // Jika belum dipilih, tambahkan sebagai layanan baru
+        else {
+            selectedServices[serviceName] = {
+                name: serviceName,
+                price: servicePrice,
+                qty: 1
+            };
+        }
+
+        renderSelectedServices();
+    });
+});
+
+
+// Hapus layanan dari daftar
+if (selectedServicesContainer) {
+    selectedServicesContainer.addEventListener('click', function (e) {
+
+        const removeButton = e.target.closest('[data-action="remove"]');
+
+        if (!removeButton) return;
+
+        const serviceName = removeButton.dataset.service;
+
+        delete selectedServices[serviceName];
+
+        renderSelectedServices();
+    });
+}
+
+const btnSimpanTransaksi = document.getElementById('btnSimpanTransaksi');
+
+if (btnSimpanTransaksi) {
+    btnSimpanTransaksi.addEventListener('click', function () {
+
+        // Validasi: layanan wajib dipilih
+        if (Object.keys(selectedServices).length === 0) {
+            alert('Pilih minimal satu layanan');
+            return;
+        }
+
+        // Tampilkan notifikasi transaksi berhasil
+        showSuccessNotification();
+
+        // Kosongkan layanan yang sudah dipilih
+        Object.keys(selectedServices).forEach(serviceName => {
+            delete selectedServices[serviceName];
+        });
+
+        // Perbarui tampilan kasir
+        renderSelectedServices();
+    });
+}
 
 });

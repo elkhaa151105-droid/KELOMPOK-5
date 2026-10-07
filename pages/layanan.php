@@ -1,4 +1,5 @@
 <?php
+
 require_once __DIR__ . '/../includes/auth_check.php';
 
 // Proteksi server-side: Hanya Owner yang diizinkan (Job 3.3)
@@ -18,7 +19,7 @@ $nama = $_SESSION['nama'] ?? '';
 
     <div class="dashboard-section" style="padding: 24px; background: #FFFFFF; border-radius: 14px; border: 1px solid #E2E4F0;">
         <p style="margin: 0; color: #2E9E5B; font-weight: 600;">
-            ✓ Halaman ini berhasil dibuka oleh Owner. Fitur kelola layanan siap dikembangkan pada kartu Job 5.3.
+            
         </p>
     </div>
 </div>

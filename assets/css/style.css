@@ -1031,3 +1031,362 @@ body:has(.login-page) main.container {
         grid-template-columns: repeat(2, 1fr);
     }
 }
+
+/* ======================================================
+   KASIR / TRANSAKSI (JOB 4.1)
+====================================================== */
+
+.kasir-page {
+    width: 100%;
+}
+
+.kasir-heading {
+    margin-bottom: 16px;
+}
+
+.kasir-heading h1 {
+    margin: 0 0 2px;
+    font-size: 25px;
+    font-weight: 800;
+    color: var(--text-main);
+}
+
+.kasir-heading p {
+    margin: 0;
+    font-size: 12.5px;
+    color: var(--text-main);
+    font-weight: 500;
+}
+
+
+/* =========================
+   LAYOUT KASIR
+========================= */
+
+.kasir-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 330px;
+    gap: 18px;
+    align-items: start;
+}
+
+
+/* =========================
+   DAFTAR LAYANAN
+========================= */
+
+.kasir-services {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(190px, 1fr));
+    gap: 16px;
+    align-content: start;
+}
+
+.service-card {
+    min-height: 78px;
+    padding: 14px 18px;
+    border: 1px solid var(--border-color);
+    border-radius: 13px;
+    background: var(--white);
+    box-shadow: 0 2px 7px rgba(23, 24, 107, 0.08);
+
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    cursor: pointer;
+    text-align: left;
+
+    transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease,
+        border-color 0.15s ease;
+}
+
+.service-card:hover {
+    transform: translateY(-1px);
+    border-color: var(--secondary-indigo);
+    box-shadow: 0 4px 12px rgba(23, 24, 107, 0.12);
+}
+
+.service-card.selected {
+    border-color: var(--primary-navy);
+    box-shadow: 0 0 0 2px rgba(23, 24, 107, 0.1);
+}
+
+.service-icon {
+    width: 38px;
+    flex-shrink: 0;
+
+    color: #111111;
+    font-size: 31px;
+    line-height: 1;
+
+    transform: rotate(-8deg);
+}
+
+.service-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    margin-left: auto;
+}
+
+.service-info strong {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.service-info small {
+    margin-top: 2px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+
+/* Creambath tetap berada di bawah */
+.service-card:last-child {
+    grid-column: 2;
+}
+
+
+/* =========================
+   CARD DETAIL TRANSAKSI
+========================= */
+
+.kasir-order-card {
+    min-height: 430px;
+    padding: 12px 10px 14px;
+
+    background: var(--white);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+
+    box-shadow: 0 2px 8px rgba(23, 24, 107, 0.08);
+}
+
+.kasir-order-card h2 {
+    margin: 0 0 2px;
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text-main);
+}
+
+
+/* =========================
+   FIELD
+========================= */
+
+.kasir-field {
+    margin-bottom: 8px;
+}
+
+.kasir-field label {
+    display: block;
+    margin-bottom: 4px;
+
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-main);
+}
+
+.kasir-field input,
+.kasir-field select {
+    width: 100%;
+    height: 28px;
+
+    padding: 4px 9px;
+
+    border: 1px solid #BDBDBD;
+    border-radius: 8px;
+
+    background: #FFFFFF;
+    color: var(--text-main);
+
+    font-family: inherit;
+    font-size: 10.5px;
+
+    outline: none;
+}
+
+.kasir-field input::placeholder {
+    color: #B5B5B5;
+    font-style: italic;
+}
+
+.kasir-field input:focus,
+.kasir-field select:focus {
+    border-color: var(--primary-navy);
+    box-shadow: 0 0 0 2px rgba(23, 24, 107, 0.08);
+}
+
+
+/* =========================
+   SERVICE TERPILIH
+========================= */
+
+.kasir-selected-service {
+    margin-top: 8px;
+}
+
+.selected-service-heading {
+    margin-bottom: 3px;
+
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-main);
+}
+
+.selected-services-list {
+    min-height: 40px;
+}
+
+.selected-service-row {
+    display: grid;
+    grid-template-columns: 1fr auto 14px;
+    align-items: center;
+    gap: 4px;
+
+    padding: 2px 0;
+
+    border-bottom: 1px solid #D9D9D9;
+
+    font-size: 9px;
+    color: var(--text-main);
+}
+
+.selected-service-row span:nth-child(2) {
+    text-align: right;
+}
+
+.selected-service-remove {
+    border: none;
+    padding: 0;
+
+    background: transparent;
+    color: var(--error);
+
+    font-size: 11px;
+    cursor: pointer;
+}
+
+.empty-service {
+    margin: 8px 0;
+
+    color: #AAAAAA;
+    font-size: 10px;
+    font-style: italic;
+}
+
+
+/* =========================
+   TOTAL
+========================= */
+
+.kasir-total {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-top: 5px;
+    padding-top: 2px;
+
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-main);
+}
+
+.kasir-total strong {
+    font-size: 14px;
+    font-weight: 800;
+}
+
+
+/* =========================
+   PEMBAYARAN
+========================= */
+
+.payment-field {
+    margin-top: 6px;
+}
+
+
+/* =========================
+   BUTTON SIMPAN
+========================= */
+
+.kasir-submit {
+    width: 100%;
+    height: 30px;
+
+    margin-top: 35px;
+
+    border: none;
+    border-radius: 6px;
+
+    background: var(--primary-navy);
+    color: #FFFFFF;
+
+    font-family: inherit;
+    font-size: 10px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition: background-color 0.2s ease;
+}
+
+.kasir-submit:hover {
+    background: var(--secondary-indigo);
+}
+
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 900px) {
+
+    .kasir-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .kasir-order-card {
+        max-width: none;
+    }
+}
+
+@media (max-width: 600px) {
+
+    .kasir-services {
+        grid-template-columns: 1fr;
+    }
+
+    .service-card:last-child {
+        grid-column: auto;
+    }
+}
+
+.transaction-success {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-10px);
+    background: #DDF5E7;
+    color: #2E9E5B;
+    border: 1px solid #B9E6C9;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    opacity: 0;
+    z-index: 9999;
+    transition: all 0.3s ease;
+}
+
+.transaction-success.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}

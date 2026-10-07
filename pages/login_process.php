@@ -5,7 +5,7 @@ $username = trim($_POST['username'] ?? '');
 $password = $_POST['password'] ?? '';
 
 if ($username === '' || $password === '') {
-    header('Location: /kataji-barber/pages/login.php?error=1');
+    header('Location: /KELOMPOK-5/pages/login.php?error=1');
     exit;
 }
 
@@ -14,7 +14,7 @@ $stmt->execute([$username]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$user || !password_verify($password, $user['password_hash'])) {
-    header('Location: /kataji-barber/pages/login.php?error=1');
+    header('Location: /KELOMPOK-5/pages/login.php?error=1');
     exit;
 }
 
@@ -24,5 +24,5 @@ $_SESSION['role'] = $user['role'];
 $_SESSION['login_time'] = time();
 $_SESSION['last_activity'] = time();
 
-header('Location: /kataji-barber/pages/dashboard.php');
+header('Location: /KELOMPOK-5/pages/dashboard.php');
 exit;
