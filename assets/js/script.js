@@ -17,6 +17,14 @@ document.addEventListener('DOMContentLoaded', function () {
     const loginErrorMessage = document.getElementById('loginErrorMessage');
     const passwordToggle = document.getElementById('passwordToggle');
 
+    const loginNotification = document.querySelector('.login-notification');
+
+if (loginNotification) {
+    setTimeout(() => {
+        loginNotification.classList.remove('show');
+    }, 2500);
+}
+
     // Toggle Password Visibility
     if (passwordToggle && passwordInput) {
         passwordToggle.addEventListener('click', function () {
@@ -380,6 +388,23 @@ const selectedServices = {};
 // Format angka menjadi Rupiah
 function formatRupiah(value) {
     return 'Rp' + Number(value).toLocaleString('id-ID');
+}
+
+// Tampilkan kondisi jika belum ada layanan
+function showEmptyState() {
+    const tableBody = document.getElementById('layananTableBody');
+
+    if (!tableBody) return;
+
+    if (tableBody.children.length === 0) {
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="4" class="layanan-empty">
+                    Belum ada layanan.
+                </td>
+            </tr>
+        `;
+    }
 }
 
 // Menampilkan layanan yang dipilih

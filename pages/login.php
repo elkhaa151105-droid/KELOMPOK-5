@@ -55,16 +55,16 @@ if (isset($_GET['both_empty'])) {
 <div class="login-page">
 
     <!-- BRANDING SISI KIRI (DESKTOP) -->
-    <div class="login-hero">
+    <<!--div class="login-hero">
         <div class="login-hero-logo">
             <img
                 src="/KELOMPOK-5/assets/img/logo-kataji.png"
-                alt="Logo Kataji Barbering Hair Studio"
+                alt="Logo Kataji Barbering Hair Studio" 
             >
         </div>
         <h2 class="login-hero-title">KATAJI BARBER</h2>
         <p class="login-hero-subtitle">MANAGEMENT &amp; INFORMATION SYSTEM</p>
-    </div>
+    </div>-->
 
     <!-- CARD FORM LOGIN DI SISI KANAN -->
     <div class="login-card">

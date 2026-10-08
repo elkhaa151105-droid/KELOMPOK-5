@@ -7,6 +7,8 @@ $role = $_SESSION['role'] ?? '';
 $nama = $_SESSION['nama'] ?? '';
 
 $current_page = basename($_SERVER['PHP_SELF']);
+$login_notification = $_SESSION['login_notification'] ?? '';
+unset($_SESSION['login_notification']);
 ?>
 
 <!DOCTYPE html>
@@ -39,7 +41,11 @@ $current_page = basename($_SERVER['PHP_SELF']);
 </head>
 
 <body>
-
+<?php if ($login_notification !== ''): ?>
+    <div class="transaction-success login-notification show">
+        <?= htmlspecialchars($login_notification) ?>
+    </div>
+<?php endif; ?>
 <div class="app-layout">
 
     <!-- SIDEBAR -->
@@ -81,12 +87,12 @@ $current_page = basename($_SERVER['PHP_SELF']);
         <span>Kasir</span>
     </a>
 
-    <!-- PELANGGAN -->
+    <!-- RIWAYAT -->
     <a
-        href="/KELOMPOK-5/pages/pelanggan.php"
+        href="/KELOMPOK-5/pages/riwayat.php"
         class="sidebar-link <?= $current_page === 'pelanggan.php' ? 'active' : '' ?>"
     >
-        <span>Pelanggan</span>
+        <span>Riwayat</span>
     </a>
 
     <!-- DATA BARBER -->
@@ -97,12 +103,12 @@ $current_page = basename($_SERVER['PHP_SELF']);
         <span>Data Barber</span>
     </a>
 
-    <!-- LAYANAN & PRICELIST -->
+    <!-- LAYANAN-->
     <a
         href="/KELOMPOK-5/pages/layanan.php"
         class="sidebar-link <?= $current_page === 'layanan.php' ? 'active' : '' ?>"
     >
-        <span>Layanan &amp; Pricelist</span>
+        <span>Layanan</span>
     </a>
 
     <!-- KONTEN WEB -->
@@ -141,10 +147,10 @@ $current_page = basename($_SERVER['PHP_SELF']);
 
     <!-- RIWAYAT SAYA -->
     <a
-        href="/KELOMPOK-5/pages/riwayat_saya.php"
-        class="sidebar-link <?= $current_page === 'riwayat_saya.php' ? 'active' : '' ?>"
+        href="/KELOMPOK-5/pages/riwayat.php"
+        class="sidebar-link <?= $current_page === 'riwayat.php' ? 'active' : '' ?>"
     >
-        <span>Riwayat Saya</span>
+        <span>Riwayat</span>
     </a>
 
     <!-- STATUS SAYA -->

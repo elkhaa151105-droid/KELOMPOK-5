@@ -277,13 +277,13 @@ body:has(.login-page) main.container {
 }
 
 .login-button:hover {
-    background: #111154;
+    background: #17186B;
 }
 
 .login-register {
     margin-top: 14px;
     text-align: center;
-    color: #888888;
+    color: #6B6B6B;
     font-size: 10px;
     line-height: 1.4;
 }
@@ -1389,4 +1389,537 @@ body:has(.login-page) main.container {
 .transaction-success.show {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
+}
+
+/* ======================================================
+   LAYANAN & PRICELIST (JOB 5.3)
+====================================================== */
+
+.layanan-page {
+    width: 100%;
+}
+
+.layanan-heading {
+    margin-bottom: 12px;
+}
+
+.layanan-heading h1 {
+    margin: 0;
+    font-size: 25px;
+    font-weight: 800;
+    color: var(--text-main);
+}
+
+/* =========================
+   CARD LAYANAN
+========================= */
+
+.layanan-card {
+    background: var(--white);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    padding: 10px 14px;
+    box-shadow: 0 2px 8px rgba(23, 24, 107, 0.06);
+    margin-bottom: 10px;
+}
+
+
+/* =========================
+   TABEL LAYANAN
+========================= */
+
+.layanan-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.layanan-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.layanan-table th {
+    padding: 4px 8px;
+    text-align: left;
+    font-size: 9px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    border-bottom: 1px solid #E5E5E5;
+}
+
+.layanan-table td {
+    height: 28px;
+    padding: 3px 8px;
+    font-size: 9px;
+    color: var(--text-main);
+    border-bottom: 1px solid #EEEEF4;
+    vertical-align: middle;
+}
+
+.layanan-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+
+/* Lebar kolom mengikuti Figma */
+
+.layanan-table th:nth-child(1),
+.layanan-table td:nth-child(1) {
+    width: 28%;
+}
+
+.layanan-table th:nth-child(2),
+.layanan-table td:nth-child(2) {
+    width: 25%;
+}
+
+.layanan-table th:nth-child(3),
+.layanan-table td:nth-child(3) {
+    width: 25%;
+}
+
+.layanan-table th:nth-child(4),
+.layanan-table td:nth-child(4) {
+    width: 22%;
+}
+
+
+/* =========================
+   INPUT HARGA & HPP
+========================= */
+
+.layanan-price-input,
+.layanan-hpp-input {
+    width: 70px;
+    height: 20px;
+
+    padding: 2px 7px;
+
+    border: 1px solid #CFCFCF;
+    border-radius: 7px;
+
+    background: #FFFFFF;
+    color: var(--text-main);
+
+    font-family: inherit;
+    font-size: 8px;
+    text-align: center;
+
+    outline: none;
+
+    /* Hilangkan tombol panah input number */
+    -moz-appearance: textfield;
+}
+
+.layanan-price-input::-webkit-outer-spin-button,
+.layanan-price-input::-webkit-inner-spin-button,
+.layanan-hpp-input::-webkit-outer-spin-button,
+.layanan-hpp-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+.layanan-price-input:focus,
+.layanan-hpp-input:focus {
+    border-color: var(--primary-navy);
+    box-shadow: 0 0 0 2px rgba(23, 24, 107, 0.08);
+}
+
+
+/* =========================
+   CHECKBOX AKTIF
+========================= */
+
+.layanan-checkbox {
+    width: 12px;
+    height: 12px;
+
+    margin: 0;
+
+    accent-color: var(--success);
+    cursor: pointer;
+}
+
+
+/* =========================
+   TAMBAH LAYANAN
+========================= */
+
+.tambah-layanan-card {
+    padding: 12px 14px;
+}
+
+.tambah-layanan-card h2 {
+    margin: 0 0 8px;
+
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.tambah-layanan-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+
+    align-items: end;
+}
+
+.layanan-input-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.layanan-input-group label {
+    margin-bottom: 4px;
+
+    font-size: 9px;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.layanan-input-group input {
+    width: 100%;
+    height: 28px;
+
+    padding: 4px 8px;
+
+    border: 1px solid #BDBDBD;
+    border-radius: 7px;
+
+    outline: none;
+
+    font-family: inherit;
+    font-size: 9px;
+}
+
+.layanan-input-group input:focus {
+    border-color: var(--primary-navy);
+    box-shadow: 0 0 0 2px rgba(23, 24, 107, 0.08);
+}
+
+.layanan-input-group input.is-invalid {
+    border-color: var(--error) !important;
+    background: var(--error-bg);
+}
+
+.layanan-error {
+    min-height: 13px;
+
+    margin-top: 3px;
+
+    color: var(--error);
+    font-size: 8px;
+}
+
+
+/* =========================
+   TOMBOL TAMBAH
+========================= */
+
+.layanan-submit {
+    grid-column: 1;
+
+    width: 55px;
+    height: 25px;
+
+    margin-top: 2px;
+
+    padding: 0;
+
+    border: none;
+    border-radius: 5px;
+
+    background: var(--primary-navy);
+    color: #FFFFFF;
+
+    font-family: inherit;
+    font-size: 8px;
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+.layanan-submit:hover {
+    background: var(--secondary-indigo);
+}
+
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 800px) {
+
+    .tambah-layanan-form {
+        grid-template-columns: 1fr;
+    }
+
+    .layanan-submit {
+        grid-column: auto;
+        width: 55px;
+    }
+}
+/* =========================
+   KONDISI TABEL KOSONG
+========================= */
+
+.layanan-empty {
+    height: 60px !important;
+    text-align: center !important;
+    color: var(--text-secondary) !important;
+    font-size: 9px !important;
+}
+/* =========================
+   KONDISI TABEL KOSONG
+========================= */
+
+.layanan-empty {
+    height: 60px !important;
+    text-align: center !important;
+    color: var(--text-secondary) !important;
+    font-size: 9px !important;
+}
+
+/* =========================================================
+   RIWAYAT
+   ========================================================= */
+
+.riwayat-page {
+    width: 100%;
+}
+
+.riwayat-heading {
+    margin-bottom: 10px;
+}
+
+.riwayat-heading h1 {
+    margin: 0;
+    font-size: 25px;
+    font-weight: 800;
+    color: var(--text-main);
+}
+
+.riwayat-card {
+    width: 100%;
+    min-height: 128px;
+    background: var(--white);
+    border-radius: 12px;
+    padding: 7px 12px;
+    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.18);
+}
+
+.riwayat-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.riwayat-table th {
+    padding: 2px 6px;
+    text-align: left;
+    font-size: 9px;
+    font-weight: 500;
+    color: #888888;
+}
+
+.riwayat-table td {
+    padding: 2px 6px;
+    font-size: 9px;
+    font-weight: 400;
+    color: #777777;
+    vertical-align: middle;
+}
+
+.riwayat-table th:nth-child(1),
+.riwayat-table td:nth-child(1) {
+    width: 12%;
+}
+
+.riwayat-table th:nth-child(2),
+.riwayat-table td:nth-child(2) {
+    width: 18%;
+}
+
+.riwayat-table th:nth-child(3),
+.riwayat-table td:nth-child(3) {
+    width: 17%;
+}
+
+.riwayat-table th:nth-child(4),
+.riwayat-table td:nth-child(4) {
+    width: 16%;
+}
+
+.riwayat-table th:nth-child(5),
+.riwayat-table td:nth-child(5) {
+    width: 25%;
+}
+
+.riwayat-table th:nth-child(6),
+.riwayat-table td:nth-child(6) {
+    width: 12%;
+    text-align: center;
+}
+
+.riwayat-detail-btn {
+    border: none;
+    background: transparent;
+    color: #E25555;
+    font-size: 12px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+}
+/* =========================================================
+   RIWAYAT
+   ========================================================= */
+
+.riwayat-page {
+    width: 100%;
+}
+
+.riwayat-heading {
+    margin-bottom: 8px;
+}
+
+.riwayat-heading h1 {
+    margin: 0;
+    font-size: 25px;
+    font-weight: 800;
+    color: var(--text-main);
+}
+
+/* CARD RIWAYAT */
+
+.riwayat-card {
+    position: relative;
+    width: 100%;
+    min-height: 128px;
+    background: var(--white);
+    border-radius: 10px;
+    padding: 7px 12px;
+    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.18);
+}
+
+/* TABEL */
+
+.riwayat-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.riwayat-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.riwayat-table th {
+    padding: 2px 6px;
+    text-align: left;
+    font-size: 9px;
+    font-weight: 500;
+    color: #888888;
+    white-space: nowrap;
+}
+
+.riwayat-table td {
+    padding: 2px 6px;
+    text-align: left;
+    font-size: 9px;
+    font-weight: 400;
+    color: #777777;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+/* LEBAR KOLOM */
+
+.riwayat-table th:nth-child(1),
+.riwayat-table td:nth-child(1) {
+    width: 12%;
+}
+
+.riwayat-table th:nth-child(2),
+.riwayat-table td:nth-child(2) {
+    width: 18%;
+}
+
+.riwayat-table th:nth-child(3),
+.riwayat-table td:nth-child(3) {
+    width: 17%;
+}
+
+.riwayat-table th:nth-child(4),
+.riwayat-table td:nth-child(4) {
+    width: 16%;
+}
+
+.riwayat-table th:nth-child(5),
+.riwayat-table td:nth-child(5) {
+    width: 25%;
+}
+
+.riwayat-table th:nth-child(6),
+.riwayat-table td:nth-child(6) {
+    width: 12%;
+    text-align: center;
+}
+
+/* TOMBOL HAPUS */
+
+.riwayat-delete-btn {
+    border: none;
+    background: transparent;
+    color: #E25555;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1;
+    padding: 0;
+    cursor: pointer;
+}
+
+.riwayat-delete-btn:hover {
+    color: #C93D3D;
+}
+
+/* NOTIFIKASI */
+
+.riwayat-notification {
+    position: absolute;
+    top: -20px;
+    right: 12px;
+
+    min-width: 90px;
+    height: 20px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0 12px;
+
+    border: 1px solid #E8A0A0;
+    border-radius: 10px;
+
+    background: #FFF7F7;
+    color: #D85A5A;
+
+    font-size: 8px;
+    font-weight: 500;
+
+    opacity: 0;
+    pointer-events: none;
+
+    transition: opacity 0.2s ease;
+}
+
+.riwayat-notification.show {
+    opacity: 1;
+}
+/* Notifikasi Berhasil Dihapus - Riwayat */
+.riwayat-delete-notification {
+    background: #FBEAEA;
+    color: #D64545;
 }
