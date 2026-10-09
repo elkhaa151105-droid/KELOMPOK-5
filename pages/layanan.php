@@ -23,15 +23,15 @@ require_role(['owner']);
                         <th>Harga</th>
                         <th>HPP</th>
                         <th>Aktif</th>
+                        <th>Aksi</th>
                         
                     </tr>
                 </thead>
 
      <tbody id="layananTableBody">
 
-    <tr>
-        <td>Haircut</td>
-
+    <tr data-service-row="true">
+    <td>Haircut</td>
         <td>
             <input
                 type="number"
@@ -57,8 +57,8 @@ require_role(['owner']);
         </td>
     </tr>
 
-    <tr>
-        <td>Colouring</td>
+    <tr data-service-row="true">
+    <td>Colouring</td>
 
         <td>
             <input
@@ -85,8 +85,8 @@ require_role(['owner']);
         </td>
     </tr>
 
-    <tr>
-        <td>Perming</td>
+    <tr data-service-row="true">
+    <td>Perming</td>
 
         <td>
             <input
@@ -113,8 +113,8 @@ require_role(['owner']);
         </td>
     </tr>
 
-    <tr>
-        <td>Smoothing</td>
+    <tr data-service-row="true">
+    <td>Smooting</td>
 
         <td>
             <input
@@ -141,8 +141,8 @@ require_role(['owner']);
         </td>
     </tr>
 
-    <tr>
-        <td>Creambath</td>
+    <tr data-service-row="true">
+    <td>Creambath</td>
 
         <td>
             <input

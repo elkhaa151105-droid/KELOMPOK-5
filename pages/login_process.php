@@ -24,5 +24,14 @@ $_SESSION['role'] = $user['role'];
 $_SESSION['login_time'] = time();
 $_SESSION['last_activity'] = time();
 
-header('Location: /KELOMPOK-5/pages/dashboard.php');
+$_SESSION['login_notification'] = $user['role'] === 'owner'
+    ? 'Ini halaman owner'
+    : 'Ini halaman barber';
+
+if ($user['role'] === 'owner') {
+    header('Location: /KELOMPOK-5/pages/dashboard.php');
+} else {
+    header('Location: /KELOMPOK-5/pages/transaksi.php');
+}
+
 exit;
