@@ -1612,6 +1612,40 @@ body:has(.login-page) main.container {
     font-size: 8px;
 }
 
+.layanan-notifikasi {
+    display: none;
+    position: fixed;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: max-content;
+    max-width: calc(100vw - 32px);
+    box-sizing: border-box;
+    padding: 12px 20px;
+    margin: 0;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: center;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.layanan-notifikasi.berhasil {
+    display: block;
+    color: #166534;
+    background-color: #dcfce7;
+    border: 1px solid #86efac;
+}
+
+.layanan-notifikasi.dihapus {
+    display: block;
+    color: #991b1b;
+    background-color: #fee2e2;
+    border: 1px solid #fca5a5;
+}
+
+
 
 /* =========================
    TOMBOL TAMBAH

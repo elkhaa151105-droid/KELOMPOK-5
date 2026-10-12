@@ -15,6 +15,8 @@ require_role(['owner']);
     <!-- DAFTAR LAYANAN -->
     <div class="layanan-card">
 
+    <div id="layananNotifikasi" class="layanan-notifikasi" role="status" aria-live="polite"></div>
+
         <div class="layanan-table-wrapper">
             <table class="layanan-table">
                 <thead>

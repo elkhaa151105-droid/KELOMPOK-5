@@ -85,10 +85,10 @@ if (isset($_GET['both_empty'])) {
         <form
             id="loginForm"
             method="post"
-            action="/KELOMPOK-5/pages/login_process.php"
+            action="/KELOMPOK-5/pages/login_process.php"        
             class="login-form"
             novalidate
-        >
+        >       <!-- mengirim POST kebagian BE -->
 
             <!-- FIELD EMAIL / USERNAME -->
             <div class="login-field">
@@ -144,7 +144,7 @@ if (isset($_GET['both_empty'])) {
                     </button>
                 </div>
 
-                <!-- PESAN ERROR INLINE MERAH SESUAI ATURAN VALIDASI -->
+                <!---------------------------------------- PESAN ERROR INLINE MERAH SESUAI ATURAN VALIDASI -->
                 <div id="loginErrorMessage" class="login-inline-error" style="<?= $error_message !== '' ? 'display: block;' : 'display: none;' ?>">
                     <?= htmlspecialchars($error_message !== '' ? '*' . $error_message : '') ?>
                 </div>

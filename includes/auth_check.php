@@ -6,7 +6,7 @@
 
 require_once __DIR__ . '/../config/config.php';
 
-define('SESSION_LIFETIME', 1800); // 30 menit
+define('SESSION_LIFETIME', 1800);                   // 30 menit
 
 function require_login(): void {
     if (empty($_SESSION['id_user'])) {
