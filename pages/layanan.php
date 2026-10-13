@@ -57,6 +57,8 @@ require_role(['owner']);
                 checked
             >
         </td>
+         <!-- Kolom Aksi -->
+    <td></td>
     </tr>
 
     <tr data-service-row="true">
@@ -85,6 +87,8 @@ require_role(['owner']);
                 checked
             >
         </td>
+         <!-- Kolom Aksi -->
+    <td></td>
     </tr>
 
     <tr data-service-row="true">
@@ -113,6 +117,8 @@ require_role(['owner']);
                 checked
             >
         </td>
+         <!-- Kolom Aksi -->
+    <td></td>
     </tr>
 
     <tr data-service-row="true">
@@ -141,6 +147,8 @@ require_role(['owner']);
                 checked
             >
         </td>
+         <!-- Kolom Aksi -->
+    <td></td>
     </tr>
 
     <tr data-service-row="true">
@@ -168,6 +176,8 @@ require_role(['owner']);
                 class="layanan-checkbox"
             >
         </td>
+         <!-- Kolom Aksi -->
+    <td></td>
     </tr>
 
 </tbody>

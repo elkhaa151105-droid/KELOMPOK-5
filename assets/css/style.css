@@ -1393,327 +1393,318 @@ body:has(.login-page) main.container {
 
 /* ======================================================
    LAYANAN & PRICELIST (JOB 5.3)
+   Penyesuaian visual berdasarkan Layanan.svg
 ====================================================== */
 
 .layanan-page {
     width: 100%;
+    max-width: 100%;
+    color: var(--text-main);
 }
 
 .layanan-heading {
-    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
 }
 
 .layanan-heading h1 {
     margin: 0;
-    font-size: 25px;
-    font-weight: 800;
     color: var(--text-main);
+    font-size: 28px;
+    font-weight: 800;
 }
-
-/* =========================
-   CARD LAYANAN
-========================= */
 
 .layanan-card {
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 22px;
+    padding: 22px 24px;
     background: var(--white);
     border: 1px solid var(--border-color);
-    border-radius: 14px;
-    padding: 10px 14px;
-    box-shadow: 0 2px 8px rgba(23, 24, 107, 0.06);
-    margin-bottom: 10px;
+    border-radius: 20px;
+    box-shadow: none;
 }
-
-
-/* =========================
-   TABEL LAYANAN
-========================= */
 
 .layanan-table-wrapper {
     width: 100%;
+    max-width: 100%;
     overflow-x: auto;
 }
 
 .layanan-table {
     width: 100%;
+    min-width: 760px;
     border-collapse: collapse;
     table-layout: fixed;
+    font-size: 14px;
 }
 
 .layanan-table th {
-    padding: 4px 8px;
+    padding: 12px 16px;
+    color: #858585;
+    background: transparent;
+    border-bottom: 2px solid #BDBDBD;
+    font-size: 14px;
+    font-weight: 600;
     text-align: left;
-    font-size: 9px;
-    font-weight: 500;
-    color: var(--text-secondary);
-    border-bottom: 1px solid #E5E5E5;
+    white-space: nowrap;
 }
 
+/* Persentase kolom mencakup kolom Aksi agar tabel tidak melebar tak terkendali. */
+.layanan-table th:nth-child(1),
+.layanan-table td:nth-child(1) { width: 24%; }
+.layanan-table th:nth-child(2),
+.layanan-table td:nth-child(2) { width: 15%; }
+.layanan-table th:nth-child(3),
+.layanan-table td:nth-child(3) { width: 15%; }
+.layanan-table th:nth-child(4),
+.layanan-table td:nth-child(4) { width: 8%; }
+.layanan-table th:nth-child(5),
+.layanan-table td:nth-child(5) { width: 38%; }
+
 .layanan-table td {
-    height: 28px;
-    padding: 3px 8px;
-    font-size: 9px;
-    color: var(--text-main);
-    border-bottom: 1px solid #EEEEF4;
+    box-sizing: border-box;
+    padding: 9px 16px;
+    color: #858585;
+    border-bottom: 2px solid #BDBDBD;
+    vertical-align: middle;
+    font-size: 14px;
+}
+
+.layanan-table tbody tr:last-child td { border-bottom: 2px solid #BDBDBD; }
+.layanan-table tbody tr:hover { background: transparent; }
+
+.layanan-table input:not([type="checkbox"]) {
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 145px;
+    min-width: 0;
+    height: 40px;
+    padding: 7px 12px;
+    border: 2px solid #BDBDBD;
+    border-radius: 15px;
+    background: var(--white);
+    color: #858585;
+    font-family: inherit;
+    font-size: 14px;
+    text-align: center;
+}
+
+.layanan-table input:focus {
+    outline: none;
+    border-color: var(--secondary-indigo);
+    box-shadow: 0 0 0 2px rgba(59, 61, 168, 0.08);
+}
+
+.layanan-table input[type="checkbox"] {
+    width: 17px;
+    height: 17px;
+    margin: 0;
+    accent-color: var(--success);
+    cursor: pointer;
     vertical-align: middle;
 }
 
-.layanan-table tbody tr:last-child td {
-    border-bottom: none;
+/* Aksi tetap tersedia meskipun tidak ditampilkan pada rancangan SVG. */
+.layanan-table td.layanan-aksi {
+    white-space: nowrap;
 }
 
-
-/* Lebar kolom mengikuti Figma */
-
-.layanan-table th:nth-child(1),
-.layanan-table td:nth-child(1) {
-    width: 28%;
-}
-
-.layanan-table th:nth-child(2),
-.layanan-table td:nth-child(2) {
-    width: 25%;
-}
-
-.layanan-table th:nth-child(3),
-.layanan-table td:nth-child(3) {
-    width: 25%;
-}
-
-.layanan-table th:nth-child(4),
-.layanan-table td:nth-child(4) {
-    width: 22%;
-}
-
-
-/* =========================
-   INPUT HARGA & HPP
-========================= */
-
-.layanan-price-input,
-.layanan-hpp-input {
-    width: 70px;
-    height: 20px;
-
-    padding: 2px 7px;
-
-    border: 1px solid #CFCFCF;
+.layanan-table td.layanan-aksi button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    min-height: 32px;
+    margin: 2px 4px 2px 0;
+    padding: 6px 10px;
+    border: 1px solid transparent;
     border-radius: 7px;
-
-    background: #FFFFFF;
-    color: var(--text-main);
-
     font-family: inherit;
-    font-size: 8px;
-    text-align: center;
-
-    outline: none;
-
-    /* Hilangkan tombol panah input number */
-    -moz-appearance: textfield;
-}
-
-.layanan-price-input::-webkit-outer-spin-button,
-.layanan-price-input::-webkit-inner-spin-button,
-.layanan-hpp-input::-webkit-outer-spin-button,
-.layanan-hpp-input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-}
-.layanan-price-input:focus,
-.layanan-hpp-input:focus {
-    border-color: var(--primary-navy);
-    box-shadow: 0 0 0 2px rgba(23, 24, 107, 0.08);
-}
-
-
-/* =========================
-   CHECKBOX AKTIF
-========================= */
-
-.layanan-checkbox {
-    width: 12px;
-    height: 12px;
-
-    margin: 0;
-
-    accent-color: var(--success);
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.2;
+    vertical-align: middle;
     cursor: pointer;
+    white-space: nowrap;
 }
 
-
-/* =========================
-   TAMBAH LAYANAN
-========================= */
-
-.tambah-layanan-card {
-    padding: 12px 14px;
+.layanan-edit-button {
+    color: var(--white);
+    background: var(--primary-navy);
+    border-color: var(--primary-navy) !important;
 }
+.layanan-edit-button:hover { background: var(--secondary-indigo); }
+
+.layanan-nonaktif-button {
+    color: var(--error);
+    background: var(--white);
+    border-color: var(--error) !important;
+}
+.layanan-nonaktif-button:hover { background: var(--error-bg); }
+
+.layanan-hapus-button {
+    color: var(--white);
+    background: var(--error);
+    border-color: var(--error) !important;
+}
+.layanan-hapus-button:hover { background: #B91C1C; }
+
+.layanan-table tr:has(.layanan-checkbox:not(:checked)) td:first-child {
+    color: var(--text-secondary);
+    text-decoration: line-through;
+    text-decoration-color: #B8B8B8;
+}
+
+.layanan-empty,
+.layanan-empty-row td {
+    height: 60px;
+    padding: 18px;
+    color: var(--text-secondary);
+    font-size: 12px;
+    text-align: center;
+}
+
+/* Form Tambah Layanan */
+.tambah-layanan-card { padding: 22px 28px 26px; }
 
 .tambah-layanan-card h2 {
-    margin: 0 0 8px;
-
-    font-size: 13px;
-    font-weight: 700;
+    margin: 0 0 12px;
     color: var(--text-main);
+    font-size: 28px;
+    font-weight: 700;
 }
 
 .tambah-layanan-form {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 10px;
-
-    align-items: end;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px 24px;
+    align-items: start;
 }
 
 .layanan-input-group {
     display: flex;
     flex-direction: column;
+    min-width: 0;
 }
 
 .layanan-input-group label {
-    margin-bottom: 4px;
-
-    font-size: 9px;
-    font-weight: 600;
+    margin-bottom: 6px;
     color: var(--text-main);
+    font-size: 15px;
+    font-weight: 600;
 }
 
-.layanan-input-group input {
+.layanan-input-group input,
+.layanan-input-group select {
+    box-sizing: border-box;
     width: 100%;
-    height: 28px;
-
-    padding: 4px 8px;
-
-    border: 1px solid #BDBDBD;
-    border-radius: 7px;
-
-    outline: none;
-
+    height: 50px;
+    padding: 10px 14px;
+    border: 2px solid #BDBDBD;
+    border-radius: 16px;
+    background: var(--white);
+    color: var(--text-main);
     font-family: inherit;
-    font-size: 9px;
+    font-size: 14px;
 }
 
-.layanan-input-group input:focus {
-    border-color: var(--primary-navy);
-    box-shadow: 0 0 0 2px rgba(23, 24, 107, 0.08);
+.layanan-input-group input:focus,
+.layanan-input-group select:focus {
+    outline: none;
+    border-color: var(--secondary-indigo);
+    box-shadow: 0 0 0 2px rgba(59, 61, 168, 0.08);
 }
 
-.layanan-input-group input.is-invalid {
+.layanan-input-group input.is-invalid,
+.tambah-layanan-form .is-invalid {
     border-color: var(--error) !important;
-    background: var(--error-bg);
+    background: var(--error-bg) !important;
 }
 
 .layanan-error {
-    min-height: 13px;
-
-    margin-top: 3px;
-
+    min-height: 14px;
+    margin-top: 4px;
     color: var(--error);
-    font-size: 8px;
+    font-size: 11px;
+    line-height: 1.4;
 }
 
+.layanan-submit {
+    grid-column: 1 / -1;
+    justify-self: start;
+    min-width: 155px;
+    height: 40px;
+    margin-top: 0;
+    padding: 0 24px;
+    border: none;
+    border-radius: 10px;
+    background: var(--primary-navy);
+    color: var(--white);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+.layanan-submit:hover { background: var(--secondary-indigo); }
+.layanan-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* Notifikasi: class ini dipakai layanan.js untuk tambah dan hapus. */
 .layanan-notifikasi {
     display: none;
     position: fixed;
     top: 24px;
     left: 50%;
-    transform: translateX(-50%);
+    z-index: 10000;
+    box-sizing: border-box;
     width: max-content;
     max-width: calc(100vw - 32px);
-    box-sizing: border-box;
     padding: 12px 20px;
-    margin: 0;
+    transform: translateX(-50%);
+    border: 1px solid transparent;
     border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
     font-size: 14px;
     font-weight: 500;
     text-align: center;
-    z-index: 10000;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
-
 .layanan-notifikasi.berhasil {
     display: block;
     color: #166534;
-    background-color: #dcfce7;
-    border: 1px solid #86efac;
+    background: #DCFCE7;
+    border-color: #86EFAC;
 }
-
 .layanan-notifikasi.dihapus {
     display: block;
-    color: #991b1b;
-    background-color: #fee2e2;
-    border: 1px solid #fca5a5;
+    color: #991B1B;
+    background: #FEE2E2;
+    border-color: #FCA5A5;
+}
+.layanan-notifikasi.error,
+.layanan-notifikasi.is-error {
+    display: block;
+    color: var(--error);
+    background: var(--error-bg);
+    border-color: #F0BABA;
 }
 
-
-
-/* =========================
-   TOMBOL TAMBAH
-========================= */
-
-.layanan-submit {
-    grid-column: 1;
-
-    width: 55px;
-    height: 25px;
-
-    margin-top: 2px;
-
-    padding: 0;
-
-    border: none;
-    border-radius: 5px;
-
-    background: var(--primary-navy);
-    color: #FFFFFF;
-
-    font-family: inherit;
-    font-size: 8px;
-    font-weight: 700;
-
-    cursor: pointer;
+@media (max-width: 900px) {
+    .layanan-card { padding: 16px; border-radius: 14px; margin-bottom: 16px; }
+    .layanan-table { min-width: 760px; }
+    .tambah-layanan-card h2 { font-size: 22px; }
+    .tambah-layanan-form { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 18px; }
 }
 
-.layanan-submit:hover {
-    background: var(--secondary-indigo);
+@media (max-width: 560px) {
+    .layanan-heading h1 { font-size: 24px; }
+    .tambah-layanan-form { grid-template-columns: 1fr; }
+    .layanan-submit { grid-column: auto; }
 }
 
-
-/* =========================
-   RESPONSIVE
-========================= */
-
-@media (max-width: 800px) {
-
-    .tambah-layanan-form {
-        grid-template-columns: 1fr;
-    }
-
-    .layanan-submit {
-        grid-column: auto;
-        width: 55px;
-    }
-}
-/* =========================
-   KONDISI TABEL KOSONG
-========================= */
-
-.layanan-empty {
-    height: 60px !important;
-    text-align: center !important;
-    color: var(--text-secondary) !important;
-    font-size: 9px !important;
-}
-/* =========================
-   KONDISI TABEL KOSONG
-========================= */
-
-.layanan-empty {
-    height: 60px !important;
-    text-align: center !important;
-    color: var(--text-secondary) !important;
-    font-size: 9px !important;
-}
 
 /* =========================================================
    RIWAYAT

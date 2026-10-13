@@ -5,6 +5,12 @@
 
 document.addEventListener('DOMContentLoaded', function () {
     console.log('SCRIPT KATAJI TERLOAD');
+    console.log('DOM SIAP');
+console.log(
+    'Tombol simpan:',
+    document.getElementById('btnSimpanTransaksi')
+);
+    
 
     // ======================================================
     // 1. VALIDASI FORM LOGIN
@@ -76,8 +82,12 @@ if (loginNotification) {
 
     // Handler Submit Form Login
     if (loginForm && usernameInput && passwordInput) {
-        loginForm.addEventListener('submit', function (e) {
-            const usernameVal = usernameInput.value.trim();
+    console.log('FORM LOGIN DITEMUKAN');
+
+    loginForm.addEventListener('submit', function (e) {
+        console.log('FORM LOGIN DISUBMIT');
+
+        const usernameVal = usernameInput.value.trim();
             const passwordVal = passwordInput.value;
 
             // Aturan A: Username dan password kosong
@@ -101,30 +111,83 @@ if (loginNotification) {
                 return;
             }
 
-            // Jika validasi client lolos, biarkan form submit ke backend
+
+            // Jika validasi client lolos, kirim ke API Backend
+            e.preventDefault();
+
+            const loginButton = loginForm.querySelector(
+                'button[type="submit"], input[type="submit"]'
+            );
+
+            const buttonText = loginButton
+                ? loginButton.textContent
+                : '';
+
+            if (loginButton) {
+                loginButton.disabled = true;
+
+                if (loginButton.tagName === 'INPUT') {
+                    loginButton.value = 'Memproses...';
+                } else {
+                    loginButton.textContent = 'Memproses...';
+                }
+            }
+
+            fetch('/KELOMPOK-5/api/auth/login.php', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    username: usernameVal,
+                    password: passwordVal
+                })
+            })
+                .then(async function (response) {
+                    const result = await response.json();
+
+                    if (!response.ok || !result.success) {
+                        throw new Error(
+                            result.message || 'Login gagal.'
+                        );
+                    }
+
+                    const role = result.data?.role;
+
+                    if (role === 'barber') {
+                        window.location.href =
+                            '/KELOMPOK-5/pages/transaksi.php';
+                    } else if (role === 'owner') {
+                        window.location.href =
+                            '/KELOMPOK-5/pages/dashboard.php';
+                    } else {
+                        throw new Error(
+                            'Role akun tidak dikenali.'
+                        );
+                    }
+                })
+                .catch(function (error) {
+                    showLoginError(
+                        error.message || 'Terjadi kesalahan saat login.',
+                        true,
+                        true
+                    );
+                })
+                .finally(function () {
+                    if (loginButton) {
+                        loginButton.disabled = false;
+
+                        if (loginButton.tagName === 'INPUT') {
+                            loginButton.value = buttonText || 'Masuk';
+                        } else {
+                            loginButton.textContent = buttonText || 'Masuk';
+                        }
+                    }
+                });
         });
     }
 
-    function showLoginError(msg, errorUser, errorPass) {
-        if (loginErrorMessage) {
-            loginErrorMessage.textContent = '*' + msg;
-            loginErrorMessage.style.display = 'block';
-        }
-        if (usernameWrapper) {
-            if (errorUser) {
-                usernameWrapper.classList.add('has-error');
-            } else {
-                usernameWrapper.classList.remove('has-error');
-            }
-        }
-        if (passwordWrapper) {
-            if (errorPass) {
-                passwordWrapper.classList.add('has-error');
-            } else {
-                passwordWrapper.classList.remove('has-error');
-            }
-        }
-    }
 
 
     // ======================================================
@@ -531,18 +594,47 @@ if (selectedServicesContainer) {
     });
 }
 
+
 const btnSimpanTransaksi = document.getElementById('btnSimpanTransaksi');
+
+console.log('Tombol simpan ditemukan:', btnSimpanTransaksi);
 
 if (btnSimpanTransaksi) {
     btnSimpanTransaksi.addEventListener('click', function () {
+        console.log('TOMBOL SIMPAN DIKLIK');
+        // Ambil nilai input transaksi
+        const namaPelanggan = document.getElementById('namaPelanggan');
+        const namaBarber = document.getElementById('namaBarber');
+        const metodePembayaran = document.getElementById('metodePembayaran');
 
-        // Validasi: layanan wajib dipilih
-        if (Object.keys(selectedServices).length === 0) {
-            alert('Pilih minimal satu layanan');
+        // Validasi nama pelanggan
+        if (!namaPelanggan || namaPelanggan.value.trim() === '') {
+            alert('Nama pelanggan wajib diisi!');
+            if (namaPelanggan) namaPelanggan.focus();
             return;
         }
 
-        // Tampilkan notifikasi transaksi berhasil
+        // Validasi nama barber
+        if (!namaBarber || namaBarber.value === '') {
+            alert('Nama barber wajib dipilih!');
+            if (namaBarber) namaBarber.focus();
+            return;
+        }
+
+        // Validasi layanan
+        if (Object.keys(selectedServices).length === 0) {
+            alert('Pilih minimal satu layanan!');
+            return;
+        }
+
+        // Validasi metode pembayaran
+        if (!metodePembayaran || metodePembayaran.value === '') {
+            alert('Metode pembayaran wajib dipilih!');
+            if (metodePembayaran) metodePembayaran.focus();
+            return;
+        }
+
+        // Tampilkan notifikasi setelah semua validasi lolos
         showSuccessNotification();
 
         // Kosongkan layanan yang sudah dipilih
@@ -550,9 +642,15 @@ if (btnSimpanTransaksi) {
             delete selectedServices[serviceName];
         });
 
+        // Kosongkan input transaksi
+        namaPelanggan.value = '';
+        namaBarber.value = '';
+        metodePembayaran.value = '';
+
         // Perbarui tampilan kasir
         renderSelectedServices();
     });
+
 }
 
 });
