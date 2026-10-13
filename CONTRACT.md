@@ -144,3 +144,133 @@ Data di atas merupakan contoh format respons, bukan data tetap.
 
 POST, PUT, dan PATCH memerlukan sesi login
 dengan role owner.
+
+## API Transaksi
+
+Base URL lokal:
+
+`{{base_url}} = http://localhost:8080/KELOMPOK-5`
+
+Semua endpoint transaksi memerlukan sesi login yang valid.
+
+### 1. Daftar Transaksi
+
+**Endpoint:** `GET /api/transaksi/`
+
+Mengambil daftar transaksi yang dapat diakses oleh user yang sedang login.
+
+Hak akses:
+
+- **Owner:** dapat melihat semua transaksi.
+- **Barber:** hanya dapat melihat transaksi miliknya sendiri.
+
+Contoh respons sukses (`200 OK`):
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id_transaksi": 1,
+      "id_pencatat": 1,
+      "id_barber": 2,
+      "nama_barber": "Sandi",
+      "id_pelanggan": null,
+      "nama_pelanggan": null,
+      "no_hp": null,
+      "tanggal": "2026-10-13",
+      "waktu": "09:00:00",
+      "total_harga": 50000
+    }
+  ]
+}
+```
+
+Nilai di atas hanya contoh format respons.
+
+### 2. Tambah Transaksi
+
+**Endpoint:** `POST /api/transaksi/`
+
+Body menggunakan JSON dengan minimal satu layanan.
+
+Contoh body untuk owner:
+
+```json
+{
+  "id_barber": 2,
+  "nama_pelanggan": "Pelanggan Tes",
+  "no_hp": "081234567890",
+  "layanan": [
+    {
+      "id_layanan": 1,
+      "jumlah": 1
+    }
+  ]
+}
+```
+
+Contoh body untuk barber:
+
+```json
+{
+  "nama_pelanggan": "Pelanggan Tes",
+  "no_hp": "081234567890",
+  "layanan": [
+    {
+      "id_layanan": 1,
+      "jumlah": 1
+    }
+  ]
+}
+```
+
+Aturan:
+
+- Owner wajib menentukan `id_barber` yang valid dan aktif.
+- Barber yang login otomatis menjadi barber transaksi.
+- `id_pencatat` diambil dari user yang login.
+- `id_pelanggan` dibuat jika nama atau nomor telepon pelanggan diberikan.
+- Harga layanan diambil dari database.
+- Total harga dihitung oleh server.
+- Data transaksi dan detail layanan disimpan dalam satu transaksi database.
+
+Respons sukses: `201 Created`.
+
+### 3. Detail Transaksi
+
+**Endpoint:** `GET /api/transaksi/detail.php?id={id_transaksi}`
+
+Contoh URL Postman:
+
+`{{base_url}}/api/transaksi/detail.php?id=1`
+
+Mengambil informasi transaksi beserta rincian layanan, jumlah, harga saat transaksi, dan subtotal.
+
+Hak akses:
+
+- Owner dapat melihat detail semua transaksi.
+- Barber hanya dapat melihat detail transaksi miliknya sendiri.
+
+Respons sukses: `200 OK`.
+
+### 4. Kode Respons
+
+| HTTP Status                 | Keterangan                                         |
+| --------------------------- | -------------------------------------------------- |
+| `200 OK`                    | Data berhasil diambil                              |
+| `201 Created`               | Transaksi berhasil dibuat                          |
+| `400 Bad Request`           | Format JSON atau input tidak valid                 |
+| `401 Unauthorized`          | Belum login atau sesi tidak valid                  |
+| `403 Forbidden`             | Role tidak diizinkan                               |
+| `404 Not Found`             | Transaksi tidak ditemukan atau tidak dapat diakses |
+| `405 Method Not Allowed`    | Method tidak didukung                              |
+| `422 Unprocessable Content` | Validasi data gagal                                |
+| `500 Internal Server Error` | Kesalahan server                                   |
+
+### 5. Catatan Implementasi
+
+- Format respons menggunakan JSON.
+- Harga pada detail transaksi menyimpan snapshot harga ketika transaksi dibuat.
+- Endpoint daftar dan detail transaksi menerapkan pembatasan akses berdasarkan role.
+- Semua URL pengujian Postman menggunakan variabel `{{base_url}}` pada environment Postman `Local KELOMPOK-5`.
