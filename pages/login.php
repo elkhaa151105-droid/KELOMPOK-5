@@ -85,7 +85,7 @@ if (isset($_GET['both_empty'])) {
         <form
             id="loginForm"
             method="post"
-            action="/KELOMPOK-5/pages/login_process.php"        
+            action="/KELOMPOK-5/api/auth/login.php"        
             class="login-form"
             novalidate
         >       <!-- mengirim POST kebagian BE -->

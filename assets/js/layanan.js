@@ -4,60 +4,75 @@ document.addEventListener('DOMContentLoaded', function () {
     const hargaInput = document.getElementById('hargaLayanan');
     const hppInput = document.getElementById('hppLayanan');
     const tableBody = document.getElementById('layananTableBody');
+    const notifikasiElement = document.getElementById('layananNotifikasi');
 
-    
-    // Menampilkan notifikasi sederhana
-    function notifikasi(pesan) {
-        alert(pesan);
-    }
+    const API_LAYANAN = '/KELOMPOK-5/api/layanan/index.php';
 
+    // HPP sementara di frontend, belum terhubung ke database.
+    const hppSementara = {
+        'Haircut': 5000,
+        'Colouring': 50000,
+        'Perming': 25000,
+        'Smoothing': 10000,
+        'Creambath': 15000
+    };
 
-let timerNotifikasi;
+    let timerNotifikasi;
 
-function tampilkanNotifikasi(pesan, jenis) {
-    const elemen = document.getElementById('layananNotifikasi');
-
-    if (!elemen) {
-        console.error('Elemen #layananNotifikasi tidak ditemukan');
+   function tampilkanNotifikasi(pesan, jenis = 'berhasil') {
+    if (!notifikasiElement) {
+        console.error('Elemen notifikasi tidak ditemukan!');
         return;
     }
 
     clearTimeout(timerNotifikasi);
-
-    elemen.textContent = pesan;
-    elemen.className = 'layanan-notifikasi ' + jenis;
+    notifikasiElement.textContent = pesan;
+    notifikasiElement.className = 'layanan-notifikasi ' + jenis;
 
     timerNotifikasi = setTimeout(function () {
-        elemen.textContent = '';
-        elemen.className = 'layanan-notifikasi';
+        notifikasiElement.textContent = '';
+        notifikasiElement.className = 'layanan-notifikasi';
     }, 3000);
 }
 
+// Fungsi sementara untuk mengetes notifikasi.
+window.tesNotifikasiLayanan = function () {
+    tampilkanNotifikasi(
+        'Tes notifikasi HPP berhasil!',
+        'simulasi'
+    );
+};
 
-    // Menghapus pesan error pada form
     function hapusError() {
         document.getElementById('errorNamaLayanan').textContent = '';
         document.getElementById('errorHargaLayanan').textContent = '';
         document.getElementById('errorHppLayanan').textContent = '';
     }
 
-    // Membuat tombol Edit dan Nonaktifkan pada setiap baris
-    function siapkanBaris(row) {
-    let kolomAksi = row.querySelector('.layanan-aksi');
+    function buatInput(namaClass, nilai, tipe = 'number') {
+        const input = document.createElement('input');
+        input.type = tipe;
+        input.className = namaClass;
+        input.value = nilai;
 
-    if (!kolomAksi) {
-        kolomAksi = document.createElement('td');
-        kolomAksi.className = 'layanan-aksi';
-        row.appendChild(kolomAksi);
+        if (tipe === 'number') {
+            input.min = '0';
+        }
+
+        return input;
     }
 
-    // Tombol Edit
-    if (!kolomAksi.querySelector('.layanan-edit-button')) {
+    function siapkanBaris(row) {
+        const kolomAksi = row.querySelector('.layanan-aksi');
+        if (!kolomAksi) return;
+
+        if (kolomAksi.querySelector('.layanan-edit-button')) return;
+
+        // Edit: perubahan hanya berlaku pada tampilan.
         const editButton = document.createElement('button');
         editButton.type = 'button';
         editButton.className = 'layanan-edit-button';
         editButton.textContent = 'Edit';
-        kolomAksi.appendChild(editButton);
 
         editButton.addEventListener('click', function () {
             const namaCell = row.cells[0];
@@ -67,98 +82,202 @@ function tampilkanNotifikasi(pesan, jenis) {
             const namaBaru = prompt('Nama layanan:', namaCell.textContent.trim());
             if (namaBaru === null) return;
 
-            if (namaBaru.trim() === '') {
-                alert('Nama layanan wajib diisi');
+            if (!namaBaru.trim()) {
+                tampilkanNotifikasi('Nama layanan wajib diisi.', 'gagal');
                 return;
             }
 
             const hargaBaru = prompt('Harga layanan:', harga.value);
             if (hargaBaru === null) return;
 
-            if (hargaBaru.trim() === '' || !Number.isFinite(Number(hargaBaru)) || Number(hargaBaru) <= 0) {
-                alert('Harga harus lebih dari nol');
+            if (hargaBaru.trim() === '' ||
+                !Number.isFinite(Number(hargaBaru)) ||
+                Number(hargaBaru) <= 0) {
+                tampilkanNotifikasi('Harga harus lebih dari nol.', 'gagal');
                 return;
             }
 
-            const hppBaru = prompt('HPP layanan:', hpp.value);
-            if (hppBaru === null) return;
+            const namaLama = namaCell.textContent.trim();
+            const namaFinal = namaBaru.trim();
 
-            if (hppBaru.trim() === '' || !Number.isFinite(Number(hppBaru)) || Number(hppBaru) < 0) {
-                alert('HPP tidak boleh kosong atau negatif');
+            const namaDuplikat = Array.from(
+                tableBody.querySelectorAll('tr[data-service-row]')
+            ).some(function (baris) {
+                return baris !== row &&
+                    baris.cells[0].textContent.trim().toLowerCase() ===
+                    namaFinal.toLowerCase();
+            });
+
+            if (namaDuplikat) {
+                tampilkanNotifikasi('Nama layanan sudah digunakan.', 'gagal');
                 return;
             }
 
-            namaCell.textContent = namaBaru.trim();
+            const hppLama = hpp.value;
+
+            namaCell.textContent = namaFinal;
             harga.value = Number(hargaBaru);
-            hpp.value = Number(hppBaru);
 
-            alert('Layanan berhasil diedit');
+            // Pindahkan nilai HPP sementara jika nama layanan berubah.
+            if (Object.prototype.hasOwnProperty.call(hppSementara, namaLama)) {
+                hppSementara[namaFinal] = Number(hppLama);
+                delete hppSementara[namaLama];
+            }
+
+            tampilkanNotifikasi(
+                'Perubahan ditampilkan sementara, belum tersimpan ke database.',
+                'simulasi'
+            );
         });
-    }
 
-    // Tombol Nonaktifkan
-    if (!kolomAksi.querySelector('.layanan-nonaktif-button')) {
+        // Nonaktifkan: hanya mengubah checkbox pada tampilan.
         const nonaktifButton = document.createElement('button');
         nonaktifButton.type = 'button';
         nonaktifButton.className = 'layanan-nonaktif-button';
         nonaktifButton.textContent = 'Nonaktifkan';
-        kolomAksi.appendChild(nonaktifButton);
 
         nonaktifButton.addEventListener('click', function () {
             const checkbox = row.querySelector('.layanan-checkbox');
 
-            if (!checkbox) return;
-
-            if (!checkbox.checked) {
-                alert('Layanan sudah nonaktif');
+            if (!checkbox || !checkbox.checked) {
+                tampilkanNotifikasi('Layanan sudah nonaktif.', 'simulasi');
                 return;
             }
 
-            if (confirm('Nonaktifkan layanan ini?')) {
+            if (confirm('Nonaktifkan layanan ini sementara?')) {
                 checkbox.checked = false;
-                alert('Layanan dinonaktifkan');
+                tampilkanNotifikasi(
+                    'Status hanya berubah pada tampilan, belum tersimpan.',
+                    'simulasi'
+                );
             }
         });
-    }
 
-    // Tombol Hapus
-    if (!kolomAksi.querySelector('.layanan-hapus-button')) {
+        // Hapus: hanya menghapus baris dari tampilan.
         const hapusButton = document.createElement('button');
         hapusButton.type = 'button';
         hapusButton.className = 'layanan-hapus-button';
         hapusButton.textContent = 'Hapus';
-        kolomAksi.appendChild(hapusButton);
 
         hapusButton.addEventListener('click', function () {
             const nama = row.cells[0].textContent.trim();
 
-        if (confirm('Yakin ingin menghapus layanan "' + nama + '"?')) {
-        row.remove();
-        tampilkanNotifikasi('Layanan berhasil dihapus!', 'dihapus');
-        }
+            if (confirm('Hapus layanan "' + nama + '" dari tampilan sementara?')) {
+                row.remove();
+                tampilkanNotifikasi(
+                    'Baris dihapus dari tampilan, database tidak berubah.',
+                    'simulasi'
+                );
+            }
         });
+
+        kolomAksi.append(editButton, nonaktifButton, hapusButton);
     }
-}
 
-    // Menyiapkan baris layanan yang sudah tersedia
+    function buatBarisLayanan(layanan) {
+        const row = document.createElement('tr');
+        row.dataset.serviceRow = 'true';
+        row.dataset.idLayanan = layanan.id_layanan;
+
+        const namaCell = document.createElement('td');
+        namaCell.textContent = layanan.nama_layanan;
+
+        const hargaCell = document.createElement('td');
+        hargaCell.appendChild(
+            buatInput('layanan-price-input', layanan.harga)
+        );
+
+        const hppCell = document.createElement('td');
+        const nilaiHpp = Object.prototype.hasOwnProperty.call(
+            hppSementara,
+            layanan.nama_layanan
+        ) ? hppSementara[layanan.nama_layanan] : 0;
+
+        hppCell.appendChild(
+            buatInput('layanan-hpp-input', nilaiHpp)
+        );
+
+        const statusCell = document.createElement('td');
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.className = 'layanan-checkbox';
+
+        // Status aktif belum tersedia dalam respons GET API.
+        // Nilai ini hanya tampilan sementara.
+        checkbox.checked = true;
+        statusCell.appendChild(checkbox);
+
+        const aksiCell = document.createElement('td');
+        aksiCell.className = 'layanan-aksi';
+
+        row.append(namaCell, hargaCell, hppCell, statusCell, aksiCell);
+
+        // Perubahan HPP tidak dikirim ke API.
+      const inputHpp = row.querySelector('.layanan-hpp-input');
+
+inputHpp.addEventListener('change', function () {
+    const nama = namaCell.textContent.trim();
+    const nilaiHpp = Number(this.value);
+
+    if (this.value.trim() === '' || !Number.isFinite(nilaiHpp) || nilaiHpp < 0) {
+        tampilkanNotifikasi('HPP tidak boleh kosong atau negatif.', 'gagal');
+        return;
+    }
+
+    hppSementara[nama] = nilaiHpp;
+
+    tampilkanNotifikasi(
+        'HPP berhasil diubah sementara. Belum tersimpan ke database.',
+        'simulasi'
+    );
+
+    console.log('HPP simulasi diperbarui:', nama, nilaiHpp);
+});
+
+        siapkanBaris(row);
+        return row;
+    }
+
+    async function muatLayanan() {
+        try {
+            const response = await fetch(API_LAYANAN);
+            if (!response.ok) {
+                throw new Error('HTTP ' + response.status);
+            }
+
+            const hasil = await response.json();
+
+            if (!hasil.success || !Array.isArray(hasil.data)) {
+                throw new Error('Format respons API tidak sesuai.');
+            }
+
+            tableBody.innerHTML = '';
+
+            hasil.data.forEach(function (layanan) {
+                tableBody.appendChild(buatBarisLayanan(layanan));
+            });
+
+            console.log('Layanan berhasil dimuat dari API:', hasil.data);
+        } catch (error) {
+            console.error('Gagal memuat layanan:', error);
+            tampilkanNotifikasi(
+                'Gagal mengambil layanan dari API. Periksa koneksi backend.',
+                'gagal'
+            );
+        }
+    }
+
     if (tableBody) {
-        tableBody.querySelectorAll('tr[data-service-row]').forEach(function (row) {
-            siapkanBaris(row);
-        });
-
-        // Menampilkan notifikasi saat status checkbox berubah
         tableBody.addEventListener('change', function (event) {
             if (!event.target.matches('.layanan-checkbox')) return;
 
-            notifikasi(
-                event.target.checked
-                    ? 'Layanan diaktifkan'
-                    : 'Layanan dinonaktifkan'
+            tampilkanNotifikasi(
+                'Status berubah pada tampilan saja, belum tersimpan ke database.',
+                'simulasi'
             );
         });
     }
 
-    // Menambahkan layanan baru ke tabel
     if (form && tableBody) {
         form.addEventListener('submit', function (event) {
             event.preventDefault();
@@ -170,69 +289,59 @@ function tampilkanNotifikasi(pesan, jenis) {
 
             let valid = true;
 
-            if (nama === '') {
-                document.getElementById('errorNamaLayanan').textContent = 'Nama wajib diisi';
+            if (!nama) {
+                document.getElementById('errorNamaLayanan').textContent =
+                    'Nama wajib diisi.';
                 valid = false;
             }
 
-            if (harga === '' || !Number.isFinite(Number(harga)) || Number(harga) <= 0) {
-                document.getElementById('errorHargaLayanan').textContent = 'Harga harus lebih dari nol';
+            if (harga === '' || !Number.isFinite(Number(harga)) ||
+                Number(harga) <= 0) {
+                document.getElementById('errorHargaLayanan').textContent =
+                    'Harga harus lebih dari nol.';
                 valid = false;
             }
 
-            if (hpp === '' || !Number.isFinite(Number(hpp)) || Number(hpp) < 0) {
-                document.getElementById('errorHppLayanan').textContent = 'HPP tidak boleh kosong atau negatif';
+            if (hpp === '' || !Number.isFinite(Number(hpp)) ||
+                Number(hpp) < 0) {
+                document.getElementById('errorHppLayanan').textContent =
+                    'HPP tidak boleh kosong atau negatif.';
                 valid = false;
             }
 
             if (!valid) return;
 
-            // Mencegah nama layanan yang sama
-            const namaSama = Array.from(
-                tableBody.querySelectorAll('tr[data-service-row] td:first-child')
-            ).some(function (cell) {
-                return cell.textContent.trim().toLowerCase() === nama.toLowerCase();
+            const namaDuplikat = Array.from(
+                tableBody.querySelectorAll('tr[data-service-row]')
+            ).some(function (row) {
+                return row.cells[0].textContent.trim().toLowerCase() ===
+                    nama.toLowerCase();
             });
 
-            if (namaSama) {
-                document.getElementById('errorNamaLayanan').textContent = 'Nama layanan sudah ada';
+            if (namaDuplikat) {
+                document.getElementById('errorNamaLayanan').textContent =
+                    'Nama layanan sudah ada.';
                 return;
             }
 
-            const row = document.createElement('tr');
-            row.setAttribute('data-service-row', 'true');
+            // Penambahan hanya simulasi frontend, belum dikirim ke API.
+            const layananBaru = {
+                id_layanan: 'sementara-' + Date.now(),
+                nama_layanan: nama,
+                harga: Number(harga)
+            };
 
-            const namaCell = document.createElement('td');
-            namaCell.textContent = nama;
-
-            const hargaCell = document.createElement('td');
-            const hargaBaru = document.createElement('input');
-            hargaBaru.type = 'number';
-            hargaBaru.className = 'layanan-price-input';
-            hargaBaru.value = Number(harga);
-            hargaCell.appendChild(hargaBaru);
-
-            const hppCell = document.createElement('td');
-            const hppBaru = document.createElement('input');
-            hppBaru.type = 'number';
-            hppBaru.className = 'layanan-hpp-input';
-            hppBaru.value = Number(hpp);
-            hppCell.appendChild(hppBaru);
-
-            const statusCell = document.createElement('td');
-            const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.className = 'layanan-checkbox';
-            checkbox.checked = true;
-            statusCell.appendChild(checkbox);
-
-            row.append(namaCell, hargaCell, hppCell, statusCell);
-            tableBody.appendChild(row);
-
-            siapkanBaris(row);
+            hppSementara[nama] = Number(hpp);
+            tableBody.appendChild(buatBarisLayanan(layananBaru));
 
             form.reset();
-tampilkanNotifikasi('Layanan berhasil ditambahkan!', 'berhasil');
+
+            tampilkanNotifikasi(
+                'Layanan ditambahkan pada tampilan sementara, belum tersimpan ke database.',
+                'simulasi'
+            );
         });
     }
+
+    muatLayanan();
 });

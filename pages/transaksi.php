@@ -55,7 +55,7 @@ require_login();
 
                 <span class="service-info">
                     <strong>Colouring</strong>
-                    <small>Rp50.000</small>
+                    <small>Rp150.000</small>
                 </span>
             </button>
 
@@ -143,9 +143,6 @@ require_login();
 
                 <select id="namaBarber">
                     <option value="">Ketik disini...</option>
-                    <option value="Sandi">Sandi</option>
-                    <option value="Erik">Erik</option>
-                    <option value="Ujang">Ujang</option>
                 </select>
             </div>
 
@@ -203,5 +200,8 @@ require_login();
     </div>
 
 </div>
+
+
+   
 
 <?php include __DIR__ . '/../includes/footer.php'; ?>

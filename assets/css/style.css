@@ -1656,33 +1656,42 @@ body:has(.login-page) main.container {
 /* Notifikasi: class ini dipakai layanan.js untuk tambah dan hapus. */
 .layanan-notifikasi {
     display: none;
-    position: fixed;
-    top: 24px;
-    left: 50%;
-    z-index: 10000;
-    box-sizing: border-box;
-    width: max-content;
-    max-width: calc(100vw - 32px);
-    padding: 12px 20px;
-    transform: translateX(-50%);
-    border: 1px solid transparent;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-    font-size: 14px;
-    font-weight: 500;
-    text-align: center;
+    visibility: visible;
+    opacity: 1;
+    min-height: 0;
+    margin-bottom: 0;
+    padding: 0;
+    color: #1a1a1a;
+    background: transparent;
+    border-radius: 6px;
+    transition: opacity 0.3s ease;
 }
-.layanan-notifikasi.berhasil {
-    display: block;
-    color: #166534;
-    background: #DCFCE7;
-    border-color: #86EFAC;
-}
+
+.layanan-notifikasi.berhasil,
+.layanan-notifikasi.simulasi,
+.layanan-notifikasi.gagal,
 .layanan-notifikasi.dihapus {
-    display: block;
-    color: #991B1B;
-    background: #FEE2E2;
-    border-color: #FCA5A5;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    padding: 10px 14px !important;
+    margin-bottom: 16px !important;
+}
+
+.layanan-notifikasi.berhasil,
+.layanan-notifikasi.simulasi {
+    background-color: #e8f5e9;
+    color: #256029;
+}
+
+.layanan-notifikasi.gagal {
+    background-color: #ffebee;
+    color: #b71c1c;
+}
+
+.layanan-notifikasi.dihapus {
+    background-color: #fff3e0;
+    color: #8a4b08;
 }
 .layanan-notifikasi.error,
 .layanan-notifikasi.is-error {
@@ -1707,8 +1716,8 @@ body:has(.login-page) main.container {
 
 
 /* =========================================================
-   RIWAYAT
-   ========================================================= */
+   RIWAYAT TRANSAKSI
+========================================================= */
 
 .riwayat-page {
     width: 100%;
@@ -1725,105 +1734,16 @@ body:has(.login-page) main.container {
     color: var(--text-main);
 }
 
-.riwayat-card {
-    width: 100%;
-    min-height: 128px;
-    background: var(--white);
-    border-radius: 12px;
-    padding: 7px 12px;
-    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.18);
-}
-
-.riwayat-table {
-    width: 100%;
-    border-collapse: collapse;
-    table-layout: fixed;
-}
-
-.riwayat-table th {
-    padding: 2px 6px;
-    text-align: left;
-    font-size: 9px;
-    font-weight: 500;
-    color: #888888;
-}
-
-.riwayat-table td {
-    padding: 2px 6px;
-    font-size: 9px;
-    font-weight: 400;
-    color: #777777;
-    vertical-align: middle;
-}
-
-.riwayat-table th:nth-child(1),
-.riwayat-table td:nth-child(1) {
-    width: 12%;
-}
-
-.riwayat-table th:nth-child(2),
-.riwayat-table td:nth-child(2) {
-    width: 18%;
-}
-
-.riwayat-table th:nth-child(3),
-.riwayat-table td:nth-child(3) {
-    width: 17%;
-}
-
-.riwayat-table th:nth-child(4),
-.riwayat-table td:nth-child(4) {
-    width: 16%;
-}
-
-.riwayat-table th:nth-child(5),
-.riwayat-table td:nth-child(5) {
-    width: 25%;
-}
-
-.riwayat-table th:nth-child(6),
-.riwayat-table td:nth-child(6) {
-    width: 12%;
-    text-align: center;
-}
-
-.riwayat-detail-btn {
-    border: none;
-    background: transparent;
-    color: #E25555;
-    font-size: 12px;
-    line-height: 1;
-    cursor: pointer;
-    padding: 0;
-}
-/* =========================================================
-   RIWAYAT
-   ========================================================= */
-
-.riwayat-page {
-    width: 100%;
-}
-
-.riwayat-heading {
-    margin-bottom: 8px;
-}
-
-.riwayat-heading h1 {
-    margin: 0;
-    font-size: 25px;
-    font-weight: 800;
-    color: var(--text-main);
-}
-
 /* CARD RIWAYAT */
 
 .riwayat-card {
     position: relative;
     width: 100%;
     min-height: 128px;
+    padding: 12px;
     background: var(--white);
+    border: 1px solid var(--border-color);
     border-radius: 10px;
-    padding: 7px 12px;
     box-shadow: 0 2px 3px rgba(0, 0, 0, 0.18);
 }
 
@@ -1836,12 +1756,13 @@ body:has(.login-page) main.container {
 
 .riwayat-table {
     width: 100%;
+    min-width: 600px;
     border-collapse: collapse;
     table-layout: fixed;
 }
 
 .riwayat-table th {
-    padding: 2px 6px;
+    padding: 8px 6px;
     text-align: left;
     font-size: 9px;
     font-weight: 500;
@@ -1850,13 +1771,13 @@ body:has(.login-page) main.container {
 }
 
 .riwayat-table td {
-    padding: 2px 6px;
+    padding: 8px 6px;
     text-align: left;
     font-size: 9px;
     font-weight: 400;
     color: #777777;
-    white-space: nowrap;
     vertical-align: middle;
+    overflow-wrap: anywhere;
 }
 
 /* LEBAR KOLOM */
@@ -1892,19 +1813,22 @@ body:has(.login-page) main.container {
     text-align: center;
 }
 
-/* TOMBOL HAPUS */
+/* TOMBOL DETAIL DAN HAPUS */
 
+.riwayat-detail-btn,
 .riwayat-delete-btn {
+    padding: 0;
     border: none;
     background: transparent;
     color: #E25555;
+    font-family: inherit;
     font-size: 12px;
     font-weight: 500;
     line-height: 1;
-    padding: 0;
     cursor: pointer;
 }
 
+.riwayat-detail-btn:hover,
 .riwayat-delete-btn:hover {
     color: #C93D3D;
 }
@@ -1915,36 +1839,38 @@ body:has(.login-page) main.container {
     position: absolute;
     top: -20px;
     right: 12px;
-
     min-width: 90px;
     height: 20px;
-
     display: flex;
     align-items: center;
     justify-content: center;
-
     padding: 0 12px;
-
     border: 1px solid #E8A0A0;
     border-radius: 10px;
-
     background: #FFF7F7;
     color: #D85A5A;
-
     font-size: 8px;
     font-weight: 500;
-
     opacity: 0;
     pointer-events: none;
-
     transition: opacity 0.2s ease;
 }
 
 .riwayat-notification.show {
     opacity: 1;
 }
-/* Notifikasi Berhasil Dihapus - Riwayat */
+
 .riwayat-delete-notification {
     background: #FBEAEA;
     color: #D64545;
+}
+
+@media (max-width: 600px) {
+    .riwayat-card {
+        padding: 8px;
+    }
+
+    .riwayat-heading h1 {
+        font-size: 22px;
+    }
 }

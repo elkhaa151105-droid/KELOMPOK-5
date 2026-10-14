@@ -12,8 +12,9 @@ console.log(
 );
     
 
+  
     // ======================================================
-    // 1. VALIDASI FORM LOGIN
+    // 1. LOGIN MENGGUNAKAN API BACKEND
     // ======================================================
     const loginForm = document.getElementById('loginForm');
     const usernameInput = document.getElementById('username');
@@ -23,168 +24,148 @@ console.log(
     const loginErrorMessage = document.getElementById('loginErrorMessage');
     const passwordToggle = document.getElementById('passwordToggle');
 
-    const loginNotification = document.querySelector('.login-notification');
-
-if (loginNotification) {
-    setTimeout(() => {
-        loginNotification.classList.remove('show');
-    }, 2500);
-}
-
-    // Toggle Password Visibility
-    if (passwordToggle && passwordInput) {
-        passwordToggle.addEventListener('click', function () {
-            const isPassword = passwordInput.getAttribute('type') === 'password';
-            passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
-
-            if (isPassword) {
-                passwordToggle.innerHTML = `
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-                        <line x1="1" y1="1" x2="23" y2="23"></line>
-                    </svg>
-                `;
-            } else {
-                passwordToggle.innerHTML = `
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                        <circle cx="12" cy="12" r="3"></circle>
-                    </svg>
-                `;
-            }
-        });
-    }
-
-    // Pembersihan pesan error saat user mengetik
-    if (usernameInput) {
-        usernameInput.addEventListener('input', function () {
-            if (usernameWrapper) usernameWrapper.classList.remove('has-error');
-            clearLoginErrorIfResolved();
-        });
-    }
-    if (passwordInput) {
-        passwordInput.addEventListener('input', function () {
-            if (passwordWrapper) passwordWrapper.classList.remove('has-error');
-            clearLoginErrorIfResolved();
-        });
-    }
-
-    function clearLoginErrorIfResolved() {
+    function showLoginError(message, errorUsername = false, errorPassword = false) {
         if (loginErrorMessage) {
-            const uVal = usernameInput ? usernameInput.value.trim() : '';
-            const pVal = passwordInput ? passwordInput.value : '';
-            if (uVal !== '' && pVal !== '') {
-                loginErrorMessage.textContent = '';
-                loginErrorMessage.style.display = 'none';
-            }
+            loginErrorMessage.textContent = message;
+            loginErrorMessage.style.display = 'block';
+        } else {
+            alert(message);
+        }
+
+        if (errorUsername && usernameWrapper) {
+            usernameWrapper.classList.add('has-error');
+        }
+
+        if (errorPassword && passwordWrapper) {
+            passwordWrapper.classList.add('has-error');
         }
     }
 
-    // Handler Submit Form Login
+    function clearLoginError() {
+        if (loginErrorMessage) {
+            loginErrorMessage.textContent = '';
+            loginErrorMessage.style.display = 'none';
+        }
+
+        if (usernameWrapper) usernameWrapper.classList.remove('has-error');
+        if (passwordWrapper) passwordWrapper.classList.remove('has-error');
+    }
+
+    // Tampilkan/sembunyikan password
+    if (passwordToggle && passwordInput) {
+        passwordToggle.addEventListener('click', function () {
+            const showPassword = passwordInput.type === 'password';
+            passwordInput.type = showPassword ? 'text' : 'password';
+        });
+    }
+
+    if (usernameInput) {
+        usernameInput.addEventListener('input', clearLoginError);
+    }
+
+    if (passwordInput) {
+        passwordInput.addEventListener('input', clearLoginError);
+    }
+
     if (loginForm && usernameInput && passwordInput) {
-    console.log('FORM LOGIN DITEMUKAN');
-
-    loginForm.addEventListener('submit', function (e) {
-        console.log('FORM LOGIN DISUBMIT');
-
-        const usernameVal = usernameInput.value.trim();
-            const passwordVal = passwordInput.value;
-
-            // Aturan A: Username dan password kosong
-            if (usernameVal === '' && passwordVal === '') {
-                e.preventDefault();
-                showLoginError('Username/email dan password wajib diisi', true, true);
-                return;
-            }
-
-            // Aturan B: Username kosong, password diisi
-            if (usernameVal === '') {
-                e.preventDefault();
-                showLoginError('Username/email wajib diisi', true, false);
-                return;
-            }
-
-            // Aturan C: Username diisi, password kosong
-            if (passwordVal === '') {
-                e.preventDefault();
-                showLoginError('Password wajib diisi', false, true);
-                return;
-            }
-
-
-            // Jika validasi client lolos, kirim ke API Backend
+        loginForm.addEventListener('submit', async function (e) {
+            // Mencegah form dikirim ke login_process.php
             e.preventDefault();
+
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value;
+
+            if (!username && !password) {
+                showLoginError('Username dan password wajib diisi.', true, true);
+                return;
+            }
+
+            if (!username) {
+                showLoginError('Username wajib diisi.', true, false);
+                return;
+            }
+
+            if (!password) {
+                showLoginError('Password wajib diisi.', false, true);
+                return;
+            }
 
             const loginButton = loginForm.querySelector(
                 'button[type="submit"], input[type="submit"]'
             );
 
-            const buttonText = loginButton
-                ? loginButton.textContent
+            const originalText = loginButton
+                ? (loginButton.tagName === 'INPUT'
+                    ? loginButton.value
+                    : loginButton.textContent)
                 : '';
 
-            if (loginButton) {
-                loginButton.disabled = true;
+            try {
+                clearLoginError();
 
-                if (loginButton.tagName === 'INPUT') {
-                    loginButton.value = 'Memproses...';
+                if (loginButton) {
+                    loginButton.disabled = true;
+
+                    if (loginButton.tagName === 'INPUT') {
+                        loginButton.value = 'Memproses...';
+                    } else {
+                        loginButton.textContent = 'Memproses...';
+                    }
+                }
+
+                const endpoint = '/KELOMPOK-5/api/auth/login.php';
+
+                console.log('Mengirim login ke API:', endpoint);
+
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        password: password
+                    })
+                });
+
+                const result = await response.json();
+
+                console.log('Respons login API:', response.status, result);
+
+                if (!response.ok || !result.success) {
+                    throw new Error(result.message || 'Login gagal.');
+                }
+
+                const role = result.data?.role;
+
+                if (role === 'owner') {
+                    window.location.href = '/KELOMPOK-5/pages/dashboard.php';
+                } else if (role === 'barber') {
+                    window.location.href = '/KELOMPOK-5/pages/transaksi.php';
                 } else {
-                    loginButton.textContent = 'Memproses...';
+                    throw new Error('Role akun tidak dikenali.');
+                }
+            } catch (error) {
+                console.error('Login API gagal:', error);
+
+                showLoginError(
+                    error.message || 'Tidak dapat terhubung ke server.',
+                    true,
+                    true
+                );
+            } finally {
+                if (loginButton) {
+                    loginButton.disabled = false;
+
+                    if (loginButton.tagName === 'INPUT') {
+                        loginButton.value = originalText || 'Masuk';
+                    } else {
+                        loginButton.textContent = originalText || 'Masuk';
+                    }
                 }
             }
-
-            fetch('/KELOMPOK-5/api/auth/login.php', {
-                method: 'POST',
-                credentials: 'same-origin',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    username: usernameVal,
-                    password: passwordVal
-                })
-            })
-                .then(async function (response) {
-                    const result = await response.json();
-
-                    if (!response.ok || !result.success) {
-                        throw new Error(
-                            result.message || 'Login gagal.'
-                        );
-                    }
-
-                    const role = result.data?.role;
-
-                    if (role === 'barber') {
-                        window.location.href =
-                            '/KELOMPOK-5/pages/transaksi.php';
-                    } else if (role === 'owner') {
-                        window.location.href =
-                            '/KELOMPOK-5/pages/dashboard.php';
-                    } else {
-                        throw new Error(
-                            'Role akun tidak dikenali.'
-                        );
-                    }
-                })
-                .catch(function (error) {
-                    showLoginError(
-                        error.message || 'Terjadi kesalahan saat login.',
-                        true,
-                        true
-                    );
-                })
-                .finally(function () {
-                    if (loginButton) {
-                        loginButton.disabled = false;
-
-                        if (loginButton.tagName === 'INPUT') {
-                            loginButton.value = buttonText || 'Masuk';
-                        } else {
-                            loginButton.textContent = buttonText || 'Masuk';
-                        }
-                    }
-                });
         });
     }
 
@@ -374,6 +355,9 @@ if (loginNotification) {
     }
 
 
+
+
+
     // ======================================================
     // UTILITY: SHOW ERROR HELPER
     // ======================================================
@@ -433,224 +417,359 @@ if (loginNotification) {
             }
         };
     }
-// ======================================================
-// 6. INTERAKSI KASIR - PILIH LAYANAN (JOB 4.1)
-// ======================================================
 
-const serviceCards = document.querySelectorAll('.service-card');
-const selectedServicesContainer = document.getElementById('selectedServices');
-const kasirTotal = document.getElementById('kasirTotal');
+    
+    // ======================================================
+    // AMBIL DAFTAR LAYANAN DARI API BACKEND
+    // ======================================================
 
-console.log('Jumlah service:', serviceCards.length);
-console.log('selectedServices:', selectedServicesContainer);
-console.log('kasirTotal:', kasirTotal);
 
-// Menyimpan layanan yang dipilih
-const selectedServices = {};
+async function muatLayananDariAPI() {
+    const container = document.querySelector('.kasir-services');
+    if (!container) return;
 
-// Format angka menjadi Rupiah
-function formatRupiah(value) {
-    return 'Rp' + Number(value).toLocaleString('id-ID');
-}
+    try {
+        const response = await fetch(
+            '/KELOMPOK-5/api/layanan/index.php',
+            {
+                method: 'GET',
+                credentials: 'same-origin',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            }
+        );
 
-// Tampilkan kondisi jika belum ada layanan
-function showEmptyState() {
-    const tableBody = document.getElementById('layananTableBody');
+        const result = await response.json();
 
-    if (!tableBody) return;
+        if (!response.ok || !result.success) {
+            throw new Error(result.message || 'Gagal memuat layanan.');
+        }
 
-    if (tableBody.children.length === 0) {
-        tableBody.innerHTML = `
-            <tr>
-                <td colspan="4" class="layanan-empty">
-                    Belum ada layanan.
-                </td>
-            </tr>
-        `;
-    }
-}
+    
 
-// Menampilkan layanan yang dipilih
-function renderSelectedServices() {
-    if (!selectedServicesContainer || !kasirTotal) return;
+        const gambarLayanan = {};
 
-    const items = Object.values(selectedServices);
+        container.querySelectorAll('.service-card').forEach(kartu => {
+            const nama = kartu.dataset.service;
+            const gambar = kartu.querySelector('.service-icon img');
 
-    // Jika belum ada layanan
-    if (items.length === 0) {
-        selectedServicesContainer.innerHTML = `
-            <p class="empty-service">Belum ada layanan dipilih</p>
-        `;
-
-        kasirTotal.textContent = 'Rp0';
-
-        serviceCards.forEach(card => {
-            card.classList.remove('selected');
+            if (nama && gambar) {
+                gambarLayanan[nama] = gambar.src;
+            }
         });
 
-        return;
+console.log('Gambar layanan tersimpan:', gambarLayanan);
+
+
+        container.innerHTML = '';
+
+        if (!Array.isArray(result.data) || result.data.length === 0) {
+            container.textContent = 'Belum ada layanan aktif.';
+            return;
+        }
+
+        result.data.forEach(layanan => {
+            const kartu = document.createElement('button');
+            kartu.type = 'button';
+            kartu.className = 'service-card';
+
+            // Ambil ID, nama, dan harga dari database
+            kartu.dataset.idLayanan = String(layanan.id_layanan);
+            kartu.dataset.service = String(layanan.nama_layanan);
+            kartu.dataset.price = String(layanan.harga);
+
+            
+const ikon = document.createElement('span');
+ikon.className = 'service-icon';
+
+const gambar = document.createElement('img');
+gambar.src = gambarLayanan[layanan.nama_layanan] || '';
+gambar.alt = layanan.nama_layanan;
+
+ikon.appendChild(gambar);
+
+            const info = document.createElement('span');
+            info.className = 'service-info';
+
+            const nama = document.createElement('strong');
+            nama.textContent = layanan.nama_layanan;
+
+            const harga = document.createElement('small');
+            harga.textContent =
+                'Rp' + Number(layanan.harga).toLocaleString('id-ID');
+
+            info.append(nama, harga);
+            kartu.append(ikon, info);
+            container.appendChild(kartu);
+        });
+
+        console.log('Layanan berhasil dimuat:', result.data);
+    } catch (error) {
+        console.error('Gagal memuat layanan:', error);
+        container.textContent = 'Gagal memuat layanan. Silakan muat ulang halaman.';
+    }
+}
+
+muatLayananDariAPI();
+
+
+        // Memuat daftar barber dari API
+        async function muatBarberDariAPI() {
+            const selectBarber = document.getElementById('namaBarber');
+
+            if (!selectBarber) return;
+
+            try {
+                const response = await fetch(
+                    '/KELOMPOK-5/api/barber/index.php',
+                    {
+                        method: 'GET',
+                        credentials: 'same-origin',
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    }
+                );
+
+                const result = await response.json();
+
+                if (!response.ok || !result.success) {
+                    throw new Error(
+                        result.message || 'Gagal mengambil daftar barber.'
+                    );
+                }
+
+                // Pertahankan placeholder dropdown
+                selectBarber.innerHTML =
+                    '<option value="">Ketik disini...</option>';
+
+                result.data.forEach(barber => {
+                    const option = document.createElement('option');
+                    option.value = barber.id_user;
+                    option.textContent = barber.nama;
+                    selectBarber.appendChild(option);
+                });
+
+            } catch (error) {
+                console.error('Gagal memuat barber:', error);
+            }
+        }
+
+        // Panggil API untuk memuat daftar barber
+        muatBarberDariAPI();
+
+
+   
+    // ======================================================
+    // 6. INTERAKSI KASIR - PILIH LAYANAN
+    // ======================================================
+
+    const servicesContainer = document.querySelector('.kasir-services');
+    const selectedServicesContainer = document.getElementById('selectedServices');
+    const kasirTotal = document.getElementById('kasirTotal');
+    const selectedServices = {};
+
+    function formatRupiah(value) {
+        return 'Rp' + Number(value).toLocaleString('id-ID');
     }
 
-    let total = 0;
+    function renderSelectedServices() {
+        if (!selectedServicesContainer || !kasirTotal) return;
 
-    selectedServicesContainer.innerHTML = items.map(item => {
-        const subtotal = item.price * item.qty;
-        total += subtotal;
+        const items = Object.values(selectedServices);
+        let total = 0;
 
-        return `
-            <div class="selected-service-row" data-service="${item.name}">
-                <span>${item.name} ${item.qty}x</span>
-                <span>${formatRupiah(subtotal)}</span>
-                <button
-                    type="button"
-                    class="selected-service-remove"
-                    data-action="remove"
-                    data-service="${item.name}"
-                    aria-label="Hapus ${item.name}">
-                    ×
-                </button>
-            </div>
-        `;
-    }).join('');
-
-    // Tampilkan total
-    kasirTotal.textContent = formatRupiah(total);
-
-    // Tandai card layanan yang sedang dipilih
-    serviceCards.forEach(card => {
-        const serviceName = card.dataset.service;
-
-        if (selectedServices[serviceName]) {
-            card.classList.add('selected');
+        if (items.length === 0) {
+            selectedServicesContainer.innerHTML =
+                '<p class="empty-service">Belum ada layanan dipilih</p>';
         } else {
-            card.classList.remove('selected');
-        }
-    });
-}
+            selectedServicesContainer.innerHTML = items.map(item => {
+                const subtotal = item.price * item.qty;
+                total += subtotal;
 
-// Notifikasi transaksi berhasil
-function showSuccessNotification() {
-    const notification = document.createElement('div');
-
-    notification.className = 'transaction-success';
-    notification.textContent = 'Transaksi Berhasil';
-
-    document.body.appendChild(notification);
-
-    setTimeout(() => {
-        notification.classList.add('show');
-    }, 10);
-
-    setTimeout(() => {
-        notification.classList.remove('show');
-
-        setTimeout(() => {
-            notification.remove();
-        }, 300);
-    }, 2500);
-}
-
-// Klik layanan
-serviceCards.forEach(card => {
-    card.addEventListener('click', function () {
-
-        const serviceName = this.dataset.service;
-        const servicePrice = Number(this.dataset.price);
-
-        console.log('Service diklik:', serviceName, servicePrice);
-
-        // Jika layanan sudah dipilih, quantity bertambah
-        if (selectedServices[serviceName]) {
-            selectedServices[serviceName].qty += 1;
-        } 
-        
-        // Jika belum dipilih, tambahkan sebagai layanan baru
-        else {
-            selectedServices[serviceName] = {
-                name: serviceName,
-                price: servicePrice,
-                qty: 1
-            };
+                return `
+                    <div class="selected-service-row">
+                        <span>${item.name} ${item.qty}x</span>
+                        <span>${formatRupiah(subtotal)}</span>
+                        <button type="button"
+                            data-action="remove"
+                            data-id-layanan="${item.id_layanan}">×</button>
+                    </div>
+                `;
+            }).join('');
         }
 
-        renderSelectedServices();
-    });
-});
+        kasirTotal.textContent = formatRupiah(total);
+
+        if (servicesContainer) {
+            servicesContainer.querySelectorAll('.service-card').forEach(card => {
+                card.classList.toggle(
+                    'selected',
+                    Boolean(selectedServices[String(card.dataset.idLayanan)])
+                );
+            });
+        }
+    }
+
+    if (servicesContainer) {
+        servicesContainer.addEventListener('click', function (e) {
+            const card = e.target.closest('.service-card');
+            if (!card) return;
+
+            const id = String(card.dataset.idLayanan || '');
+            const name = card.dataset.service;
+            const price = Number(card.dataset.price);
+
+            console.log('ID layanan:', id);
+            console.log('Nama layanan:', name);
+            console.log('Harga layanan:', price);
+
+            console.log('Data kartu layanan:', {
+                id,
+                name,
+                price,
+                kartu: card
+            });
+
+            if (!id || !name || !Number.isFinite(price)) {
+                alert('Data layanan tidak valid.');
+                return;
+            }
 
 
-// Hapus layanan dari daftar
-if (selectedServicesContainer) {
-    selectedServicesContainer.addEventListener('click', function (e) {
+            if (selectedServices[id]) {
+                delete selectedServices[id];
+            } else {
+                selectedServices[id] = {
+                    id_layanan: Number(id),
+                    name,
+                    price,
+                    qty: 1
+                };
+            }
 
-        const removeButton = e.target.closest('[data-action="remove"]');
+            renderSelectedServices();
 
-        if (!removeButton) return;
+        });
+    }
 
-        const serviceName = removeButton.dataset.service;
+    if (selectedServicesContainer) {
+        selectedServicesContainer.addEventListener('click', function (e) {
+            const button = e.target.closest('[data-action="remove"]');
+            if (!button) return;
 
-        delete selectedServices[serviceName];
+            delete selectedServices[String(button.dataset.idLayanan)];
+            renderSelectedServices();
+        });
+    }
 
-        renderSelectedServices();
-    });
-}
+    renderSelectedServices();
 
+    
+
+// ======================================================
+// 7. SIMPAN TRANSAKSI KE API BACKEND
+// ======================================================
 
 const btnSimpanTransaksi = document.getElementById('btnSimpanTransaksi');
 
-console.log('Tombol simpan ditemukan:', btnSimpanTransaksi);
-
 if (btnSimpanTransaksi) {
-    btnSimpanTransaksi.addEventListener('click', function () {
-        console.log('TOMBOL SIMPAN DIKLIK');
-        // Ambil nilai input transaksi
+    btnSimpanTransaksi.addEventListener('click', async function () {
         const namaPelanggan = document.getElementById('namaPelanggan');
         const namaBarber = document.getElementById('namaBarber');
         const metodePembayaran = document.getElementById('metodePembayaran');
 
+        const layanan = Object.values(selectedServices).map(item => ({
+            id_layanan: item.id_layanan,
+            jumlah: item.qty
+        }));
+
         // Validasi nama pelanggan
-        if (!namaPelanggan || namaPelanggan.value.trim() === '') {
+        if (!namaPelanggan || !namaPelanggan.value.trim()) {
             alert('Nama pelanggan wajib diisi!');
-            if (namaPelanggan) namaPelanggan.focus();
+            namaPelanggan?.focus();
             return;
         }
 
-        // Validasi nama barber
-        if (!namaBarber || namaBarber.value === '') {
+        // Validasi barber
+        if (!namaBarber || !namaBarber.value) {
             alert('Nama barber wajib dipilih!');
-            if (namaBarber) namaBarber.focus();
+            namaBarber?.focus();
             return;
         }
 
         // Validasi layanan
-        if (Object.keys(selectedServices).length === 0) {
+        if (layanan.length === 0) {
             alert('Pilih minimal satu layanan!');
             return;
         }
 
         // Validasi metode pembayaran
-        if (!metodePembayaran || metodePembayaran.value === '') {
+        if (!metodePembayaran || !metodePembayaran.value) {
             alert('Metode pembayaran wajib dipilih!');
-            if (metodePembayaran) metodePembayaran.focus();
+            metodePembayaran?.focus();
             return;
         }
 
-        // Tampilkan notifikasi setelah semua validasi lolos
-        showSuccessNotification();
+        btnSimpanTransaksi.disabled = true;
 
-        // Kosongkan layanan yang sudah dipilih
-        Object.keys(selectedServices).forEach(serviceName => {
-            delete selectedServices[serviceName];
-        });
+        try {
+            const response = await fetch(
+                '/KELOMPOK-5/api/transaksi/index.php',
+                {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    
 
-        // Kosongkan input transaksi
-        namaPelanggan.value = '';
-        namaBarber.value = '';
-        metodePembayaran.value = '';
+                body: JSON.stringify({
+                    nama_pelanggan: namaPelanggan.value.trim(),
+                    id_barber: Number(namaBarber.value),
+                    layanan: layanan,
+                    metode_pembayaran: metodePembayaran.value
+                })
 
-        // Perbarui tampilan kasir
-        renderSelectedServices();
+
+                }
+            );
+
+            const result = await response.json();
+
+            if (!response.ok || !result.success) {
+                throw new Error(
+                    result.message || 'Transaksi gagal disimpan.'
+                );
+            }
+
+            alert(
+                'Transaksi berhasil disimpan!\nTotal: ' +
+                formatRupiah(result.data.total_harga)
+            );
+
+            // Kosongkan pilihan setelah API berhasil menyimpan
+            Object.keys(selectedServices).forEach(id => {
+                delete selectedServices[id];
+            });
+
+            namaPelanggan.value = '';
+            namaBarber.value = '';
+            metodePembayaran.value = '';
+
+            renderSelectedServices();
+
+        } catch (error) {
+            console.error('Gagal menyimpan transaksi:', error);
+            alert(error.message || 'Terjadi kesalahan saat menyimpan transaksi.');
+        } finally {
+            btnSimpanTransaksi.disabled = false;
+        }
     });
-
 }
+
+
 
 });
