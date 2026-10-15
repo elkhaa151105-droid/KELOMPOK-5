@@ -15,9 +15,11 @@ include __DIR__ . '/../includes/header.php';
     <div class="riwayat-card">
 
         <!-- NOTIFIKASI -->
-        <div id="riwayatNotification" class="transaction-success riwayat-delete-notification">
-         Berhasil Dihapus
-        </div>
+        <div
+            id="riwayatNotification"
+            class="transaction-success riwayat-delete-notification"
+            hidden
+        ></div>
 
         <div class="riwayat-table-wrapper">
             <table class="riwayat-table">
@@ -34,25 +36,9 @@ include __DIR__ . '/../includes/header.php';
                 </thead>
 
                 <tbody id="riwayatTableBody">
-
-                    <!-- DATA SEMENTARA -->
                     <tr>
-                        <td>Farid</td>
-                        <td>01-10-2026</td>
-                        <td>Haircut</td>
-                        <td>Rp50.000</td>
-                        <td>Rp50.000</td>
-                        <td>
-                            <button
-                                type="button"
-                                class="riwayat-delete-btn"
-                                aria-label="Hapus riwayat"
-                            >
-                                ×
-                            </button>
-                        </td>
+                        <td colspan="6">Memuat riwayat transaksi...</td>
                     </tr>
-
                 </tbody>
 
             </table>
@@ -62,6 +48,6 @@ include __DIR__ . '/../includes/header.php';
 
 </div>
 
-<script src="/KELOMPOK-5/assets/js/riwayat.js?v=2"></script>
+<script src="/KELOMPOK-5/assets/js/riwayat.js?v=3"></script>
 
 <?php include __DIR__ . '/../includes/footer.php'; ?>

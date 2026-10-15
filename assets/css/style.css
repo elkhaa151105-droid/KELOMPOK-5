@@ -1764,7 +1764,7 @@ body:has(.login-page) main.container {
 .riwayat-table th {
     padding: 8px 6px;
     text-align: left;
-    font-size: 9px;
+    font-size: 12px;
     font-weight: 500;
     color: #888888;
     white-space: nowrap;
@@ -1773,7 +1773,7 @@ body:has(.login-page) main.container {
 .riwayat-table td {
     padding: 8px 6px;
     text-align: left;
-    font-size: 9px;
+    font-size: 12px;
     font-weight: 400;
     color: #777777;
     vertical-align: middle;
@@ -1835,28 +1835,30 @@ body:has(.login-page) main.container {
 
 /* NOTIFIKASI */
 
-.riwayat-notification {
+.riwayat-notification,
+.riwayat-delete-notification {
     position: absolute;
     top: -20px;
     right: 12px;
     min-width: 90px;
-    height: 20px;
+    min-height: 28px;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0 12px;
+    padding: 4px 12px;
     border: 1px solid #E8A0A0;
     border-radius: 10px;
     background: #FFF7F7;
     color: #D85A5A;
-    font-size: 8px;
+    font-size: 12px;
     font-weight: 500;
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.2s ease;
 }
 
-.riwayat-notification.show {
+.riwayat-notification.show,
+.riwayat-delete-notification.show {
     opacity: 1;
 }
 
