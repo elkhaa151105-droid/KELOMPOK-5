@@ -9,6 +9,99 @@ $nama = $_SESSION['nama'] ?? '';
 
 // Format sapaan sesuai role & nama
 $display_role = ($role === 'owner') ? 'Owner Kataji' : ($nama ?: 'Barber');
+
+$periode = $_GET['periode'] ?? 'today';
+if (!in_array($periode, ['today', 'week', 'month'], true)) {
+    $periode = 'today';
+}
+
+$zonaWib = new DateTimeZone('Asia/Jakarta');
+$hariIni = new DateTimeImmutable('today', $zonaWib);
+$tanggalMulai = match ($periode) {
+    'week' => $hariIni->modify('monday this week'),
+    'month' => $hariIni->modify('first day of this month'),
+    default => $hariIni,
+};
+$tanggalAkhir = match ($periode) {
+    'week' => $tanggalMulai->modify('+6 days'),
+    'month' => $tanggalMulai->modify('last day of this month'),
+    default => $hariIni,
+};
+$rentangLabel = match ($periode) {
+    'week' => 'Minggu Ini',
+    'month' => 'Bulan Ini',
+    default => 'Hari Ini',
+};
+$tanggalMulaiSql = $tanggalMulai->format('Y-m-d');
+$tanggalAkhirSql = $tanggalAkhir->format('Y-m-d');
+
+$whereTransaksi = 'tanggal BETWEEN ? AND ?';
+$parameterTransaksi = [$tanggalMulaiSql, $tanggalAkhirSql];
+if ($role === 'barber') {
+    $whereTransaksi .= ' AND id_barber = ?';
+    $parameterTransaksi[] = (int) ($_SESSION['id_user'] ?? 0);
+}
+$stmtRingkasan = $pdo->prepare(
+    "SELECT COUNT(DISTINCT id_pelanggan) AS jumlah_pelanggan,
+            COUNT(*) AS jumlah_transaksi,
+            COALESCE(SUM(total_harga), 0) AS pendapatan
+     FROM transaksi
+     WHERE {$whereTransaksi}"
+);
+$stmtRingkasan->execute($parameterTransaksi);
+$ringkasan = $stmtRingkasan->fetch(PDO::FETCH_ASSOC) ?: [];
+
+$wherePengeluaran = 'tanggal BETWEEN ? AND ?';
+$parameterPengeluaran = [$tanggalMulaiSql, $tanggalAkhirSql];
+if ($role === 'barber') {
+    $wherePengeluaran .= ' AND id_user = ?';
+    $parameterPengeluaran[] = (int) ($_SESSION['id_user'] ?? 0);
+}
+$stmtPengeluaran = $pdo->prepare(
+    "SELECT COALESCE(SUM(nominal), 0)
+     FROM pengeluaran
+     WHERE {$wherePengeluaran}"
+);
+$stmtPengeluaran->execute($parameterPengeluaran);
+$totalPengeluaran = (int) $stmtPengeluaran->fetchColumn();
+
+$whereHpp = 't.tanggal BETWEEN ? AND ?';
+$parameterHpp = [$tanggalMulaiSql, $tanggalAkhirSql];
+if ($role === 'barber') {
+    $whereHpp .= ' AND t.id_barber = ?';
+    $parameterHpp[] = (int) ($_SESSION['id_user'] ?? 0);
+}
+$stmtHpp = $pdo->prepare(
+    "SELECT COALESCE(SUM(dt.hpp_saat_transaksi * dt.jumlah), 0) AS total_hpp,
+            SUM(CASE WHEN dt.id_detail IS NULL OR dt.hpp_saat_transaksi IS NULL THEN 1 ELSE 0 END) AS detail_tanpa_hpp
+     FROM transaksi t
+     LEFT JOIN detail_transaksi dt ON dt.id_transaksi = t.id_transaksi
+     WHERE {$whereHpp}"
+);
+$stmtHpp->execute($parameterHpp);
+$ringkasanHpp = $stmtHpp->fetch(PDO::FETCH_ASSOC) ?: [];
+$totalHpp = (int) ($ringkasanHpp['total_hpp'] ?? 0);
+$hppLengkap = (int) ($ringkasanHpp['detail_tanpa_hpp'] ?? 0) === 0;
+
+$stmtBarber = $pdo->query(
+    "SELECT nama, spesialisasi
+     FROM users
+     WHERE role = 'barber' AND aktif = 1
+     ORDER BY nama ASC"
+);
+$barberAktif = $stmtBarber->fetchAll(PDO::FETCH_ASSOC);
+
+$formatRupiah = static fn (int $nilai): string => 'Rp' . number_format($nilai, 0, ',', '.');
+$pendapatan = (int) ($ringkasan['pendapatan'] ?? 0);
+$jumlahPelanggan = (int) ($ringkasan['jumlah_pelanggan'] ?? 0);
+$jumlahTransaksi = (int) ($ringkasan['jumlah_transaksi'] ?? 0);
+$labaKotor = $hppLengkap ? $pendapatan - $totalHpp : null;
+$labaBersih = $labaKotor === null ? null : $labaKotor - $totalPengeluaran;
+$labelHpp = $hppLengkap ? $formatRupiah($totalHpp) : '—';
+$labelLabaKotor = $labaKotor === null ? '—' : $formatRupiah($labaKotor);
+$labelLabaBersih = $labaBersih === null ? '—' : $formatRupiah($labaBersih);
+$keteranganHpp = 'Nilai HPP historis belum tersedia untuk seluruh detail transaksi pada periode ini.';
+$keteranganLaba = 'Laba belum dapat dihitung karena data HPP historis belum lengkap.';
 ?>
 
 <?php include __DIR__ . '/../includes/header.php'; ?>
@@ -33,9 +126,9 @@ $display_role = ($role === 'owner') ? 'Owner Kataji' : ($nama ?: 'Barber');
                         <circle cx="12" cy="7" r="4"></circle>
                     </svg>
                 </span>
-                <span class="summary-title">Pelanggan Hari Ini</span>
+                <span class="summary-title">Pelanggan <?= htmlspecialchars($rentangLabel, ENT_QUOTES, 'UTF-8') ?></span>
             </div>
-            <strong class="summary-value">2</strong>
+            <strong class="summary-value"><?= number_format($jumlahPelanggan, 0, ',', '.') ?></strong>
         </div>
 
         <!-- TRANSAKSI HARI INI -->
@@ -50,9 +143,9 @@ $display_role = ($role === 'owner') ? 'Owner Kataji' : ($nama ?: 'Barber');
                         <polyline points="10 9 9 9 8 9"></polyline>
                     </svg>
                 </span>
-                <span class="summary-title">Transaksi Hari Ini</span>
+                <span class="summary-title">Transaksi <?= htmlspecialchars($rentangLabel, ENT_QUOTES, 'UTF-8') ?></span>
             </div>
-            <strong class="summary-value">2</strong>
+            <strong class="summary-value"><?= number_format($jumlahTransaksi, 0, ',', '.') ?></strong>
         </div>
 
         <!-- PENDAPATAN HARI INI -->
@@ -64,9 +157,9 @@ $display_role = ($role === 'owner') ? 'Owner Kataji' : ($nama ?: 'Barber');
                         <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
                     </svg>
                 </span>
-                <span class="summary-title">Pendapatan Hari Ini</span>
+                <span class="summary-title">Pendapatan <?= htmlspecialchars($rentangLabel, ENT_QUOTES, 'UTF-8') ?></span>
             </div>
-            <strong class="summary-value">Rp200.000</strong>
+            <strong class="summary-value"><?= htmlspecialchars($formatRupiah($pendapatan), ENT_QUOTES, 'UTF-8') ?></strong>
         </div>
 
         <!-- LABA KOTOR HARI INI -->
@@ -78,9 +171,9 @@ $display_role = ($role === 'owner') ? 'Owner Kataji' : ($nama ?: 'Barber');
                         <polyline points="17 6 23 6 23 12"></polyline>
                     </svg>
                 </span>
-                <span class="summary-title">Laba Kotor Hari Ini</span>
+                <span class="summary-title">Laba Kotor <?= htmlspecialchars($rentangLabel, ENT_QUOTES, 'UTF-8') ?></span>
             </div>
-            <strong class="summary-value">Rp100.000</strong>
+            <strong class="summary-value"<?= $labaKotor === null ? ' title="' . htmlspecialchars($keteranganLaba, ENT_QUOTES, 'UTF-8') . '"' : '' ?>><?= htmlspecialchars($labelLabaKotor, ENT_QUOTES, 'UTF-8') ?></strong>
         </div>
 
     </div>
@@ -93,9 +186,9 @@ $display_role = ($role === 'owner') ? 'Owner Kataji' : ($nama ?: 'Barber');
             <h2>Rekap Keuangan</h2>
 
             <div class="period-filter">
-                <button type="button" class="filter-btn active">Hari Ini</button>
-                <button type="button" class="filter-btn">Minggu Ini</button>
-                <button type="button" class="filter-btn">Bulan Ini</button>
+                <a href="?periode=today" class="filter-btn <?= $periode === 'today' ? 'active' : '' ?>">Hari Ini</a>
+                <a href="?periode=week" class="filter-btn <?= $periode === 'week' ? 'active' : '' ?>">Minggu Ini</a>
+                <a href="?periode=month" class="filter-btn <?= $periode === 'month' ? 'active' : '' ?>">Bulan Ini</a>
             </div>
         </div>
 
@@ -103,27 +196,27 @@ $display_role = ($role === 'owner') ? 'Owner Kataji' : ($nama ?: 'Barber');
 
             <div class="metric-item">
                 <span class="metric-label">Pendapatan</span>
-                <strong class="metric-val">Rp450.000</strong>
+                <strong class="metric-val"><?= htmlspecialchars($formatRupiah($pendapatan), ENT_QUOTES, 'UTF-8') ?></strong>
             </div>
 
             <div class="metric-item">
                 <span class="metric-label">HPP</span>
-                <strong class="metric-val">Rp450.000</strong>
+                <strong class="metric-val"<?= !$hppLengkap ? ' title="' . htmlspecialchars($keteranganHpp, ENT_QUOTES, 'UTF-8') . '"' : '' ?>><?= htmlspecialchars($labelHpp, ENT_QUOTES, 'UTF-8') ?></strong>
             </div>
 
             <div class="metric-item">
                 <span class="metric-label">Laba Kotor</span>
-                <strong class="metric-val">Rp450.000</strong>
+                <strong class="metric-val"<?= $labaKotor === null ? ' title="' . htmlspecialchars($keteranganLaba, ENT_QUOTES, 'UTF-8') . '"' : '' ?>><?= htmlspecialchars($labelLabaKotor, ENT_QUOTES, 'UTF-8') ?></strong>
             </div>
 
             <div class="metric-item">
                 <span class="metric-label">Biaya Operasional</span>
-                <strong class="metric-val">Rp450.000</strong>
+                <strong class="metric-val"><?= htmlspecialchars($formatRupiah($totalPengeluaran), ENT_QUOTES, 'UTF-8') ?></strong>
             </div>
 
             <div class="metric-item">
                 <span class="metric-label">Laba Bersih</span>
-                <strong class="metric-val">Rp450.000</strong>
+                <strong class="metric-val"<?= $labaBersih === null ? ' title="' . htmlspecialchars($keteranganLaba, ENT_QUOTES, 'UTF-8') . '"' : '' ?>><?= htmlspecialchars($labelLabaBersih, ENT_QUOTES, 'UTF-8') ?></strong>
             </div>
 
         </div>
@@ -131,79 +224,37 @@ $display_role = ($role === 'owner') ? 'Owner Kataji' : ($nama ?: 'Barber');
     </section>
 
 
-    <!-- BARBER HARI INI -->
+    <!-- BARBER AKTIF -->
     <section class="barber-section">
 
-        <h2 class="section-title">Barber Hari Ini</h2>
+        <h2 class="section-title">Barber Aktif</h2>
 
         <div class="barber-grid">
-
-            <!-- BARBER 1: SANDI -->
-            <div class="barber-card">
-                <div class="barber-photo-box">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#999999" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                        <polyline points="21 15 16 10 5 21"></polyline>
-                    </svg>
-                </div>
-
-                <div class="barber-details">
-                    <h3 class="barber-name">SANDI</h3>
-                    <p class="barber-specialty">
-                        Spesialis:<br>
-                        Coloring, Perming
-                    </p>
-                    <span class="barber-badge badge-hadir">
-                        <span class="badge-dot"></span> Hadir
-                    </span>
-                </div>
-            </div>
-
-            <!-- BARBER 2: ERIK -->
-            <div class="barber-card">
-                <div class="barber-photo-box">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#999999" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                        <polyline points="21 15 16 10 5 21"></polyline>
-                    </svg>
-                </div>
-
-                <div class="barber-details">
-                    <h3 class="barber-name">ERIK</h3>
-                    <p class="barber-specialty">
-                        Spesialis:<br>
-                        Coloring, Smoothing
-                    </p>
-                    <span class="barber-badge badge-izin">
-                        <span class="badge-dot"></span> Izin
-                    </span>
-                </div>
-            </div>
-
-            <!-- BARBER 3: UJANG -->
-            <div class="barber-card">
-                <div class="barber-photo-box">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#999999" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                        <polyline points="21 15 16 10 5 21"></polyline>
-                    </svg>
-                </div>
-
-                <div class="barber-details">
-                    <h3 class="barber-name">UJANG</h3>
-                    <p class="barber-specialty">
-                        Spesialis:<br>
-                        Smoothing, Perming
-                    </p>
-                    <span class="barber-badge badge-tidak-hadir">
-                        <span class="badge-dot"></span> Tidak Hadir
-                    </span>
-                </div>
-            </div>
-
+            <?php if (!$barberAktif): ?>
+                <p>Belum ada akun barber aktif.</p>
+            <?php else: ?>
+                <?php foreach ($barberAktif as $barber): ?>
+                    <article class="barber-card">
+                        <div class="barber-photo-box" aria-hidden="true">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#999999" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                <polyline points="21 15 16 10 5 21"></polyline>
+                            </svg>
+                        </div>
+                        <div class="barber-details">
+                            <h3 class="barber-name"><?= htmlspecialchars($barber['nama'], ENT_QUOTES, 'UTF-8') ?></h3>
+                            <p class="barber-specialty">
+                                Spesialis:<br>
+                                <?= htmlspecialchars($barber['spesialisasi'] ?: 'Belum diatur', ENT_QUOTES, 'UTF-8') ?>
+                            </p>
+                            <span class="barber-badge badge-hadir">
+                                <span class="badge-dot"></span> Akun aktif
+                            </span>
+                        </div>
+                    </article>
+                <?php endforeach; ?>
+            <?php endif; ?>
         </div>
 
     </section>
@@ -215,11 +266,7 @@ $display_role = ($role === 'owner') ? 'Owner Kataji' : ($nama ?: 'Barber');
         <h2 class="reset-card-title">Permintaan Reset Password</h2>
 
         <div class="reset-card-body">
-            <span class="reset-user-name">Erik</span>
-
-            <button type="button" class="btn-reset-password">
-                Reset Password
-            </button>
+            <span class="reset-user-name">Pengelolaan permintaan reset password belum tersedia.</span>
         </div>
 
     </section>

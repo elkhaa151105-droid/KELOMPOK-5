@@ -6,7 +6,7 @@
 
 require_once __DIR__ . '/../config/config.php';
 
-define('SESSION_LIFETIME', 1800); // 30 menit
+define('SESSION_LIFETIME', 1800);                   // 30 menit
 
 function require_login(): void
 {
@@ -15,12 +15,25 @@ function require_login(): void
         exit;
     }
 
-    // Cek apakah session sudah melewati batas waktu
+    // Sesi yang tidak memiliki waktu aktivitas valid harus login kembali.
+    $lastActivity = $_SESSION['last_activity'] ?? null;
     if (
-        isset($_SESSION['last_activity']) &&
-        (time() - $_SESSION['last_activity'] > SESSION_LIFETIME)
+        !is_numeric($lastActivity) ||
+        time() - (int) $lastActivity > SESSION_LIFETIME
     ) {
-        session_unset();
+        $_SESSION = [];
+        if (ini_get('session.use_cookies')) {
+            $params = session_get_cookie_params();
+            setcookie(
+                session_name(),
+                '',
+                time() - 42000,
+                $params['path'],
+                $params['domain'],
+                $params['secure'],
+                $params['httponly']
+            );
+        }
         session_destroy();
 
         header('Location: /KELOMPOK-5/pages/login.php?expired=1');

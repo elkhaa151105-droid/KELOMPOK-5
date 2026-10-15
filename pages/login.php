@@ -1,4 +1,12 @@
+
 <?php
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+if (empty($_SESSION['login_csrf_token'])) {
+    $_SESSION['login_csrf_token'] = bin2hex(random_bytes(32));
+}
 
 $error = $_GET['error'] ?? '';
 $expired = isset($_GET['expired']);
@@ -7,14 +15,37 @@ $error_username = false;
 $error_password = false;
 $error_message = '';
 
-if ($error === 'empty') {
-    $error_username = true;
-    $error_password = true;
-    $error_message = 'Username dan password wajib diisi';
-} elseif ($error === 'invalid') {
+if (
+    $error === 'empty'
+    || isset($_GET['both_empty'])
+    || isset($_GET['username_empty'])
+    || isset($_GET['password_empty'])
+) {
+    $error_username = (
+        $error === 'empty'
+        || isset($_GET['both_empty'])
+        || isset($_GET['username_empty'])
+    );
+
+    $error_password = (
+        $error === 'empty'
+        || isset($_GET['both_empty'])
+        || isset($_GET['password_empty'])
+    );
+
+    if ($error_username && $error_password) {
+        $error_message = 'Username dan password wajib diisi';
+    } elseif ($error_username) {
+        $error_message = 'Username wajib diisi';
+    } else {
+        $error_message = 'Password wajib diisi';
+    }
+} elseif ($error === 'invalid' || $error === '1') {
     $error_username = true;
     $error_password = true;
     $error_message = 'Username atau password salah';
+} elseif ($error === 'csrf') {
+    $error_message = 'Form login kedaluwarsa. Silakan coba lagi.';
 } elseif ($expired) {
     $error_username = true;
     $error_password = true;
@@ -34,7 +65,6 @@ $saved_username = $_POST['username'] ?? $_GET['username'] ?? '';
 
     <title>Login - Kataji Barber</title>
 
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
@@ -43,13 +73,11 @@ $saved_username = $_POST['username'] ?? $_GET['username'] ?? '';
         rel="stylesheet"
     >
 
-    <!-- Bootstrap 5 -->
     <link
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
         rel="stylesheet"
     >
 
-    <!-- Custom Style -->
     <link
         rel="stylesheet"
         href="/KELOMPOK-5/assets/css/style.css"
@@ -60,31 +88,9 @@ $saved_username = $_POST['username'] ?? $_GET['username'] ?? '';
 
 <div class="login-page">
 
-    <!-- BRANDING SISI KIRI -->
-    <div class="login-hero">
-
-        <div class="login-hero-logo">
-            <img
-                src="/KELOMPOK-5/assets/img/logo-kataji.png"
-                alt="Logo Kataji Barber"
-            >
-        </div>
-
-        <h2 class="login-hero-title">
-            KATAJI BARBER
-        </h2>
-
-        <p class="login-hero-subtitle">
-            MANAGEMENT &amp; INFORMATION SYSTEM
-        </p>
-
-    </div>
-
-
     <!-- CARD LOGIN -->
     <div class="login-card">
 
-        <!-- LOGO -->
         <div class="login-card-logo">
             <img
                 src="/KELOMPOK-5/assets/img/logo-kataji.png"
@@ -98,7 +104,6 @@ $saved_username = $_POST['username'] ?? $_GET['username'] ?? '';
             Masukkan email/username dan password akunmu.
         </p>
 
-
         <form
             id="loginForm"
             method="post"
@@ -106,6 +111,12 @@ $saved_username = $_POST['username'] ?? $_GET['username'] ?? '';
             class="login-form"
             novalidate
         >
+
+            <input
+                type="hidden"
+                name="csrf_token"
+                value="<?= htmlspecialchars($_SESSION['login_csrf_token'], ENT_QUOTES, 'UTF-8') ?>"
+            >
 
             <!-- USERNAME -->
             <div class="login-field">
@@ -149,14 +160,13 @@ $saved_username = $_POST['username'] ?? $_GET['username'] ?? '';
                         id="username"
                         name="username"
                         placeholder="nama@email.com / username"
-                        value="<?= htmlspecialchars($saved_username) ?>"
+                        value="<?= htmlspecialchars($saved_username, ENT_QUOTES, 'UTF-8') ?>"
                         autocomplete="username"
                     >
 
                 </div>
 
             </div>
-
 
             <!-- PASSWORD -->
             <div class="login-field">
@@ -235,18 +245,21 @@ $saved_username = $_POST['username'] ?? $_GET['username'] ?? '';
 
                 </div>
 
-
                 <!-- PESAN ERROR -->
                 <div
                     id="loginErrorMessage"
                     class="login-inline-error"
                     style="<?= $error_message !== '' ? 'display: block;' : 'display: none;' ?>"
+                    role="alert"
                 >
-                    <?= htmlspecialchars($error_message !== '' ? '*' . $error_message : '') ?>
+                    <?= htmlspecialchars(
+                        $error_message !== '' ? '*' . $error_message : '',
+                        ENT_QUOTES,
+                        'UTF-8'
+                    ) ?>
                 </div>
 
             </div>
-
 
             <!-- LUPA PASSWORD -->
             <div class="login-forgot">
@@ -254,7 +267,6 @@ $saved_username = $_POST['username'] ?? $_GET['username'] ?? '';
                     Lupa Password?
                 </a>
             </div>
-
 
             <!-- TOMBOL LOGIN -->
             <button
@@ -267,7 +279,6 @@ $saved_username = $_POST['username'] ?? $_GET['username'] ?? '';
 
         </form>
 
-
         <!-- INFORMASI -->
         <div class="login-register">
             Akun dibuat oleh owner, Barber lupa password? Hubungi Owner
@@ -276,7 +287,6 @@ $saved_username = $_POST['username'] ?? $_GET['username'] ?? '';
     </div>
 
 </div>
-
 
 <script src="/KELOMPOK-5/assets/js/script.js"></script>
 

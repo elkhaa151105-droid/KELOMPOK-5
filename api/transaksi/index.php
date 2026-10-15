@@ -44,6 +44,7 @@ try {
                 t.tanggal,
                 t.waktu,
                 t.total_harga,
+                t.metode_pembayaran,
                 t.dibuat_pada
             FROM transaksi t
             JOIN users u ON u.id_user = t.id_barber
@@ -98,9 +99,49 @@ try {
             ]);
         }
 
-        $namaPelanggan = trim($input['nama_pelanggan'] ?? '');
-        $noHp = trim($input['no_hp'] ?? '');
+        $namaPelangganRaw = $input['nama_pelanggan'] ?? '';
+        $noHpRaw = $input['no_hp'] ?? '';
+        if (!is_string($namaPelangganRaw) || !is_string($noHpRaw)) {
+            kirimJson(422, [
+                'success' => false,
+                'message' => 'Data pelanggan tidak valid.'
+            ]);
+        }
+        $namaPelanggan = trim($namaPelangganRaw);
+        $noHp = trim($noHpRaw);
         $layananInput = $input['layanan'] ?? [];
+        $metodePembayaran = $input['metode_pembayaran'] ?? '';
+
+        if (
+    !is_string($metodePembayaran) ||
+    trim($metodePembayaran) === ''
+) {
+    kirimJson(422, [
+        'success' => false,
+        'message' => 'Pilih metode pembayaran.',
+        'error_code' => 'VALIDATION_ERROR'
+    ]);
+}
+
+        if ($namaPelanggan === '') {
+            kirimJson(422, [
+                'success' => false,
+                'message' => 'Nama pelanggan wajib diisi.',
+                'error_code' => 'CUSTOMER_NAME_REQUIRED'
+            ]);
+        }
+
+        if (
+            !is_string($metodePembayaran) ||
+            !in_array($metodePembayaran, ['cash', 'qris', 'transfer'], true) ||
+            strlen($namaPelanggan) > 100 ||
+            strlen($noHp) > 20
+        ) {
+            kirimJson(422, [
+                'success' => false,
+                'message' => 'Data pembayaran atau pelanggan tidak valid.'
+            ]);
+        }
 
         // Tentukan barber yang melayani.
         if ($role === 'barber') {
@@ -123,7 +164,7 @@ try {
                 "SELECT id_user
                  FROM users
                  WHERE id_user = :id_user
-                   AND role = 'barber'
+                   AND role IN ('barber', 'owner')
                    AND aktif = 1"
             );
 
@@ -209,7 +250,7 @@ try {
 
         // Ambil harga dari database.
         $stmtLayanan = $pdo->prepare(
-            'SELECT harga
+            'SELECT harga, hpp
              FROM layanan
              WHERE id_layanan = :id
                AND aktif = 1'
@@ -235,26 +276,31 @@ try {
             }
 
             $totalHarga += $harga * $jumlah;
+            if ($totalHarga > 2147483647) {
+                throw new DomainException('Total harga terlalu besar.');
+            }
 
             $rincian[] = [
                 'id_layanan' => (int) $idLayanan,
                 'harga' => $harga,
+                'hpp_saat_transaksi' => $layanan['hpp'] === null ? null : (int) $layanan['hpp'],
                 'jumlah' => $jumlah
             ];
         }
 
-        $tanggal = date('Y-m-d');
-        $waktu = date('H:i:s');
+        $sekarang = new DateTimeImmutable('now', new DateTimeZone('Asia/Jakarta'));
+        $tanggal = $sekarang->format('Y-m-d');
+        $waktu = $sekarang->format('H:i:s');
 
         // Pencatat berasal dari sesi login.
         // Barber berasal dari pilihan owner atau sesi barber.
         $stmtTransaksi = $pdo->prepare(
             'INSERT INTO transaksi
                 (id_pencatat, id_barber, id_pelanggan,
-                 tanggal, waktu, total_harga)
+                 tanggal, waktu, total_harga, metode_pembayaran)
              VALUES
                 (:id_pencatat, :id_barber, :id_pelanggan,
-                 :tanggal, :waktu, :total_harga)'
+                 :tanggal, :waktu, :total_harga, :metode_pembayaran)'
         );
 
         $stmtTransaksi->execute([
@@ -263,16 +309,18 @@ try {
             ':id_pelanggan' => $idPelanggan,
             ':tanggal' => $tanggal,
             ':waktu' => $waktu,
-            ':total_harga' => $totalHarga
+            ':total_harga' => $totalHarga,
+            ':metode_pembayaran' => $metodePembayaran
         ]);
 
         $idTransaksi = (int) $pdo->lastInsertId();
 
         $stmtDetail = $pdo->prepare(
             'INSERT INTO detail_transaksi
-                (id_transaksi, id_layanan, harga_saat_transaksi, jumlah)
+                (id_transaksi, id_layanan, harga_saat_transaksi,
+                 hpp_saat_transaksi, jumlah)
              VALUES
-                (:id_transaksi, :id_layanan, :harga, :jumlah)'
+                (:id_transaksi, :id_layanan, :harga, :hpp, :jumlah)'
         );
 
         foreach ($rincian as $item) {
@@ -280,6 +328,7 @@ try {
                 ':id_transaksi' => $idTransaksi,
                 ':id_layanan' => $item['id_layanan'],
                 ':harga' => $item['harga'],
+                ':hpp' => $item['hpp_saat_transaksi'],
                 ':jumlah' => $item['jumlah']
             ]);
         }
@@ -297,6 +346,7 @@ try {
                 'tanggal' => $tanggal,
                 'waktu' => $waktu,
                 'total_harga' => $totalHarga,
+                'metode_pembayaran' => $metodePembayaran,
                 'layanan' => $rincian
             ]
         ]);

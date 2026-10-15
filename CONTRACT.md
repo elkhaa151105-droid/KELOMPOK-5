@@ -180,7 +180,8 @@ Contoh respons sukses (`200 OK`):
       "no_hp": null,
       "tanggal": "2026-10-13",
       "waktu": "09:00:00",
-      "total_harga": 50000
+      "total_harga": 50000,
+      "metode_pembayaran": "cash"
     }
   ]
 }
@@ -201,6 +202,7 @@ Contoh body untuk owner:
   "id_barber": 2,
   "nama_pelanggan": "Pelanggan Tes",
   "no_hp": "081234567890",
+  "metode_pembayaran": "qris",
   "layanan": [
     {
       "id_layanan": 1,
@@ -216,6 +218,7 @@ Contoh body untuk barber:
 {
   "nama_pelanggan": "Pelanggan Tes",
   "no_hp": "081234567890",
+  "metode_pembayaran": "cash",
   "layanan": [
     {
       "id_layanan": 1,
@@ -232,6 +235,7 @@ Aturan:
 - `id_pencatat` diambil dari user yang login.
 - `id_pelanggan` dibuat jika nama atau nomor telepon pelanggan diberikan.
 - Harga layanan diambil dari database.
+- Metode pembayaran wajib dikirim dan harus bernilai `cash`, `qris`, atau `transfer`. Jika tidak dikirim atau nilainya kosong, API menolak transaksi dengan HTTP `422 Unprocessable Content` dan kode error `VALIDATION_ERROR`. Form Kasir menampilkan pesan `Pilih metode pembayaran` jika metode belum dipilih.
 - Total harga dihitung oleh server.
 - Data transaksi dan detail layanan disimpan dalam satu transaksi database.
 
@@ -272,5 +276,6 @@ Respons sukses: `200 OK`.
 
 - Format respons menggunakan JSON.
 - Harga pada detail transaksi menyimpan snapshot harga ketika transaksi dibuat.
+- Database yang sudah ada perlu menjalankan `database/migrations/2026-10-13-add-metode-pembayaran.sql` satu kali.
 - Endpoint daftar dan detail transaksi menerapkan pembatasan akses berdasarkan role.
 - Semua URL pengujian Postman menggunakan variabel `{{base_url}}` pada environment Postman `Local KELOMPOK-5`.

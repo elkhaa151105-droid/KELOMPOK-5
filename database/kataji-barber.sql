@@ -32,6 +32,7 @@ CREATE TABLE `detail_transaksi` (
   `id_transaksi` int(11) NOT NULL,
   `id_layanan` int(11) NOT NULL,
   `harga_saat_transaksi` int(11) NOT NULL,
+  `hpp_saat_transaksi` int(11) DEFAULT NULL CHECK (`hpp_saat_transaksi` IS NULL OR `hpp_saat_transaksi` >= 0),
   `jumlah` int(11) NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -51,6 +52,7 @@ CREATE TABLE `layanan` (
   `id_layanan` int(11) NOT NULL,
   `nama_layanan` varchar(100) NOT NULL,
   `harga` int(11) NOT NULL CHECK (`harga` > 0),
+  `hpp` int(11) DEFAULT NULL CHECK (`hpp` IS NULL OR `hpp` >= 0),
   `aktif` tinyint(1) NOT NULL DEFAULT 1,
   `dibuat_pada` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -111,6 +113,7 @@ CREATE TABLE `transaksi` (
   `tanggal` date NOT NULL,
   `waktu` time NOT NULL,
   `total_harga` int(11) NOT NULL DEFAULT 0,
+  `metode_pembayaran` enum('cash','qris','transfer') NOT NULL DEFAULT 'cash',
   `dibuat_pada` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 

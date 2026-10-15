@@ -55,6 +55,7 @@ try {
             t.tanggal,
             t.waktu,
             t.total_harga,
+            t.metode_pembayaran,
             t.dibuat_pada
         FROM transaksi t
         JOIN users u ON u.id_user = t.id_barber
@@ -99,6 +100,7 @@ try {
             dt.id_layanan,
             l.nama_layanan,
             dt.harga_saat_transaksi AS harga,
+            dt.hpp_saat_transaksi,
             dt.jumlah,
             (dt.harga_saat_transaksi * dt.jumlah) AS subtotal
         FROM detail_transaksi dt

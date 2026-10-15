@@ -4,7 +4,15 @@ require_once __DIR__ . '/../includes/auth_check.php';
 
 require_role(['barber', 'owner']);
 
+// Rute lama diarahkan ke Kasir FE yang terhubung ke handler transaksi yang sama.
+header('Location: /KELOMPOK-5/pages/transaksi.php');
+exit;
+
 require_once __DIR__ . '/../config/config.php';
+
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
 
 
 // ======================================================
@@ -67,9 +75,13 @@ $stmtHistory = $pdo->prepare(
         t.tanggal,
         t.waktu,
         t.total_harga,
+        t.metode_pembayaran,
+        pelanggan.nama AS nama_pelanggan,
         p.nama AS pencatat,
         b.nama AS barber_pelaksana
      FROM transaksi t
+     LEFT JOIN pelanggan
+        ON t.id_pelanggan = pelanggan.id_pelanggan
      JOIN users p
         ON t.id_pencatat = p.id_user
      JOIN users b
@@ -234,6 +246,12 @@ $success = $_GET['success'] ?? '';
             action="/KELOMPOK-5/pages/catat_transaksi_proses.php"
         >
 
+            <input
+                type="hidden"
+                name="csrf_token"
+                value="<?= htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES, 'UTF-8') ?>"
+            >
+
 
             <!-- ==========================================
                  PILIH BARBER
@@ -295,6 +313,26 @@ $success = $_GET['success'] ?? '';
 
                 </select>
 
+            </div>
+
+            <div style="display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 24px;">
+                <div>
+                    <label for="nama_pelanggan" style="display:block; font-size:14px; color:#6B6B6B; margin-bottom:6px; font-weight:600;">Nama pelanggan (opsional)</label>
+                    <input id="nama_pelanggan" name="nama_pelanggan" type="text" maxlength="100" style="padding:11px 12px; border:1px solid #D9DCE8; border-radius:8px;">
+                </div>
+                <div>
+                    <label for="no_hp" style="display:block; font-size:14px; color:#6B6B6B; margin-bottom:6px; font-weight:600;">Nomor HP (opsional)</label>
+                    <input id="no_hp" name="no_hp" type="tel" maxlength="20" style="padding:11px 12px; border:1px solid #D9DCE8; border-radius:8px;">
+                </div>
+                <div>
+                    <label for="metode_pembayaran" style="display:block; font-size:14px; color:#6B6B6B; margin-bottom:6px; font-weight:600;">Metode pembayaran</label>
+                    <select id="metode_pembayaran" name="metode_pembayaran" required style="padding:11px 12px; border:1px solid #D9DCE8; border-radius:8px; background:#FFFFFF;">
+                        <option value="">Pilih metode</option>
+                        <option value="cash">Cash</option>
+                        <option value="qris">QRIS</option>
+                        <option value="transfer">Transfer</option>
+                    </select>
+                </div>
             </div>
 
 
@@ -628,6 +666,8 @@ $success = $_GET['success'] ?? '';
                                 Pencatat
                             </th>
 
+                            <th style="padding: 12px; text-align: left;">Pelanggan</th>
+
 
                             <th style="
                                 padding: 12px;
@@ -643,6 +683,8 @@ $success = $_GET['success'] ?? '';
                             ">
                                 Total
                             </th>
+
+                            <th style="padding: 12px; text-align: left;">Pembayaran</th>
 
 
                         </tr>
@@ -695,6 +737,14 @@ $success = $_GET['success'] ?? '';
 
                                 </td>
 
+                                <td style="padding: 12px;">
+                                    <?= htmlspecialchars(
+                                        $transaksi['nama_pelanggan'] ?: 'Pelanggan umum',
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    ) ?>
+                                </td>
+
 
                                 <td style="
                                     padding: 12px;
@@ -705,7 +755,6 @@ $success = $_GET['success'] ?? '';
                                     ) ?>
 
                                 </td>
-
 
                                 <td style="
                                     padding: 12px;
@@ -720,6 +769,14 @@ $success = $_GET['success'] ?? '';
                                         '.'
                                     ) ?>
 
+                                </td>
+
+                                <td style="padding: 12px;">
+                                    <?= htmlspecialchars(
+                                        strtoupper($transaksi['metode_pembayaran']),
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    ) ?>
                                 </td>
 
 

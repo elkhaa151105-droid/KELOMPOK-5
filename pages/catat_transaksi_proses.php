@@ -12,7 +12,16 @@ require_once __DIR__ . '/../config/config.php';
 // ======================================================
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Location: /KELOMPOK-5/pages/catat-transaksi.php');
+    header('Location: /KELOMPOK-5/pages/transaksi.php');
+    exit;
+}
+
+if (
+    empty($_SESSION['csrf_token']) ||
+    !is_string($_POST['csrf_token'] ?? null) ||
+    !hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])
+) {
+    header('Location: /KELOMPOK-5/pages/transaksi.php?error=invalid');
     exit;
 }
 
@@ -33,11 +42,17 @@ if ($id_pencatat <= 0) {
 // Ambil barber pelaksana dari dropdown
 // ======================================================
 
-$id_barber = (int) ($_POST['id_barber'] ?? 0);
+$id_barber = ($_SESSION['role'] ?? '') === 'barber'
+    ? $id_pencatat
+    : filter_var(
+        $_POST['id_barber'] ?? null,
+        FILTER_VALIDATE_INT,
+        ['options' => ['min_range' => 1]]
+    );
 
-if ($id_barber <= 0) {
+if ($id_barber === false) {
     header(
-        'Location: /KELOMPOK-5/pages/catat-transaksi.php?error=invalid_barber'
+        'Location: /KELOMPOK-5/pages/transaksi.php?error=invalid_barber'
     );
     exit;
 }
@@ -49,7 +64,41 @@ if ($id_barber <= 0) {
 
 $layananDipilih = $_POST['layanan'] ?? [];
 $jumlahInput = $_POST['jumlah'] ?? [];
-$hargaManualInput = $_POST['harga_manual'] ?? [];
+// FE kasir tidak menyediakan harga manual; harga selalu diambil dari database.
+$hargaManualInput = [];
+$namaPelangganRaw = $_POST['nama_pelanggan'] ?? '';
+$noHpRaw = $_POST['no_hp'] ?? '';
+$metodePembayaran = $_POST['metode_pembayaran'] ?? '';
+
+if (trim($metodePembayaran) === '') {
+    header(
+        'Location: /KELOMPOK-5/pages/transaksi.php?error=payment_required'
+    );
+    exit;
+}
+
+if (
+    !is_array($layananDipilih) ||
+    !is_array($jumlahInput) ||
+    !is_array($hargaManualInput) ||
+    !is_string($namaPelangganRaw) ||
+    !is_string($noHpRaw) ||
+    !is_string($metodePembayaran) ||
+    !in_array($metodePembayaran, ['cash', 'qris', 'transfer'], true) ||
+    strlen(trim($namaPelangganRaw)) > 100 ||
+    strlen(trim($noHpRaw)) > 20
+) {
+    header('Location: /KELOMPOK-5/pages/transaksi.php?error=invalid');
+    exit;
+}
+
+$namaPelanggan = trim($namaPelangganRaw);
+$noHp = trim($noHpRaw);
+
+if ($namaPelanggan === '') {
+    header('Location: /KELOMPOK-5/pages/transaksi.php?error=customer_required');
+    exit;
+}
 
 
 // ======================================================
@@ -72,7 +121,7 @@ $barberValid = $stmtBarber->fetchColumn();
 
 if (!$barberValid) {
     header(
-        'Location: /KELOMPOK-5/pages/catat-transaksi.php?error=invalid_barber'
+        'Location: /KELOMPOK-5/pages/transaksi.php?error=invalid_barber'
     );
     exit;
 }
@@ -85,7 +134,7 @@ if (!$barberValid) {
 
 if (!is_array($layananDipilih) || count($layananDipilih) === 0) {
     header(
-        'Location: /KELOMPOK-5/pages/catat-transaksi.php?error=no_service'
+        'Location: /KELOMPOK-5/pages/transaksi.php?error=no_service'
     );
     exit;
 }
@@ -98,11 +147,18 @@ if (!is_array($layananDipilih) || count($layananDipilih) === 0) {
 $idLayananList = [];
 
 foreach ($layananDipilih as $idLayanan) {
-    $idLayanan = (int) $idLayanan;
+    $idLayananValid = filter_var(
+        $idLayanan,
+        FILTER_VALIDATE_INT,
+        ['options' => ['min_range' => 1]]
+    );
 
-    if ($idLayanan > 0) {
-        $idLayananList[] = $idLayanan;
+    if ($idLayananValid === false) {
+        header('Location: /KELOMPOK-5/pages/transaksi.php?error=invalid');
+        exit;
     }
+
+    $idLayananList[] = $idLayananValid;
 }
 
 $idLayananList = array_values(array_unique($idLayananList));
@@ -114,7 +170,7 @@ $idLayananList = array_values(array_unique($idLayananList));
 
 if (count($idLayananList) === 0) {
     header(
-        'Location: /KELOMPOK-5/pages/catat-transaksi.php?error=no_service'
+        'Location: /KELOMPOK-5/pages/transaksi.php?error=no_service'
     );
     exit;
 }
@@ -131,7 +187,7 @@ $placeholders = implode(
 );
 
 $stmt = $pdo->prepare(
-    "SELECT id_layanan, nama_layanan, harga
+    "SELECT id_layanan, nama_layanan, harga, hpp
      FROM layanan
      WHERE aktif = 1
      AND id_layanan IN ($placeholders)
@@ -149,7 +205,7 @@ $layananDatabase = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 if (count($layananDatabase) !== count($idLayananList)) {
     header(
-        'Location: /KELOMPOK-5/pages/catat-transaksi.php?error=invalid'
+        'Location: /KELOMPOK-5/pages/transaksi.php?error=invalid'
     );
     exit;
 }
@@ -176,12 +232,16 @@ foreach ($layananDatabase as $layanan) {
     // Jumlah
     // -----------------------------------------------
 
-    $jumlah = isset($jumlahInput[$idLayanan])
-        ? (int) $jumlahInput[$idLayanan]
-        : 1;
+    $jumlahRaw = $jumlahInput[$idLayanan] ?? '1';
+    $jumlah = filter_var(
+        $jumlahRaw,
+        FILTER_VALIDATE_INT,
+        ['options' => ['min_range' => 1, 'max_range' => 100]]
+    );
 
-    if ($jumlah < 1) {
-        $jumlah = 1;
+    if ($jumlah === false) {
+        header('Location: /KELOMPOK-5/pages/transaksi.php?error=invalid');
+        exit;
     }
 
 
@@ -206,10 +266,11 @@ foreach ($layananDatabase as $layanan) {
         // Harga manual harus berupa angka bulat positif.
         if (
             !preg_match('/^\d+$/', $hargaManualRaw) ||
-            (int) $hargaManualRaw <= 0
+            (int) $hargaManualRaw <= 0 ||
+            (float) $hargaManualRaw > 2147483647
         ) {
             header(
-                'Location: /KELOMPOK-5/pages/catat-transaksi.php?error=price_invalid'
+                'Location: /KELOMPOK-5/pages/transaksi.php?error=price_invalid'
             );
             exit;
         }
@@ -245,6 +306,11 @@ foreach ($layananDatabase as $layanan) {
 
     $subtotal = $hargaFinal * $jumlah;
 
+    if ($subtotal > 2147483647 - $totalHarga) {
+        header('Location: /KELOMPOK-5/pages/transaksi.php?error=price_invalid');
+        exit;
+    }
+
     $totalHarga += $subtotal;
 
 
@@ -257,6 +323,7 @@ foreach ($layananDatabase as $layanan) {
         'nama_layanan' => $layanan['nama_layanan'],
         'harga_database' => $hargaDatabase,
         'harga_final' => $hargaFinal,
+        'hpp_saat_transaksi' => $layanan['hpp'] === null ? null : (int) $layanan['hpp'],
         'jumlah' => $jumlah,
         'subtotal' => $subtotal
     ];
@@ -460,6 +527,10 @@ if ($adaHargaManualBerbeda && !$konfirmasiHarga):
         -->
 
         <form method="POST">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES, 'UTF-8') ?>">
+            <input type="hidden" name="nama_pelanggan" value="<?= htmlspecialchars($namaPelanggan, ENT_QUOTES, 'UTF-8') ?>">
+            <input type="hidden" name="no_hp" value="<?= htmlspecialchars($noHp, ENT_QUOTES, 'UTF-8') ?>">
+            <input type="hidden" name="metode_pembayaran" value="<?= htmlspecialchars($metodePembayaran, ENT_QUOTES, 'UTF-8') ?>">
 
             <input
                 type="hidden"
@@ -515,7 +586,7 @@ if ($adaHargaManualBerbeda && !$konfirmasiHarga):
 
 
             <a
-                href="/KELOMPOK-5/pages/catat-transaksi.php"
+                href="/KELOMPOK-5/pages/transaksi.php"
                 class="button cancel"
             >
                 Batal
@@ -573,13 +644,15 @@ try {
             id_pelanggan,
             tanggal,
             waktu,
-            total_harga
+            total_harga,
+            metode_pembayaran
         )
         VALUES
         (
             ?,
             ?,
-            NULL,
+            ?,
+            ?,
             ?,
             ?,
             ?
@@ -587,12 +660,27 @@ try {
     );
 
 
+    $idPelanggan = null;
+    if ($namaPelanggan !== '' || $noHp !== '') {
+        $stmtPelanggan = $pdo->prepare(
+            'INSERT INTO pelanggan (nama, no_hp) VALUES (?, ?)'
+        );
+        $stmtPelanggan->execute([
+            $namaPelanggan !== '' ? $namaPelanggan : null,
+            $noHp !== '' ? $noHp : null
+        ]);
+        $idPelanggan = (int) $pdo->lastInsertId();
+    }
+
+
     $stmtTransaksi->execute([
         $id_pencatat,
         $id_barber,
+        $idPelanggan,
         $tanggal,
         $waktu,
-        $totalHarga
+        $totalHarga,
+        $metodePembayaran
     ]);
 
 
@@ -609,10 +697,12 @@ try {
             id_transaksi,
             id_layanan,
             harga_saat_transaksi,
+            hpp_saat_transaksi,
             jumlah
         )
         VALUES
         (
+            ?,
             ?,
             ?,
             ?,
@@ -627,6 +717,7 @@ try {
             $idTransaksi,
             $detail['id_layanan'],
             $detail['harga_final'],
+            $detail['hpp_saat_transaksi'],
             $detail['jumlah']
         ]);
 
@@ -645,7 +736,7 @@ try {
     // -----------------------------------------------
 
     header(
-        'Location: /KELOMPOK-5/pages/catat-transaksi.php?success=1'
+        'Location: /KELOMPOK-5/pages/transaksi.php?success=1'
     );
 
     exit;
@@ -664,7 +755,7 @@ try {
 
 
     header(
-        'Location: /KELOMPOK-5/pages/catat-transaksi.php?error=failed'
+        'Location: /KELOMPOK-5/pages/transaksi.php?error=failed'
     );
 
     exit;

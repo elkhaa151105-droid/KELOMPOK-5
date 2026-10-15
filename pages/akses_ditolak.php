@@ -14,10 +14,10 @@
         </p>
 
         <a
-            href="/KELOMPOK-5/pages/dashboard.php"
+            href="/KELOMPOK-5/pages/transaksi.php"
             class="access-denied-button"
         >
-            Kembali ke Dashboard
+            Kembali ke Kasir
         </a>
 
     </div>

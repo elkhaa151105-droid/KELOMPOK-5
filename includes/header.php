@@ -1,8 +1,14 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+$role = $_SESSION['role'] ?? '';
+$nama = $_SESSION['nama'] ?? '';
 
 $current_page = basename($_SERVER['PHP_SELF']);
-$role = $_SESSION['role'] ?? '';
-
+$login_notification = $_SESSION['login_notification'] ?? '';
+unset($_SESSION['login_notification']);
 ?>
 
 <!DOCTYPE html>
@@ -10,7 +16,6 @@ $role = $_SESSION['role'] ?? '';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
     <title>Kataji Barber</title>
 
     <!-- Google Fonts -->
@@ -37,6 +42,12 @@ $role = $_SESSION['role'] ?? '';
 
 <body>
 
+<?php if ($login_notification !== ''): ?>
+    <div class="transaction-success login-notification show" role="status">
+        <?= htmlspecialchars($login_notification, ENT_QUOTES, 'UTF-8') ?>
+    </div>
+<?php endif; ?>
+
 <div class="app-layout">
 
     <!-- SIDEBAR -->
@@ -52,7 +63,6 @@ $role = $_SESSION['role'] ?? '';
                     src="/KELOMPOK-5/assets/img/logo-kataji.png"
                     alt="Logo Kataji Barber"
                 >
-
                 <span class="sidebar-brand-text">
                     KATAJI BARBER
                 </span>
@@ -62,73 +72,96 @@ $role = $_SESSION['role'] ?? '';
         <!-- MENU NAVIGASI -->
         <nav class="sidebar-menu">
 
-            <!-- DASHBOARD -->
-            <a
-                href="/KELOMPOK-5/pages/dashboard.php"
-                class="sidebar-link <?= $current_page === 'dashboard.php' ? 'active' : '' ?>"
-            >
-                <span>Dashboard</span>
-            </a>
-
-            <!-- KASIR -->
-<a
-    href="/KELOMPOK-5/pages/catat-transaksi.php"
-    class="sidebar-link <?= $current_page === 'catat-transaksi.php' ? 'active' : '' ?>"
->
-    <span>Kasir</span>
-</a>
-            <!-- PELANGGAN -->
-            <a
-                href="/KELOMPOK-5/pages/pelanggan.php"
-                class="sidebar-link <?= $current_page === 'pelanggan.php' ? 'active' : '' ?>"
-            >
-                <span>Pelanggan</span>
-            </a>
-
-            <!-- DATA BARBER -->
-            <a
-                href="/KELOMPOK-5/pages/barber.php"
-                class="sidebar-link <?= $current_page === 'barber.php' ? 'active' : '' ?>"
-            >
-                <span>Data Barber</span>
-            </a>
-
-            <!-- LAYANAN & PRICELIST KHUSUS OWNER -->
             <?php if ($role === 'owner'): ?>
 
+                <!-- DASHBOARD -->
+                <a
+                    href="/KELOMPOK-5/pages/dashboard.php"
+                    class="sidebar-link <?= $current_page === 'dashboard.php' ? 'active' : '' ?>"
+                >
+                    <span>Dashboard</span>
+                </a>
+
+                <!-- KASIR -->
+                <a
+                    href="/KELOMPOK-5/pages/transaksi.php"
+                    class="sidebar-link <?= $current_page === 'transaksi.php' ? 'active' : '' ?>"
+                >
+                    <span>Kasir</span>
+                </a>
+
+                <!-- RIWAYAT -->
+                <a
+                    href="/KELOMPOK-5/pages/riwayat.php"
+                    class="sidebar-link <?= $current_page === 'riwayat.php' ? 'active' : '' ?>"
+                >
+                    <span>Riwayat</span>
+                </a>
+
+                <!-- DATA BARBER -->
+                <a
+                    href="/KELOMPOK-5/pages/barber.php"
+                    class="sidebar-link <?= $current_page === 'barber.php' ? 'active' : '' ?>"
+                >
+                    <span>Data Barber</span>
+                </a>
+
+                <!-- LAYANAN -->
                 <a
                     href="/KELOMPOK-5/pages/layanan.php"
                     class="sidebar-link <?= $current_page === 'layanan.php' ? 'active' : '' ?>"
                 >
-                    <span>Layanan &amp; Pricelist</span>
+                    <span>Layanan</span>
                 </a>
 
-            <?php endif; ?>
+                <!-- KONTEN WEB -->
+                <a
+                    href="/KELOMPOK-5/pages/konten.php"
+                    class="sidebar-link <?= $current_page === 'konten.php' ? 'active' : '' ?>"
+                >
+                    <span>Konten Web</span>
+                </a>
 
-            <!-- KONTEN WEB -->
-            <a
-                href="/KELOMPOK-5/pages/konten.php"
-                class="sidebar-link <?= $current_page === 'konten.php' ? 'active' : '' ?>"
-            >
-                <span>Konten Web</span>
-            </a>
+                <!-- PENGELUARAN / HPP -->
+                <a
+                    href="/KELOMPOK-5/pages/pengeluaran.php"
+                    class="sidebar-link <?= $current_page === 'pengeluaran.php' ? 'active' : '' ?>"
+                >
+                    <span>Pengeluaran/HPP</span>
+                </a>
 
-            <!-- PENGELUARAN / HPP -->
-            <a
-                href="/KELOMPOK-5/pages/pengeluaran.php"
-                class="sidebar-link <?= $current_page === 'pengeluaran.php' ? 'active' : '' ?>"
-            >
-                <span>Pengeluaran/HPP</span>
-            </a>
-
-            <!-- LAPORAN KHUSUS OWNER -->
-            <?php if ($role === 'owner'): ?>
-
+                <!-- LAPORAN -->
                 <a
                     href="/KELOMPOK-5/pages/laporan.php"
                     class="sidebar-link <?= $current_page === 'laporan.php' ? 'active' : '' ?>"
                 >
                     <span>Laporan</span>
+                </a>
+
+            <?php elseif ($role === 'barber'): ?>
+
+                <!-- KASIR -->
+                <a
+                    href="/KELOMPOK-5/pages/transaksi.php"
+                    class="sidebar-link <?= $current_page === 'transaksi.php' ? 'active' : '' ?>"
+                >
+                    <span>Kasir</span>
+                </a>
+
+                <!-- RIWAYAT SAYA -->
+                <a
+                    href="/KELOMPOK-5/pages/riwayat.php"
+                    class="sidebar-link <?= $current_page === 'riwayat.php' ? 'active' : '' ?>"
+                >
+                    <span>Riwayat</span>
+                </a>
+
+                <!-- STATUS SAYA -->
+                <a
+                    href="/KELOMPOK-5/pages/status_saya.php"
+                    class="sidebar-link <?= $current_page === 'status_saya.php' ? 'active' : '' ?>"
+                >
+                    <span>Status Saya</span>
                 </a>
 
             <?php endif; ?>
@@ -137,19 +170,17 @@ $role = $_SESSION['role'] ?? '';
 
         <!-- TOMBOL KELUAR -->
         <div class="sidebar-bottom">
-
             <a
                 href="/KELOMPOK-5/pages/logout.php"
                 class="sidebar-logout"
             >
                 Keluar
             </a>
-
         </div>
 
     </aside>
 
     <!-- AREA KONTEN UTAMA -->
     <div class="app-main">
-
         <main class="app-content">
+
