@@ -54,7 +54,7 @@ unset($_SESSION['login_notification']);
         <!-- LOGO & BRAND -->
         <div class="sidebar-logo">
             <a
-                href="/KELOMPOK-5/pages/dashboard.php"
+                href="/KELOMPOK-5/pages/"
                 class="sidebar-brand-link"
             >
                 <img
