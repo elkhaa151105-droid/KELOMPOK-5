@@ -279,3 +279,72 @@ Respons sukses: `200 OK`.
 - Database yang sudah ada perlu menjalankan `database/migrations/2026-10-13-add-metode-pembayaran.sql` satu kali.
 - Endpoint daftar dan detail transaksi menerapkan pembatasan akses berdasarkan role.
 - Semua URL pengujian Postman menggunakan variabel `{{base_url}}` pada environment Postman `Local KELOMPOK-5`.
+
+## API Pengeluaran — WBS 4.3
+
+Base endpoint: `/api/pengeluaran/`
+
+Akses: owner yang sudah login.
+
+### GET — Daftar Pengeluaran Berdasarkan Tanggal
+
+Endpoint:
+`GET /api/pengeluaran/?tanggal=YYYY-MM-DD`
+
+Parameter `tanggal` bersifat opsional. Jika tidak diberikan, endpoint menggunakan tanggal hari ini.
+
+Response berhasil (`200 OK`) memuat:
+
+- `tanggal`: tanggal yang diminta.
+- `pengeluaran`: daftar pengeluaran pada tanggal tersebut.
+- `total_pengeluaran`: total nominal pengeluaran pada tanggal tersebut.
+
+### POST — Menambahkan Pengeluaran
+
+Endpoint:
+`POST /api/pengeluaran/`
+
+Header:
+`Content-Type: application/json`
+
+Contoh body:
+
+```json
+{
+  "kategori": "Bahan",
+  "nominal": 150000,
+  "tanggal": "2026-10-10",
+  "keterangan": "Pembelian bahan"
+}
+```
+
+Aturan validasi:
+
+- `kategori` wajib diisi dan maksimal 100 karakter.
+- `nominal` wajib berupa bilangan bulat lebih dari nol.
+- `tanggal` opsional; jika tidak diberikan, digunakan tanggal hari ini.
+- `keterangan` opsional dan maksimal 255 karakter.
+- `id_user` diambil dari sesi login, bukan dari body request.
+
+Response berhasil: `201 Created`.
+
+Jika nominal kosong, nol, negatif, bukan bilangan bulat, atau melebihi batas integer, API mengembalikan `422 Unprocessable Content` dengan kode `VALIDATION_ERROR` dan pesan:
+
+`Nominal harus lebih dari nol`
+
+### Status HTTP
+
+- `400 Bad Request`: JSON tidak valid (`INVALID_JSON`).
+- `401 Unauthorized`: sesi login tidak valid.
+- `403 Forbidden`: pengguna bukan owner.
+- `405 Method Not Allowed`: method tidak didukung.
+- `422 Unprocessable Content`: validasi gagal (`VALIDATION_ERROR`).
+- `500 Internal Server Error`: kesalahan server.
+
+### Skenario Pengujian
+
+- [ ] Simpan pengeluaran kategori Bahan sebesar Rp150.000.
+- [ ] Pastikan nominal kosong, nol, dan negatif ditolak.
+- [ ] Ambil daftar pengeluaran berdasarkan tanggal.
+- [ ] Pastikan pengeluaran Rp150.000 dan Rp50.000 menghasilkan total Rp200.000 pada tanggal yang sama.
+- [ ] Pastikan pengguna selain owner ditolak.
