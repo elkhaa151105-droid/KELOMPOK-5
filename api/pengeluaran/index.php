@@ -29,11 +29,18 @@ function tanggalValidPengeluaran($tanggal): bool
     return $date !== false && $date->format('Y-m-d') === $tanggal;
 }
 
+function tanggalHariIniWIBPengeluaran(): string
+{
+    return (new DateTimeImmutable(
+        'now',
+        new DateTimeZone('Asia/Jakarta')
+    ))->format('Y-m-d');
+}
+
 try {
     // GET: daftar dan total pengeluaran per tanggal.
     if ($method === 'GET') {
-        $tanggal = $_GET['tanggal'] ?? date('Y-m-d');
-
+        $tanggal = $_GET['tanggal'] ?? tanggalHariIniWIBPengeluaran();
         if (!tanggalValidPengeluaran($tanggal)) {
             kirimJsonPengeluaran(422, [
                 'success' => false,
@@ -90,7 +97,7 @@ try {
         );
 
         $nominalInput = $input['nominal'] ?? null;
-        $tanggal = $input['tanggal'] ?? date('Y-m-d');
+        $tanggal = $input['tanggal'] ?? tanggalHariIniWIBPengeluaran();
         $keterangan = $input['keterangan'] ?? null;
 
         // Tolak nominal kosong, bukan angka, nol, negatif,

@@ -50,3 +50,6 @@ erDiagram
 - `tanggal` digunakan untuk menyaring daftar dan menghitung total pengeluaran harian.
 - `nominal` wajib lebih dari nol.
 - `keterangan` bersifat opsional.
+- `kategori` disimpan sebagai teks (`VARCHAR(100)`), sehingga contoh kategori seperti `Bahan` masih bersifat sementara dan dapat diganti sesuai keputusan client.
+- `tanggal` bertipe `DATE` dan digunakan sebagai tanggal operasional untuk filter serta rekap pengeluaran harian.
+- Jika tanggal tidak dikirim melalui API, tanggal default ditentukan berdasarkan zona waktu `Asia/Jakarta` (WIB).

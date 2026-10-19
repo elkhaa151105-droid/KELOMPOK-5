@@ -280,6 +280,67 @@ Respons sukses: `200 OK`.
 - Endpoint daftar dan detail transaksi menerapkan pembatasan akses berdasarkan role.
 - Semua URL pengujian Postman menggunakan variabel `{{base_url}}` pada environment Postman `Local KELOMPOK-5`.
 
+## API Rekap Pemasukan Harian — WBS 4.5
+
+**Endpoint:** `GET /api/rekap/pemasukan.php`
+
+**Akses:** Owner yang sudah login.
+
+### Query parameter
+
+| Parameter | Wajib | Keterangan                                                                                                                                      |
+| --------- | ----- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `tanggal` | Tidak | Tanggal rekap dalam format `YYYY-MM-DD`. Jika tidak dikirim, endpoint menggunakan tanggal hari ini berdasarkan zona waktu WIB (`Asia/Jakarta`). |
+
+### Contoh request
+
+```http
+GET {{base_url}}/api/rekap/pemasukan.php
+GET {{base_url}}/api/rekap/pemasukan.php?tanggal=2026-10-19
+```
+
+### Contoh response sukses
+
+```json
+{
+  "success": true,
+  "data": {
+    "tanggal": "2026-10-19",
+    "total_pemasukan": 150000,
+    "rincian_per_barber": [
+      {
+        "id_barber": 2,
+        "nama_barber": "Nama Barber",
+        "jumlah_transaksi": 2,
+        "total_pemasukan": 150000
+      }
+    ]
+  }
+}
+```
+
+Nilai di atas merupakan contoh.
+
+### Struktur data
+
+- `tanggal`: tanggal rekap.
+- `total_pemasukan`: total `total_harga` seluruh transaksi pada tanggal tersebut.
+- `rincian_per_barber`: daftar pemasukan yang dikelompokkan berdasarkan barber.
+- `id_barber`: ID user barber.
+- `nama_barber`: nama barber.
+- `jumlah_transaksi`: jumlah transaksi barber pada tanggal tersebut.
+- `total_pemasukan` di dalam setiap item: total pemasukan barber pada tanggal tersebut.
+
+### Ketentuan
+
+- Rekap menggunakan data transaksi dari tabel `transaksi`.
+- Tanggal transaksi mengikuti tanggal yang dicatat dalam zona waktu WIB.
+- Tanggal tanpa transaksi tetap mengembalikan response sukses (`200 OK`), dengan `total_pemasukan` bernilai `0` dan `rincian_per_barber` berupa array kosong.
+- Format tanggal tidak valid ditolak dengan `422 Unprocessable Entity`.
+- Pengguna yang belum login harus melewati autentikasi terlebih dahulu.
+- Pengguna selain owner ditolak dengan `403 Forbidden`.
+- Method selain `GET` ditolak dengan `405 Method Not Allowed`.
+
 ## API Pengeluaran — WBS 4.3
 
 Base endpoint: `/api/pengeluaran/`
@@ -291,7 +352,7 @@ Akses: owner yang sudah login.
 Endpoint:
 `GET /api/pengeluaran/?tanggal=YYYY-MM-DD`
 
-Parameter `tanggal` bersifat opsional. Jika tidak diberikan, endpoint menggunakan tanggal hari ini.
+Parameter `tanggal` bersifat opsional. Jika tidak diberikan, endpoint menggunakan tanggal hari ini berdasarkan zona waktu `Asia/Jakarta` (WIB). Filter dan rekap menggunakan kolom `tanggal` bertipe `DATE`.
 
 Response berhasil (`200 OK`) memuat:
 
@@ -322,7 +383,7 @@ Aturan validasi:
 
 - `kategori` wajib diisi dan maksimal 100 karakter.
 - `nominal` wajib berupa bilangan bulat lebih dari nol.
-- `tanggal` opsional; jika tidak diberikan, digunakan tanggal hari ini.
+- - `tanggal` opsional; jika tidak diberikan, digunakan tanggal hari ini berdasarkan zona waktu `Asia/Jakarta` (WIB).
 - `keterangan` opsional dan maksimal 255 karakter.
 - `id_user` diambil dari sesi login, bukan dari body request.
 
@@ -343,8 +404,10 @@ Jika nominal kosong, nol, negatif, bukan bilangan bulat, atau melebihi batas int
 
 ### Skenario Pengujian
 
-- [ ] Simpan pengeluaran kategori Bahan sebesar Rp150.000.
-- [ ] Pastikan nominal kosong, nol, dan negatif ditolak.
-- [ ] Ambil daftar pengeluaran berdasarkan tanggal.
-- [ ] Pastikan pengeluaran Rp150.000 dan Rp50.000 menghasilkan total Rp200.000 pada tanggal yang sama.
-- [ ] Pastikan pengguna selain owner ditolak.
+- [x] Simpan pengeluaran kategori Bahan sebesar Rp150.000.
+- [x] Pastikan nominal kosong, nol, dan negatif ditolak.
+- [x] Ambil daftar pengeluaran berdasarkan tanggal.
+- [x] Pastikan pengeluaran Rp150.000 dan Rp50.000 menghasilkan total Rp200.000 pada tanggal yang sama.
+- [x] Pastikan pengguna selain owner ditolak.
+- [x] Pastikan tanggal default menggunakan tanggal WIB ketika parameter atau field `tanggal` tidak diberikan.
+- [x] Pastikan tanggal yang tidak memiliki pengeluaran menghasilkan `pengeluaran` berupa array kosong dan `total_pengeluaran` sebesar `0`.
