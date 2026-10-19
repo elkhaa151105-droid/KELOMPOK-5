@@ -87,47 +87,46 @@ $display_role = ($role === 'owner') ? 'Owner Kataji' : ($nama ?: 'Barber');
 
 
     <!-- REKAP KEUANGAN -->
-    <section class="dashboard-section rekap-card">
-
+        <!-- REKAP PEMASUKAN HARIAN (4.5) -->
+    <section class="dashboard-section rekap-pemasukan">
         <div class="rekap-header">
-            <h2>Rekap Keuangan</h2>
+            <div>
+                <h2>Pemasukan</h2>
+                <p>Rekap pemasukan harian dan transaksi per barber</p>
+            </div>
 
-            <div class="period-filter">
-                <button type="button" class="filter-btn active">Hari Ini</button>
-                <button type="button" class="filter-btn">Minggu Ini</button>
-                <button type="button" class="filter-btn">Bulan Ini</button>
+            <div class="filter-tanggal">
+                <label for="tanggalPemasukan">Tanggal</label>
+                <input
+                    type="date"
+                    id="tanggalPemasukan"
+                    aria-label="Pilih tanggal pemasukan"
+                >
             </div>
         </div>
 
-        <div class="financial-metrics">
-
-            <div class="metric-item">
-                <span class="metric-label">Pendapatan</span>
-                <strong class="metric-val">Rp450.000</strong>
-            </div>
-
-            <div class="metric-item">
-                <span class="metric-label">HPP</span>
-                <strong class="metric-val">Rp450.000</strong>
-            </div>
-
-            <div class="metric-item">
-                <span class="metric-label">Laba Kotor</span>
-                <strong class="metric-val">Rp450.000</strong>
-            </div>
-
-            <div class="metric-item">
-                <span class="metric-label">Biaya Operasional</span>
-                <strong class="metric-val">Rp450.000</strong>
-            </div>
-
-            <div class="metric-item">
-                <span class="metric-label">Laba Bersih</span>
-                <strong class="metric-val">Rp450.000</strong>
-            </div>
-
+        <div class="pemasukan-total">
+            <span>Total Pemasukan</span>
+            <strong id="totalPemasukan">Rp0</strong>
         </div>
 
+        <h3>Rincian Per Barber</h3>
+
+        <div id="statusPemasukan" role="status" aria-live="polite">
+            Memuat data pemasukan...
+        </div>
+
+        <div class="table-responsive" id="tabelPemasukanWrapper" hidden>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Nama Barber</th>
+                        <th>Total Pemasukan</th>
+                    </tr>
+                </thead>
+                <tbody id="tabelPemasukanBody"></tbody>
+            </table>
+        </div>
     </section>
 
 

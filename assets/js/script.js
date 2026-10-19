@@ -11,7 +11,33 @@ console.log(
     document.getElementById('btnSimpanTransaksi')
 );
     
+const pesanLogin = sessionStorage.getItem('loginNotification');
 
+if (pesanLogin) {
+    sessionStorage.removeItem('loginNotification');
+
+    let notifikasi = document.querySelector('.login-notification');
+
+    if (!notifikasi) {
+        notifikasi = document.createElement('div');
+        notifikasi.className = 'transaction-success login-notification';
+        document.body.appendChild(notifikasi);
+    }
+
+    notifikasi.textContent = pesanLogin;
+
+    requestAnimationFrame(() => {
+        notifikasi.classList.add('show');
+    });
+
+    setTimeout(() => {
+        notifikasi.classList.remove('show');
+    }, 4000);
+}
+
+function simpanNotifikasiLogin(pesan) {
+    sessionStorage.setItem('loginNotification', pesan);
+}
   
     // ======================================================
     // 1. LOGIN MENGGUNAKAN API BACKEND
@@ -138,15 +164,17 @@ console.log(
                     throw new Error(result.message || 'Login gagal.');
                 }
 
-                const role = result.data?.role;
+            const role = result.data?.role;
 
-                if (role === 'owner') {
-                    window.location.href = '/KELOMPOK-5/pages/dashboard.php';
-                } else if (role === 'barber') {
-                    window.location.href = '/KELOMPOK-5/pages/transaksi.php';
-                } else {
-                    throw new Error('Role akun tidak dikenali.');
-                }
+            if (role === 'owner') {
+                simpanNotifikasiLogin('Login berhasil. Selamat datang erik');
+                window.location.href = '/KELOMPOK-5/pages/dashboard.php';
+            } else if (role === 'barber') {
+                simpanNotifikasiLogin('Login berhasil. Selamat bekerja!');
+                window.location.href = '/KELOMPOK-5/pages/transaksi.php';
+            } else {
+                throw new Error('Role akun tidak dikenali.');
+            }
             } catch (error) {
                 console.error('Login API gagal:', error);
 

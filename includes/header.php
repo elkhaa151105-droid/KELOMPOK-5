@@ -54,7 +54,7 @@ unset($_SESSION['login_notification']);
         <!-- LOGO & BRAND -->
         <div class="sidebar-logo">
             <a
-                href="/KELOMPOK-5/pages/"
+                
                 class="sidebar-brand-link"
             >
                 <img
@@ -90,7 +90,7 @@ unset($_SESSION['login_notification']);
     <!-- RIWAYAT -->
     <a
         href="/KELOMPOK-5/pages/riwayat.php"
-        class="sidebar-link <?= $current_page === 'pelanggan.php' ? 'active' : '' ?>"
+        class="sidebar-link <?= $current_page === 'riwayat.php' ? 'active' : '' ?>"
     >
         <span>Riwayat</span>
     </a>
@@ -113,10 +113,10 @@ unset($_SESSION['login_notification']);
 
     <!-- KONTEN WEB -->
     <a
-        href="/KELOMPOK-5/pages/konten.php"
-        class="sidebar-link <?= $current_page === 'konten.php' ? 'active' : '' ?>"
+        href="/KELOMPOK-5/pages/pemasukan.php"
+        class="sidebar-link <?= $current_page === 'pemasukan.php' ? 'active' : '' ?>"
     >
-        <span>Konten Web</span>
+        <span>pemasukkan</span>
     </a>
 
     <!-- PENGELUARAN / HPP -->

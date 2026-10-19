@@ -37,13 +37,13 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Tampilkan pesan di dalam tabel.
-    function tampilkanPesan(pesan) {
+    function esan(pesan) {
         tableBody.replaceChildren();
 
         const row = document.createElement('tr');
         const cell = document.createElement('td');
 
-        cell.colSpan = 6;
+        cell.colSpan = 7;
         cell.textContent = pesan;
 
         row.appendChild(cell);
@@ -156,6 +156,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     transaksi.metode_pembayaran
                 );
 
+                const barber = document.createElement('td');
+                barber.textContent = transaksi.nama_barber || '-';
+
                 const aksi = document.createElement('td');
 
                 const tombolHapus = document.createElement('button');
@@ -175,7 +178,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     tanggal,
                     layanan,
                     nominal,
+                    barber,
                     pembayaran,
+                    barber,
                     aksi
                 );
 

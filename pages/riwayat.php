@@ -31,6 +31,8 @@ include __DIR__ . '/../includes/header.php';
                         <th>Layanan</th>
                         <th>Nominal</th>
                         <th>Metode Pembayaran</th>
+                        <th>Barber</th>
+                         <th>Aksi</th>
                         <th></th>
                     </tr>
                 </thead>
