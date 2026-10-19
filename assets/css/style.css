@@ -77,12 +77,12 @@ body:has(.login-page) main.container {
   position: relative;
   display: flex;
   align-items: center;
-    justify-content: flex-end;
-  padding: 40px 9%;
+  justify-content: flex-end;
+
+  padding: 40px 4%;
+
   box-sizing: border-box;
-  background-image:
-    linear-gradient(rgba(10, 12, 50, 0.45), rgba(10, 12, 50, 0.45)),
-    url("../img/login-bg.jpg");
+  background-image: url("../img/login-bg.jpg");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -252,6 +252,10 @@ body:has(.login-page) main.container {
   color: #17186b;
 }
 
+/* =========================
+   LUPA PASSWORD
+========================= */
+
 .login-forgot {
   display: flex;
   justify-content: flex-end;
@@ -280,6 +284,27 @@ body:has(.login-page) main.container {
   font-size: 13.5px;
   font-weight: 600;
   cursor: pointer;
+  transition: 0.2s;
+}
+
+/* =========================
+   BUTTON
+========================= */
+
+.login-button {
+  width: 100%;
+  height: 43px;
+  border: none;
+  border-radius: 9px;
+  background: #17186b;
+
+  color: #ffffff;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  cursor: pointer;
+
   transition: 0.2s;
 }
 
@@ -1365,6 +1390,20 @@ body:has(.login-page) main.container {
   .kasir-order-card {
     max-width: none;
   }
+
+  .login-page {
+    justify-content: center;
+
+    padding: 20px;
+
+    background-position: center;
+  }
+
+  .login-card {
+    max-width: 400px;
+
+    padding: 30px 25px;
+  }
 }
 
 @media (max-width: 600px) {
@@ -2190,4 +2229,9 @@ body:has(.login-page) main.container {
   .layanan-table {
     min-width: 700px;
   }
+}
+
+.access-denied-button:hover {
+  background: #3b3da8;
+  color: #ffffff;
 }
