@@ -474,6 +474,11 @@ async function muatLayananDariAPI() {
             throw new Error(result.message || 'Gagal memuat layanan.');
         }
 
+        // Kasir hanya menampilkan layanan yang aktif.
+        const daftarLayananAktif = Array.isArray(result.data)
+            ? result.data.filter(layanan => Number(layanan.aktif) === 1)
+            : [];
+
     
 
         const gambarLayanan = {};
@@ -492,12 +497,12 @@ console.log('Gambar layanan tersimpan:', gambarLayanan);
 
         container.innerHTML = '';
 
-        if (!Array.isArray(result.data) || result.data.length === 0) {
-            container.textContent = 'Belum ada layanan aktif.';
-            return;
-        }
+            if (daftarLayananAktif.length === 0) {
+                container.textContent = 'Belum ada layanan aktif.';
+                return;
+            }
 
-        result.data.forEach(layanan => {
+            daftarLayananAktif.forEach(layanan => {
             const kartu = document.createElement('button');
             kartu.type = 'button';
             kartu.className = 'service-card';
@@ -695,6 +700,28 @@ muatLayananDariAPI();
     renderSelectedServices();
 
     
+function showSuccessNotification(pesan) {
+    const notifikasi = document.createElement('div');
+
+    notifikasi.className = 'transaction-success';
+    notifikasi.textContent = pesan;
+
+    document.body.appendChild(notifikasi);
+
+    requestAnimationFrame(() => {
+        notifikasi.classList.add('show');
+    });
+
+    setTimeout(() => {
+        notifikasi.classList.remove('show');
+
+        setTimeout(() => {
+            notifikasi.remove();
+        }, 300);
+    }, 2500);
+}
+
+    
 
 // ======================================================
 // 7. SIMPAN TRANSAKSI KE API BACKEND
@@ -773,10 +800,9 @@ if (btnSimpanTransaksi) {
                 );
             }
 
-            alert(
-                'Transaksi berhasil disimpan!\nTotal: ' +
-                formatRupiah(result.data.total_harga)
-            );
+            showSuccessNotification(
+    'Transaksi Berhasil Ditambahkan'
+);
 
             // Kosongkan pilihan setelah API berhasil menyimpan
             Object.keys(selectedServices).forEach(id => {

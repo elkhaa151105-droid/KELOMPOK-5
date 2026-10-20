@@ -26,20 +26,19 @@ include __DIR__ . '/../includes/header.php';
 
                 <thead>
                     <tr>
+                        <th>Barber</th>
                         <th>Nama</th>
                         <th>Tgl-Bln-Thn</th>
                         <th>Layanan</th>
                         <th>Nominal</th>
                         <th>Metode Pembayaran</th>
-                        <th>Barber</th>
                          <th>Aksi</th>
-                        <th></th>
                     </tr>
                 </thead>
 
                 <tbody id="riwayatTableBody">
                     <tr>
-                        <td colspan="6">Memuat riwayat transaksi...</td>
+                        <td colspan="7">Memuat riwayat transaksi...</td>
                     </tr>
                 </tbody>
 

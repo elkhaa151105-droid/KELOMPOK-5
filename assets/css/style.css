@@ -139,15 +139,15 @@ body:has(.login-page) main.container {
 }
 
 .login-card-logo img {
-    width: 56px;
-    height: 56px;
+    width: 188px;
+    height: 187px;
     object-fit: contain;
 }
 
 .login-card h1 {
     margin: 4px 0 4px;
-    text-align: center;
-    color: #17186B;
+    text-align: left;
+    color: #000000;
     font-size: 24px;
     font-weight: 700;
 }
@@ -155,7 +155,7 @@ body:has(.login-page) main.container {
 .login-description {
     max-width: 320px;
     margin: 0 auto 20px;
-    text-align: center;
+    text-align: left;
     color: #777777;
     font-size: 11.5px;
     line-height: 1.5;
@@ -1720,6 +1720,242 @@ body:has(.login-page) main.container {
 }
 
 
+/* ======================================================
+   MODAL EDIT LAYANAN
+   Penyesuaian mengikuti desain Edit Layanan.svg
+====================================================== */
+
+.layanan-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+    background: rgba(30, 35, 50, 0.48);
+}
+
+.layanan-modal-overlay.is-open {
+    display: flex;
+}
+
+.layanan-modal {
+    width: 100%;
+    max-width: 516px;
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+    box-sizing: border-box;
+    padding: 26px 32px 24px;
+    background: #FFFFFF;
+    border-radius: 13px;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.12);
+    animation: layananModalMuncul 0.18s ease-out;
+}
+
+@keyframes layananModalMuncul {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Header modal */
+.layanan-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 22px;
+}
+
+.layanan-modal-header h2 {
+    margin: 0;
+    color: #202020;
+    font-size: 23px;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.layanan-modal-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: #333333;
+    font-family: Arial, sans-serif;
+    font-size: 28px;
+    font-weight: 400;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.layanan-modal-close:hover {
+    color: #777777;
+}
+
+/* Jarak dan susunan input */
+#formEditLayanan {
+    margin: 0;
+}
+
+.layanan-modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.layanan-modal-group {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.layanan-modal-group label {
+    margin-bottom: 7px;
+    color: #202020;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.layanan-modal-group input:not([type="file"]) {
+    display: block;
+    width: 100%;
+    height: 43px;
+    box-sizing: border-box;
+    padding: 0 13px;
+    border: 1px solid #D0D0D0;
+    border-radius: 8px;
+    outline: none;
+    background: #FFFFFF;
+    color: #333333;
+    font-family: inherit;
+    font-size: 13px;
+    transition: border-color 0.2s ease;
+}
+
+.layanan-modal-group input:not([type="file"]):focus {
+    border-color: var(--secondary-indigo);
+}
+
+/* Input unggah ikon */
+.layanan-modal-group input[type="file"] {
+    display: block;
+    width: 100%;
+    min-height: 40px;
+    box-sizing: border-box;
+    padding: 5px;
+    border: 1px solid #D0D0D0;
+    border-radius: 8px;
+    background: #FFFFFF;
+    color: #333333;
+    font-family: inherit;
+    font-size: 12px;
+}
+
+.layanan-modal-group input[type="file"]::file-selector-button {
+    margin-right: 10px;
+    padding: 7px 11px;
+    border: 1px solid #D0D0D0;
+    border-radius: 5px;
+    background: #F5F5F5;
+    color: #333333;
+    font-family: inherit;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.layanan-modal-hint {
+    margin-top: 5px;
+    color: #858585;
+    font-size: 10px;
+    line-height: 1.4;
+}
+
+/* Pesan validasi */
+.layanan-modal-group .layanan-error {
+    min-height: 0;
+    margin-top: 4px;
+    font-size: 11px;
+}
+
+/* Tombol Simpan Layanan */
+.layanan-modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 22px;
+}
+
+.layanan-modal-submit {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 176px;
+    min-height: 42px;
+    padding: 10px 22px;
+    border: none;
+    border-radius: 8px;
+    background: var(--primary-navy);
+    color: #FFFFFF;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.layanan-modal-submit:hover {
+    background: var(--secondary-indigo);
+}
+
+.layanan-modal-submit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Halaman tidak ikut bergulir saat modal terbuka */
+body.layanan-modal-open {
+    overflow: hidden;
+}
+
+/* Tampilan layar kecil */
+@media (max-width: 560px) {
+    .layanan-modal {
+        padding: 22px 20px;
+        border-radius: 12px;
+    }
+
+    .layanan-modal-header {
+        margin-bottom: 18px;
+    }
+
+    .layanan-modal-header h2 {
+        font-size: 21px;
+    }
+
+    .layanan-modal-body {
+        gap: 13px;
+    }
+
+    .layanan-modal-footer {
+        margin-top: 20px;
+    }
+}
+
+
 /* =========================================================
    RIWAYAT TRANSAKSI
 ========================================================= */
@@ -1969,6 +2205,9 @@ body:has(.login-page) main.container {
     background: #f3f4fa;
 }
 
+.pemasukan-page {
+    margin-top: -15px;
+}
 .pemasukan-heading {
     margin-bottom: 18px;
 }
@@ -2084,150 +2323,142 @@ body:has(.login-page) main.container {
 
 /* ===== HALAMAN PENGELUARAN / HPP ===== */
 
+/* =========================
+   HALAMAN PENGELUARAN
+   ========================= */
+
 .pengeluaran-page {
     width: 100%;
-    max-width: 1500px;
+    max-width: 1200px;
     margin: 0 auto;
-    padding: 4px 0 28px;
-    color: #171b32;
-}
-
-.pengeluaran-heading {
-    margin-bottom: 32px;
-}
-
-.pengeluaran-heading h1 {
-    margin: 0 0 8px;
-    font-size: 36px;
-    font-weight: 700;
-    color: #151a32;
-}
-
-.pengeluaran-heading p {
-    margin: 0;
-    color: #75819e;
-    font-size: 15px;
-}
-
-.pengeluaran-total-card,
-.pengeluaran-list-card {
-    background: #fff;
-    border: 1px solid #e5eaf3;
-    border-radius: 12px;
-    padding: 26px;
-    margin-bottom: 26px;
-    box-shadow: 0 3px 12px rgba(30, 42, 80, 0.04);
-}
-
-.pengeluaran-total-card {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 24px;
-}
-
-.pengeluaran-total-info h2,
-.pengeluaran-list-header h2 {
-    margin: 0;
-    font-size: 22px;
-    font-weight: 700;
-    color: #171b32;
-}
-
-.pengeluaran-total-info strong {
-    display: block;
-    margin: 10px 0;
-    font-size: 42px;
-    line-height: 1.2;
-    font-weight: 800;
-    color: #171f45;
-}
-
-.pengeluaran-total-info p {
-    margin: 0;
-    color: #75819e;
-    font-size: 14px;
-}
-
-.pengeluaran-filter {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    min-width: 230px;
-}
-
-.pengeluaran-filter label,
-.pengeluaran-form-group label {
-    color: #586582;
-    font-size: 13px;
-    font-weight: 600;
-}
-
-.pengeluaran-filter input,
-.pengeluaran-form-group input,
-.pengeluaran-form-group select {
-    width: 100%;
-    min-height: 43px;
-    padding: 10px 12px;
-    border: 1px solid #d8dfed;
-    border-radius: 8px;
-    background: #fff;
-    color: #202743;
-    font: inherit;
+    padding-bottom: 30px;
+    color: #000000;
     box-sizing: border-box;
 }
 
-.pengeluaran-filter input:focus,
-.pengeluaran-form-group input:focus,
-.pengeluaran-form-group select:focus {
-    outline: none;
-    border-color: #35419a;
-    box-shadow: 0 0 0 3px rgba(53, 65, 154, 0.1);
+.pengeluaran-page * {
+    box-sizing: border-box;
 }
 
-.pengeluaran-list-header {
+/* Judul halaman */
+.pengeluaran-heading h1 {
+    margin: 0;
+    color: #000000;
+    font-size: 36px;
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+.pengeluaran-heading {
+    margin-bottom: 22px;
+}
+
+/* Gaya umum kartu */
+.pengeluaran-summary-card,
+.pengeluaran-form-card,
+.pengeluaran-daily-card {
+    width: 100%;
+    margin-bottom: 16px;
+    padding: 20px 30px;
+    background: #ffffff;
+    border: 1px solid #edf0f6;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(23, 24, 47, 0.035);
+}
+
+/* Judul di dalam kartu */
+.pengeluaran-summary-header,
+.pengeluaran-daily-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 16px;
-    margin-bottom: 24px;
+    gap: 20px;
 }
 
-#btnTampilkanFormPengeluaran,
-#btnSimpanPengeluaran {
-    padding: 12px 18px;
-    border: none;
-    border-radius: 8px;
-    background: #29358b;
-    color: #fff;
+.pengeluaran-summary-header h2,
+.pengeluaran-card-heading h2,
+.pengeluaran-daily-header h2 {
+    margin: 0;
+    color: #000000;
+    font-size: 19px;
+    font-weight: 700;
+}
+
+/* Ringkasan pengeluaran */
+.pengeluaran-summary-card {
+    min-height: 140px;
+}
+
+.pengeluaran-period-options {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.pengeluaran-period-options button {
+    min-height: 34px;
+    padding: 8px 15px;
+    border: 1px solid #e5e7f0;
+    border-radius: 20px;
+    background: #ffffff;
+    color: #555b78;
+    font-family: inherit;
+    font-size: 12px;
     font-weight: 600;
     cursor: pointer;
+    transition: background 0.2s, color 0.2s;
 }
 
-#btnTampilkanFormPengeluaran:hover,
-#btnSimpanPengeluaran:hover {
-    background: #20296d;
+.pengeluaran-period-options button:hover {
+    background: #f0f1fa;
 }
 
-#btnTampilkanFormPengeluaran:disabled,
-#btnSimpanPengeluaran:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+.pengeluaran-period-options button.active {
+    border-color: #17186b;
+    background: #17186b;
+    color: #ffffff;
+}
+
+.pengeluaran-summary-content {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    margin-top: 20px;
+}
+
+.pengeluaran-summary-item {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.pengeluaran-summary-item span {
+    color: #737b96;
+    font-size: 13px;
+}
+
+.pengeluaran-summary-item strong {
+    color: #000000;
+    font-size: 23px;
+    font-weight: 700;
+}
+
+/* Form pencatatan */
+.pengeluaran-form-card {
+    min-height: 135px;
+}
+
+.pengeluaran-card-heading {
+    margin-bottom: 20px;
 }
 
 .pengeluaran-form {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+    align-items: start;
     gap: 18px;
-    margin-bottom: 24px;
-    padding: 20px;
-    border: 1px solid #e4e8f2;
-    border-radius: 10px;
-    background: #f8f9fd;
-}
-
-.pengeluaran-form[hidden] {
-    display: none;
 }
 
 .pengeluaran-form-group {
@@ -2237,70 +2468,151 @@ body:has(.login-page) main.container {
     min-width: 0;
 }
 
+.pengeluaran-form-group label,
+.pengeluaran-date-filter label {
+    color: #59617d;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.pengeluaran-form-group input,
+.pengeluaran-form-group select,
+.pengeluaran-date-filter input {
+    width: 100%;
+    min-height: 43px;
+    padding: 10px 12px;
+    border: 1px solid #dfe3ee;
+    border-radius: 8px;
+    outline: none;
+    background: #ffffff;
+    color: #252743;
+    font-family: inherit;
+    font-size: 13px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.pengeluaran-form-group input:focus,
+.pengeluaran-form-group select:focus,
+.pengeluaran-date-filter input:focus {
+    border-color: #34358b;
+    box-shadow: 0 0 0 3px rgba(52, 53, 139, 0.1);
+}
+
 .pengeluaran-form-group small {
+    min-height: 15px;
     color: #dc3545;
     font-size: 12px;
 }
 
 .pengeluaran-form-actions {
     display: flex;
-    align-items: center;
-    gap: 10px;
-    grid-column: 1 / -1;
+    align-items: flex-end;
+    padding-top: 25px;
 }
 
-#btnBatalPengeluaran {
-    padding: 12px 18px;
-    border: 1px solid #d8dfed;
+#btnSimpanPengeluaran {
+    min-height: 43px;
+    padding: 11px 22px;
+    border: none;
     border-radius: 8px;
-    background: #fff;
-    color: #38415d;
+    background: #17186b;
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 13px;
     font-weight: 600;
     cursor: pointer;
+    transition: background 0.2s;
+}
+
+#btnSimpanPengeluaran:hover {
+    background: #292a88;
+}
+
+#btnSimpanPengeluaran:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Pengeluaran berdasarkan tanggal */
+.pengeluaran-daily-card {
+    min-height: 190px;
+}
+
+.pengeluaran-daily-header {
+    align-items: flex-start;
+}
+
+.pengeluaran-date-filter {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 230px;
+    flex-shrink: 0;
 }
 
 .pengeluaran-status {
-    margin: 0 0 16px;
-    color: #75819e;
-    font-size: 13px;
+    margin: 14px 0;
+    color: #7b829a;
+    font-size: 12px;
 }
 
+.pengeluaran-daily-total {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 26px;
+    padding-top: 16px;
+    border-top: 1px solid #edf0f6;
+}
+
+.pengeluaran-daily-total span {
+    color: #555d78;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.pengeluaran-daily-total strong {
+    color: #000000;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+/* Daftar pengeluaran di dalam kartu Pengeluaran Hari Ini */
 .pengeluaran-table-wrapper {
     width: 100%;
     overflow-x: auto;
-    border: 1px solid #e5eaf3;
-    border-radius: 9px;
+    border: 1px solid #edf0f6;
+    border-radius: 8px;
 }
 
 .pengeluaran-table {
     width: 100%;
-    min-width: 650px;
+    min-width: 480px;
     border-collapse: collapse;
 }
 
 .pengeluaran-table thead {
-    background: #f1f4fa;
+    background: #f5f6fb;
 }
 
 .pengeluaran-table th {
-    padding: 16px;
-    color: #64708c;
+    padding: 14px 16px;
+    color: #666e88;
     font-size: 12px;
     font-weight: 700;
     text-align: left;
-    text-transform: uppercase;
-    white-space: nowrap;
 }
 
 .pengeluaran-table td {
-    padding: 17px 16px;
-    border-top: 1px solid #e8edf5;
-    color: #28314e;
-    font-size: 14px;
+    padding: 14px 16px;
+    border-top: 1px solid #edf0f6;
+    color: #30334e;
+    font-size: 13px;
 }
 
 .pengeluaran-table tbody tr:hover {
-    background: #fafbfe;
+    background: #fafaff;
 }
 
 .pengeluaran-table th:last-child,
@@ -2310,52 +2622,108 @@ body:has(.login-page) main.container {
 }
 
 .pengeluaran-empty {
-    padding: 28px !important;
-    color: #7b849b !important;
+    padding: 24px 16px !important;
+    color: #858ba1 !important;
     text-align: center !important;
 }
 
-@media (max-width: 768px) {
+/* Tampilan tablet */
+@media (max-width: 900px) {
     .pengeluaran-page {
-        padding-top: 0;
+        padding: 0 4px 24px;
     }
 
-    .pengeluaran-heading h1 {
-        font-size: 27px;
-    }
-
-    .pengeluaran-total-card {
-        flex-direction: column;
-        padding: 20px;
-    }
-
-    .pengeluaran-total-info strong {
-        font-size: 32px;
-    }
-
-    .pengeluaran-filter {
-        width: 100%;
-        min-width: 0;
-    }
-
-    .pengeluaran-list-card {
-        padding: 18px;
-    }
-
-    .pengeluaran-list-header {
+    .pengeluaran-summary-header {
         align-items: flex-start;
         flex-direction: column;
     }
 
-    .pengeluaran-list-header h2 {
-        font-size: 20px;
+    .pengeluaran-period-options {
+        justify-content: flex-start;
+    }
+
+    .pengeluaran-form {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .pengeluaran-form-actions {
+        grid-column: 1 / -1;
+        padding-top: 0;
+    }
+}
+
+/* Tampilan HP */
+@media (max-width: 600px) {
+    .pengeluaran-heading h1 {
+        font-size: 28px;
+    }
+
+    .pengeluaran-summary-card,
+    .pengeluaran-form-card,
+    .pengeluaran-daily-card {
+        padding: 18px;
+        margin-bottom: 14px;
+    }
+
+    .pengeluaran-summary-header h2,
+    .pengeluaran-card-heading h2,
+    .pengeluaran-daily-header h2 {
+        font-size: 17px;
+    }
+
+    .pengeluaran-period-options {
+        gap: 6px;
+    }
+
+    .pengeluaran-period-options button {
+        padding: 8px 11px;
+        font-size: 11px;
     }
 
     .pengeluaran-form {
         grid-template-columns: 1fr;
+        gap: 14px;
     }
 
     .pengeluaran-form-actions {
-        flex-wrap: wrap;
+        grid-column: auto;
+    }
+
+    #btnSimpanPengeluaran {
+        width: 100%;
+    }
+
+    .pengeluaran-daily-header {
+        flex-direction: column;
+    }
+
+    .pengeluaran-date-filter {
+        width: 100%;
+    }
+
+    .pengeluaran-daily-total strong {
+        font-size: 19px;
     }
 }
+
+/* Garis di bawah judul kolom riwayat */
+.riwayat-table thead th {
+    border-bottom: 2px solid #DCDCDC !important;
+}
+
+/* Hilangkan garis tambahan pada baris data */
+.riwayat-table tbody td {
+    border-bottom: none;
+}
+
+/* Sesuaikan posisi halaman pemasukan dengan Figma */
+.pemasukan-page {
+    margin-top: 0;
+    padding-top: 0;
+}
+
+.pemasukan-heading {
+    margin-top: 0;
+    margin-bottom: 22px;
+}
+

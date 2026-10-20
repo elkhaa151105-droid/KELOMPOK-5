@@ -1,8 +1,8 @@
-
 <?php
 require_once __DIR__ . '/../includes/auth_check.php';
 require_login();
 
+// Halaman pengeluaran hanya bisa diakses oleh owner.
 $role = $_SESSION['role'] ?? '';
 
 if ($role !== 'owner') {
@@ -14,40 +14,50 @@ include __DIR__ . '/../includes/header.php';
 ?>
 
 <div class="pengeluaran-page">
+
+    <!-- Judul halaman mengikuti Figma -->
     <div class="pengeluaran-heading">
-        <h1>Pengeluaran/HPP</h1>
-        <p>Catat dan pantau pengeluaran operasional harian</p>
+        <h1>Pengeluaran</h1>
     </div>
 
-    <!-- Kartu total pengeluaran -->
-    <section class="pengeluaran-total-card">
-        <div class="pengeluaran-total-info">
-            <h2>Total Pengeluaran</h2>
-            <strong id="totalPengeluaranHarian">Rp0</strong>
-            <p>
-                <span>Periode:</span>
-                <span id="periodePengeluaran">-</span>
-            </p>
+    <!-- Ringkasan pengeluaran -->
+    <section class="pengeluaran-summary-card">
+        <div class="pengeluaran-summary-header">
+            <h2>Ringkasan Pengeluaran</h2>
+
+            <!-- Pilihan periode sebagai elemen UI Figma.
+                 Perhitungan tetap mengikuti tanggal dari Trello. -->
+            <div class="pengeluaran-period-options">
+                <button type="button" class="active" aria-pressed="true">
+                    Hari Ini
+                </button>
+                <button type="button" aria-pressed="false">
+                    Minggu Ini
+                </button>
+                <button type="button" aria-pressed="false">
+                    Bulan Ini
+                </button>
+                <button type="button" aria-pressed="false">
+                    Semua
+                </button>
+            </div>
         </div>
 
-        <div class="pengeluaran-filter">
-            <label for="tanggalPengeluaranHarian">Tanggal</label>
-            <input type="date" id="tanggalPengeluaranHarian">
+        <div class="pengeluaran-summary-content">
+            <div class="pengeluaran-summary-item">
+                <span>Total Pengeluaran</span>
+                <strong id="totalRingkasanPengeluaran">Rp0</strong>
+            </div>
         </div>
     </section>
 
-    <!-- Daftar pengeluaran -->
-    <section class="pengeluaran-list-card">
-        <div class="pengeluaran-list-header">
-            <h2>Daftar Pengeluaran</h2>
-
-            <button type="button" id="btnTampilkanFormPengeluaran">
-                + Tambah Pengeluaran
-            </button>
+    <!-- Form pencatatan pengeluaran -->
+    <section class="pengeluaran-form-card">
+        <div class="pengeluaran-card-heading">
+            <h2>Catat Pengeluaran</h2>
         </div>
 
-        <!-- Form tambah pengeluaran -->
-        <form id="formPengeluaranHarian" class="pengeluaran-form" hidden>
+        <form id="formPengeluaranHarian" class="pengeluaran-form">
             <div class="pengeluaran-form-group">
                 <label for="kategoriPengeluaranHarian">Kategori</label>
                 <select id="kategoriPengeluaranHarian" required>
@@ -72,46 +82,59 @@ include __DIR__ . '/../includes/header.php';
                 <small id="errorNominalPengeluaranHarian" role="alert"></small>
             </div>
 
-            <div class="pengeluaran-form-group">
-                <label for="keteranganPengeluaranHarian">Keterangan</label>
-                <input
-                    type="text"
-                    id="keteranganPengeluaranHarian"
-                    placeholder="Contoh: Pembelian perlengkapan"
-                >
-            </div>
-
             <div class="pengeluaran-form-actions">
                 <button type="submit" id="btnSimpanPengeluaran">
-                    Simpan Pengeluaran
-                </button>
-                <button type="button" id="btnBatalPengeluaran">
-                    Batal
+                    Simpan
                 </button>
             </div>
         </form>
-
-        <p
-            id="statusPengeluaranHarian"
-            class="pengeluaran-status"
-            role="status"
-            aria-live="polite"
-        >Memuat data pengeluaran...</p>
-
-        <div class="pengeluaran-table-wrapper">
-            <table class="pengeluaran-table">
-                <thead>
-                    <tr>
-                        <th>Tanggal</th>
-                        <th>Kategori</th>
-                        <th>Keterangan</th>
-                        <th>Nominal</th>
-                    </tr>
-                </thead>
-                <tbody id="daftarPengeluaranHarian"></tbody>
-            </table>
-        </div>
     </section>
+
+
+<!-- Pengeluaran berdasarkan tanggal yang dipilih -->
+<section class="pengeluaran-daily-card">
+    <div class="pengeluaran-daily-header">
+        <h2>Pengeluaran Hari Ini</h2>
+
+        <div class="pengeluaran-date-filter">
+            <label for="tanggalPengeluaranHarian">Tanggal</label>
+            <input type="date" id="tanggalPengeluaranHarian">
+        </div>
+    </div>
+
+    <p
+        id="statusPengeluaranHarian"
+        class="pengeluaran-status"
+        role="status"
+        aria-live="polite"
+    >
+        Memuat data pengeluaran...
+    </p>
+
+    <!-- Daftar pengeluaran digabung dalam card ini -->
+    <div class="pengeluaran-table-wrapper">
+        <table class="pengeluaran-table">
+            <thead>
+                <tr>
+                    <th>Tanggal</th>
+                    <th>Kategori</th>
+                    <th>Nominal</th>
+                </tr>
+            </thead>
+            <tbody id="daftarPengeluaranHarian"></tbody>
+        </table>
+    </div>
+
+    <!-- Total pengeluaran berada di bagian bawah card -->
+    <div class="pengeluaran-daily-total">
+        <span>Total Pengeluaran</span>
+        <strong id="totalPengeluaranHarian">Rp0</strong>
+    </div>
+
+    <span id="periodePengeluaran" hidden></span>
+</section>
+
+    
 </div>
 
 <script src="/KELOMPOK-5/assets/js/pengeluaran.js"></script>

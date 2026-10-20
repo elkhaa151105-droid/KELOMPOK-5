@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Tampilkan pesan di dalam tabel.
-    function esan(pesan) {
+    function tampilkanPesan(pesan) {
         tableBody.replaceChildren();
 
         const row = document.createElement('tr');
@@ -125,66 +125,76 @@ document.addEventListener('DOMContentLoaded', function () {
             );
 
             transaksiDenganDetail.forEach(function (transaksi) {
-                const row = document.createElement('tr');
+ 
+const row = document.createElement('tr');
 
-                const nama = document.createElement('td');
-                nama.textContent = transaksi.nama_pelanggan || '-';
+// Kolom Barber
+const barber = document.createElement('td');
+barber.textContent = transaksi.nama_barber || '-';
 
-                const tanggal = document.createElement('td');
-                tanggal.textContent = formatTanggal(transaksi.tanggal);
+// Kolom Nama pelanggan
+const nama = document.createElement('td');
+nama.textContent = transaksi.nama_pelanggan || '-';
 
-                const layanan = document.createElement('td');
+// Kolom Tanggal (DD-MM-YYYY)
+const tanggal = document.createElement('td');
+tanggal.textContent = formatTanggal(transaksi.tanggal);
 
-                if (transaksi.layanan === null) {
-                    layanan.textContent = 'Gagal memuat';
-                } else if (transaksi.layanan.length === 0) {
-                    layanan.textContent = '-';
-                } else {
-                    layanan.textContent = transaksi.layanan.map(function (item) {
-                        const jumlah = Number(item.jumlah) || 1;
-                        return jumlah > 1
-                            ? `${item.nama_layanan} (${jumlah}x)`
-                            : item.nama_layanan;
-                    }).join(', ');
-                }
+// Kolom Layanan
+const layanan = document.createElement('td');
 
-                const nominal = document.createElement('td');
-                nominal.textContent = formatRupiah(transaksi.total_harga);
+if (transaksi.layanan === null) {
+    layanan.textContent = 'Gagal memuat';
+} else if (transaksi.layanan.length === 0) {
+    layanan.textContent = '-';
+} else {
+    layanan.textContent = transaksi.layanan.map(function (item) {
+        const jumlah = Number(item.jumlah) || 1;
 
-                const pembayaran = document.createElement('td');
-                pembayaran.textContent = formatMetodePembayaran(
-                    transaksi.metode_pembayaran
-                );
+        return jumlah > 1
+            ? `${item.nama_layanan} (${jumlah}x)`
+            : item.nama_layanan;
+    }).join(', ');
+}
 
-                const barber = document.createElement('td');
-                barber.textContent = transaksi.nama_barber || '-';
+// Kolom Nominal
+const nominal = document.createElement('td');
+nominal.textContent = formatRupiah(transaksi.total_harga);
 
-                const aksi = document.createElement('td');
+// Kolom Metode Pembayaran
+const pembayaran = document.createElement('td');
+pembayaran.textContent = formatMetodePembayaran(
+    transaksi.metode_pembayaran
+);
 
-                const tombolHapus = document.createElement('button');
-                tombolHapus.type = 'button';
-                tombolHapus.className = 'riwayat-delete-btn';
-                tombolHapus.textContent = '×';
-                tombolHapus.setAttribute(
-                    'aria-label',
-                    'Hapus riwayat transaksi'
-                );
-                tombolHapus.dataset.idTransaksi = transaksi.id_transaksi;
+// Kolom Aksi
+const aksi = document.createElement('td');
 
-                aksi.appendChild(tombolHapus);
+const tombolHapus = document.createElement('button');
+tombolHapus.type = 'button';
+tombolHapus.className = 'riwayat-delete-btn';
+tombolHapus.textContent = '×';
+tombolHapus.setAttribute(
+    'aria-label',
+    'Hapus riwayat transaksi'
+);
+tombolHapus.dataset.idTransaksi = transaksi.id_transaksi;
 
-                row.append(
-                    nama,
-                    tanggal,
-                    layanan,
-                    nominal,
-                    barber,
-                    pembayaran,
-                    barber,
-                    aksi
-                );
+aksi.appendChild(tombolHapus);
 
-                tableBody.appendChild(row);
+// Masukkan kolom sesuai urutan yang diinginkan.
+row.append(
+    barber,
+    nama,
+    tanggal,
+    layanan,
+    nominal,
+    pembayaran,
+    aksi
+);
+
+tableBody.appendChild(row);
+
             });
         } catch (error) {
             console.error('Gagal memuat riwayat:', error);
