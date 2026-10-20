@@ -3,339 +3,413 @@
  * Role: Faqih Huddin SM (Frontend Developer)
  */
 
-document.addEventListener("DOMContentLoaded", function () {
-  console.log("SCRIPT KATAJI TERLOAD");
+document.addEventListener('DOMContentLoaded', function () {
+    console.log('SCRIPT KATAJI TERLOAD');
+    console.log('DOM SIAP');
+console.log(
+    'Tombol simpan:',
+    document.getElementById('btnSimpanTransaksi')
+);
+    
+const pesanLogin = sessionStorage.getItem('loginNotification');
 
-  // ======================================================
-  // 1. VALIDASI FORM LOGIN
-  // ======================================================
-  const loginForm = document.getElementById("loginForm");
-  const usernameInput = document.getElementById("username");
-  const passwordInput = document.getElementById("password");
-  const usernameWrapper = document.getElementById("usernameWrapper");
-  const passwordWrapper = document.getElementById("passwordWrapper");
-  const loginErrorMessage = document.getElementById("loginErrorMessage");
-  const passwordToggle = document.getElementById("passwordToggle");
+if (pesanLogin) {
+    sessionStorage.removeItem('loginNotification');
 
-  const loginNotification = document.querySelector(".login-notification");
+    let notifikasi = document.querySelector('.login-notification');
 
-  if (loginNotification) {
+    if (!notifikasi) {
+        notifikasi = document.createElement('div');
+        notifikasi.className = 'transaction-success login-notification';
+        document.body.appendChild(notifikasi);
+    }
+
+    notifikasi.textContent = pesanLogin;
+
+    requestAnimationFrame(() => {
+        notifikasi.classList.add('show');
+    });
+
     setTimeout(() => {
-      loginNotification.classList.remove("show");
-    }, 2500);
-  }
+        notifikasi.classList.remove('show');
+    }, 4000);
+}
 
-  // Toggle Password Visibility
-  if (passwordToggle && passwordInput) {
-    passwordToggle.addEventListener("click", function () {
-      const isPassword = passwordInput.getAttribute("type") === "password";
-      passwordInput.setAttribute("type", isPassword ? "text" : "password");
+function simpanNotifikasiLogin(pesan) {
+    sessionStorage.setItem('loginNotification', pesan);
+}
+  
+    // ======================================================
+    // 1. LOGIN MENGGUNAKAN API BACKEND
+    // ======================================================
+    const loginForm = document.getElementById('loginForm');
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
+    const usernameWrapper = document.getElementById('usernameWrapper');
+    const passwordWrapper = document.getElementById('passwordWrapper');
+    const loginErrorMessage = document.getElementById('loginErrorMessage');
+    const passwordToggle = document.getElementById('passwordToggle');
 
-      if (isPassword) {
-        passwordToggle.innerHTML = `
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-                        <line x1="1" y1="1" x2="23" y2="23"></line>
-                    </svg>
-                `;
-      } else {
-        passwordToggle.innerHTML = `
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                        <circle cx="12" cy="12" r="3"></circle>
-                    </svg>
-                `;
-      }
-    });
-  }
+    function showLoginError(message, errorUsername = false, errorPassword = false) {
+        if (loginErrorMessage) {
+            loginErrorMessage.textContent = message;
+            loginErrorMessage.style.display = 'block';
+        } else {
+            alert(message);
+        }
 
-  // Pembersihan pesan error saat user mengetik
-  if (usernameInput) {
-    usernameInput.addEventListener("input", function () {
-      if (usernameWrapper) usernameWrapper.classList.remove("has-error");
-      clearLoginErrorIfResolved();
-    });
-  }
-  if (passwordInput) {
-    passwordInput.addEventListener("input", function () {
-      if (passwordWrapper) passwordWrapper.classList.remove("has-error");
-      clearLoginErrorIfResolved();
-    });
-  }
+        if (errorUsername && usernameWrapper) {
+            usernameWrapper.classList.add('has-error');
+        }
 
-  function clearLoginErrorIfResolved() {
-    if (loginErrorMessage) {
-      const uVal = usernameInput ? usernameInput.value.trim() : "";
-      const pVal = passwordInput ? passwordInput.value : "";
-      if (uVal !== "" && pVal !== "") {
-        loginErrorMessage.textContent = "";
-        loginErrorMessage.style.display = "none";
-      }
+        if (errorPassword && passwordWrapper) {
+            passwordWrapper.classList.add('has-error');
+        }
     }
-  }
 
-  // Handler Submit Form Login
-  if (loginForm && usernameInput && passwordInput) {
-    loginForm.addEventListener("submit", function (e) {
-      const usernameVal = usernameInput.value.trim();
-      const passwordVal = passwordInput.value;
+    function clearLoginError() {
+        if (loginErrorMessage) {
+            loginErrorMessage.textContent = '';
+            loginErrorMessage.style.display = 'none';
+        }
 
-      // Aturan A: Username dan password kosong
-      if (usernameVal === "" && passwordVal === "") {
-        e.preventDefault();
-        showLoginError("Username/email dan password wajib diisi", true, true);
-        return;
-      }
-
-      // Aturan B: Username kosong, password diisi
-      if (usernameVal === "") {
-        e.preventDefault();
-        showLoginError("Username/email wajib diisi", true, false);
-        return;
-      }
-
-      // Aturan C: Username diisi, password kosong
-      if (passwordVal === "") {
-        e.preventDefault();
-        showLoginError("Password wajib diisi", false, true);
-        return;
-      }
-
-      // Jika validasi client lolos, biarkan form submit ke backend
-    });
-  }
-
-  function showLoginError(msg, errorUser, errorPass) {
-    if (loginErrorMessage) {
-      loginErrorMessage.textContent = "*" + msg;
-      loginErrorMessage.style.display = "block";
+        if (usernameWrapper) usernameWrapper.classList.remove('has-error');
+        if (passwordWrapper) passwordWrapper.classList.remove('has-error');
     }
-    if (usernameWrapper) {
-      if (errorUser) {
-        usernameWrapper.classList.add("has-error");
-      } else {
-        usernameWrapper.classList.remove("has-error");
-      }
+
+    // Tampilkan/sembunyikan password
+    if (passwordToggle && passwordInput) {
+        passwordToggle.addEventListener('click', function () {
+            const showPassword = passwordInput.type === 'password';
+            passwordInput.type = showPassword ? 'text' : 'password';
+        });
     }
-    if (passwordWrapper) {
-      if (errorPass) {
-        passwordWrapper.classList.add("has-error");
-      } else {
-        passwordWrapper.classList.remove("has-error");
-      }
+
+    if (usernameInput) {
+        usernameInput.addEventListener('input', clearLoginError);
     }
-  }
 
-  // ======================================================
-  // 2. VALIDASI FORM CATAT TRANSAKSI (JOB 4.1)
-  // ======================================================
-  const transaksiForm = document.getElementById("formTransaksi");
-  if (transaksiForm) {
-    transaksiForm.addEventListener("submit", function (e) {
-      const layananDipilih = document.querySelectorAll(
-        'input[name="layanan[]"]:checked, input[name="id_layanan"]:checked',
-      );
-      const layananSelect = document.getElementById("selectLayanan");
-      const hasLayanan =
-        (layananDipilih && layananDipilih.length > 0) ||
-        (layananSelect && layananSelect.value !== "");
-
-      // Aturan A: Tidak ada layanan yang dipilih
-      if (!hasLayanan) {
-        e.preventDefault();
-        showFieldError("errorLayanan", "Pilih minimal satu layanan");
-        return;
-      }
-
-      // Input Harga
-      const hargaInput = document.getElementById("inputHarga");
-      if (hargaInput) {
-        const hargaVal = hargaInput.value.trim();
-
-        // Aturan B: Harga kosong
-        if (hargaVal === "") {
-          e.preventDefault();
-          showFieldError("errorHarga", "Harga wajib diisi");
-          hargaInput.classList.add("is-invalid");
-          return;
-        }
-
-        // Aturan C: Harga bukan angka
-        const numericHarga = Number(hargaVal.replace(/[^0-9.-]+/g, ""));
-        if (isNaN(numericHarga) || !/^\d+$/.test(hargaVal.replace(/\./g, ""))) {
-          e.preventDefault();
-          showFieldError("errorHarga", "Harga harus berupa angka");
-          hargaInput.classList.add("is-invalid");
-          return;
-        }
-
-        // Aturan D: Harga berbeda dari harga layanan (Konfirmasi Modal)
-        const baseHarga = Number(
-          hargaInput.getAttribute("data-base-price") || 0,
-        );
-        const isConfirmed =
-          transaksiForm.getAttribute("data-price-confirmed") === "true";
-
-        if (baseHarga > 0 && numericHarga !== baseHarga && !isConfirmed) {
-          e.preventDefault();
-          openPriceConfirmModal(function onConfirm() {
-            transaksiForm.setAttribute("data-price-confirmed", "true");
-            transaksiForm.submit();
-          });
-          return;
-        }
-      }
-    });
-  }
-
-  // ======================================================
-  // 3. VALIDASI FORM PELANGGAN
-  // ======================================================
-  const formPelanggan = document.getElementById("formPelanggan");
-  if (formPelanggan) {
-    formPelanggan.addEventListener("submit", function (e) {
-      const namaInput = document.getElementById("namaPelanggan");
-      const hpInput = document.getElementById("noHpPelanggan");
-
-      let isValid = true;
-
-      // A. Nama kosong
-      if (namaInput && namaInput.value.trim() === "") {
-        e.preventDefault();
-        showFieldError("errorNamaPelanggan", "Nama pelanggan wajib diisi");
-        namaInput.classList.add("is-invalid");
-        isValid = false;
-      }
-
-      // B & C. Nomor HP
-      if (hpInput) {
-        const hpVal = hpInput.value.trim();
-        if (hpVal === "") {
-          e.preventDefault();
-          showFieldError("errorHpPelanggan", "Nomor HP wajib diisi");
-          hpInput.classList.add("is-invalid");
-          isValid = false;
-        } else if (!/^[0-9+\-\s]{8,18}$/.test(hpVal)) {
-          e.preventDefault();
-          showFieldError("errorHpPelanggan", "Nomor HP tidak valid");
-          hpInput.classList.add("is-invalid");
-          isValid = false;
-        }
-      }
-
-      return isValid;
-    });
-  }
-
-  // ======================================================
-  // 4. VALIDASI FORM LAYANAN
-  // ======================================================
-  const formLayanan = document.getElementById("formLayanan");
-  if (formLayanan) {
-    formLayanan.addEventListener("submit", function (e) {
-      const namaLayanan = document.getElementById("namaLayanan");
-      const hargaLayanan = document.getElementById("hargaLayanan");
-
-      if (namaLayanan && namaLayanan.value.trim() === "") {
-        e.preventDefault();
-        showFieldError("errorNamaLayanan", "Nama layanan wajib diisi");
-        namaLayanan.classList.add("is-invalid");
-        return;
-      }
-
-      if (hargaLayanan) {
-        const hVal = hargaLayanan.value.trim();
-        if (hVal === "") {
-          e.preventDefault();
-          showFieldError("errorHargaLayanan", "Harga wajib diisi");
-          hargaLayanan.classList.add("is-invalid");
-          return;
-        }
-
-        const numH = Number(hVal.replace(/[^0-9.-]+/g, ""));
-        if (isNaN(numH) || !/^\d+$/.test(hVal.replace(/\./g, ""))) {
-          e.preventDefault();
-          showFieldError("errorHargaLayanan", "Harga harus berupa angka");
-          hargaLayanan.classList.add("is-invalid");
-          return;
-        }
-
-        if (numH <= 0) {
-          e.preventDefault();
-          showFieldError("errorHargaLayanan", "Harga harus lebih dari 0");
-          hargaLayanan.classList.add("is-invalid");
-          return;
-        }
-      }
-    });
-  }
-
-  // ======================================================
-  // 5. VALIDASI FORM PENGELUARAN / HPP
-  // ======================================================
-  const formPengeluaran = document.getElementById("formPengeluaran");
-  if (formPengeluaran) {
-    formPengeluaran.addEventListener("submit", function (e) {
-      const kategori = document.getElementById("kategoriPengeluaran");
-      const nominal = document.getElementById("nominalPengeluaran");
-
-      if (kategori && (kategori.value === "" || kategori.value === "pilih")) {
-        e.preventDefault();
-        showFieldError("errorKategori", "Kategori wajib dipilih");
-        kategori.classList.add("is-invalid");
-        return;
-      }
-
-      if (nominal) {
-        const nVal = nominal.value.trim();
-        if (nVal === "") {
-          e.preventDefault();
-          showFieldError("errorNominal", "Nominal wajib diisi");
-          nominal.classList.add("is-invalid");
-          return;
-        }
-
-        const numN = Number(nVal.replace(/[^0-9.-]+/g, ""));
-        if (isNaN(numN) || !/^\d+$/.test(nVal.replace(/\./g, ""))) {
-          e.preventDefault();
-          showFieldError("errorNominal", "Nominal harus berupa angka");
-          nominal.classList.add("is-invalid");
-          return;
-        }
-
-        if (numN <= 0) {
-          e.preventDefault();
-          showFieldError("errorNominal", "Nominal harus lebih dari 0");
-          nominal.classList.add("is-invalid");
-          return;
-        }
-      }
-    });
-  }
-
-  // ======================================================
-  // UTILITY: SHOW ERROR HELPER
-  // ======================================================
-  function showFieldError(targetId, message) {
-    const errEl = document.getElementById(targetId);
-    if (errEl) {
-      errEl.textContent = "*" + message;
-      errEl.style.display = "block";
-    } else {
-      alert(message);
+    if (passwordInput) {
+        passwordInput.addEventListener('input', clearLoginError);
     }
-  }
 
-  // ======================================================
-  // MODAL DIALOG KONFIRMASI HARGA BERBEDA (JOB 4.1 AC2)
-  // ======================================================
-  function openPriceConfirmModal(onConfirmCallback) {
-    let modalEl = document.getElementById("modalKonfirmasiHarga");
-    if (!modalEl) {
-      modalEl = document.createElement("div");
-      modalEl.id = "modalKonfirmasiHarga";
-      modalEl.className = "kataji-modal-overlay";
-      modalEl.innerHTML = `
+    if (loginForm && usernameInput && passwordInput) {
+        loginForm.addEventListener('submit', async function (e) {
+            // Mencegah form dikirim ke login_process.php
+            e.preventDefault();
+
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value;
+
+            if (!username && !password) {
+                showLoginError('Username dan password wajib diisi.', true, true);
+                return;
+            }
+
+            if (!username) {
+                showLoginError('Username wajib diisi.', true, false);
+                return;
+            }
+
+            if (!password) {
+                showLoginError('Password wajib diisi.', false, true);
+                return;
+            }
+
+            const loginButton = loginForm.querySelector(
+                'button[type="submit"], input[type="submit"]'
+            );
+
+            const originalText = loginButton
+                ? (loginButton.tagName === 'INPUT'
+                    ? loginButton.value
+                    : loginButton.textContent)
+                : '';
+
+            try {
+                clearLoginError();
+
+                if (loginButton) {
+                    loginButton.disabled = true;
+
+                    if (loginButton.tagName === 'INPUT') {
+                        loginButton.value = 'Memproses...';
+                    } else {
+                        loginButton.textContent = 'Memproses...';
+                    }
+                }
+
+                const endpoint = '/KELOMPOK-5/api/auth/login.php';
+
+                console.log('Mengirim login ke API:', endpoint);
+
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        password: password
+                    })
+                });
+
+                const result = await response.json();
+
+                console.log('Respons login API:', response.status, result);
+
+                if (!response.ok || !result.success) {
+                    throw new Error(result.message || 'Login gagal.');
+                }
+
+            const role = result.data?.role;
+
+            if (role === 'owner') {
+                simpanNotifikasiLogin('Login berhasil. Selamat datang erik');
+                window.location.href = '/KELOMPOK-5/pages/dashboard.php';
+            } else if (role === 'barber') {
+                simpanNotifikasiLogin('Login berhasil. Selamat bekerja!');
+                window.location.href = '/KELOMPOK-5/pages/transaksi.php';
+            } else {
+                throw new Error('Role akun tidak dikenali.');
+            }
+            } catch (error) {
+                console.error('Login API gagal:', error);
+
+                showLoginError(
+                    error.message || 'Tidak dapat terhubung ke server.',
+                    true,
+                    true
+                );
+            } finally {
+                if (loginButton) {
+                    loginButton.disabled = false;
+
+                    if (loginButton.tagName === 'INPUT') {
+                        loginButton.value = originalText || 'Masuk';
+                    } else {
+                        loginButton.textContent = originalText || 'Masuk';
+                    }
+                }
+            }
+        });
+    }
+
+
+
+    // ======================================================
+    // 2. VALIDASI FORM CATAT TRANSAKSI (JOB 4.1)
+    // ======================================================
+    const transaksiForm = document.getElementById('formTransaksi');
+    if (transaksiForm) {
+        transaksiForm.addEventListener('submit', function (e) {
+            const layananDipilih = document.querySelectorAll('input[name="layanan[]"]:checked, input[name="id_layanan"]:checked');
+            const layananSelect = document.getElementById('selectLayanan');
+            const hasLayanan = (layananDipilih && layananDipilih.length > 0) || (layananSelect && layananSelect.value !== '');
+
+            // Aturan A: Tidak ada layanan yang dipilih
+            if (!hasLayanan) {
+                e.preventDefault();
+                showFieldError('errorLayanan', 'Pilih minimal satu layanan');
+                return;
+            }
+
+            // Input Harga
+            const hargaInput = document.getElementById('inputHarga');
+            if (hargaInput) {
+                const hargaVal = hargaInput.value.trim();
+
+                // Aturan B: Harga kosong
+                if (hargaVal === '') {
+                    e.preventDefault();
+                    showFieldError('errorHarga', 'Harga wajib diisi');
+                    hargaInput.classList.add('is-invalid');
+                    return;
+                }
+
+                // Aturan C: Harga bukan angka
+                const numericHarga = Number(hargaVal.replace(/[^0-9.-]+/g, ''));
+                if (isNaN(numericHarga) || !/^\d+$/.test(hargaVal.replace(/\./g, ''))) {
+                    e.preventDefault();
+                    showFieldError('errorHarga', 'Harga harus berupa angka');
+                    hargaInput.classList.add('is-invalid');
+                    return;
+                }
+
+                // Aturan D: Harga berbeda dari harga layanan (Konfirmasi Modal)
+                const baseHarga = Number(hargaInput.getAttribute('data-base-price') || 0);
+                const isConfirmed = transaksiForm.getAttribute('data-price-confirmed') === 'true';
+
+                if (baseHarga > 0 && numericHarga !== baseHarga && !isConfirmed) {
+                    e.preventDefault();
+                    openPriceConfirmModal(function onConfirm() {
+                        transaksiForm.setAttribute('data-price-confirmed', 'true');
+                        transaksiForm.submit();
+                    });
+                    return;
+                }
+            }
+        });
+    }
+
+
+    // ======================================================
+    // 3. VALIDASI FORM PELANGGAN
+    // ======================================================
+    const formPelanggan = document.getElementById('formPelanggan');
+    if (formPelanggan) {
+        formPelanggan.addEventListener('submit', function (e) {
+            const namaInput = document.getElementById('namaPelanggan');
+            const hpInput = document.getElementById('noHpPelanggan');
+
+            let isValid = true;
+
+            // A. Nama kosong
+            if (namaInput && namaInput.value.trim() === '') {
+                e.preventDefault();
+                showFieldError('errorNamaPelanggan', 'Nama pelanggan wajib diisi');
+                namaInput.classList.add('is-invalid');
+                isValid = false;
+            }
+
+            // B & C. Nomor HP
+            if (hpInput) {
+                const hpVal = hpInput.value.trim();
+                if (hpVal === '') {
+                    e.preventDefault();
+                    showFieldError('errorHpPelanggan', 'Nomor HP wajib diisi');
+                    hpInput.classList.add('is-invalid');
+                    isValid = false;
+                } else if (!/^[0-9+\-\s]{8,18}$/.test(hpVal)) {
+                    e.preventDefault();
+                    showFieldError('errorHpPelanggan', 'Nomor HP tidak valid');
+                    hpInput.classList.add('is-invalid');
+                    isValid = false;
+                }
+            }
+
+            return isValid;
+        });
+    }
+
+
+    // ======================================================
+    // 4. VALIDASI FORM LAYANAN
+    // ======================================================
+    const formLayanan = document.getElementById('formLayanan');
+    if (formLayanan) {
+        formLayanan.addEventListener('submit', function (e) {
+            const namaLayanan = document.getElementById('namaLayanan');
+            const hargaLayanan = document.getElementById('hargaLayanan');
+
+            if (namaLayanan && namaLayanan.value.trim() === '') {
+                e.preventDefault();
+                showFieldError('errorNamaLayanan', 'Nama layanan wajib diisi');
+                namaLayanan.classList.add('is-invalid');
+                return;
+            }
+
+            if (hargaLayanan) {
+                const hVal = hargaLayanan.value.trim();
+                if (hVal === '') {
+                    e.preventDefault();
+                    showFieldError('errorHargaLayanan', 'Harga wajib diisi');
+                    hargaLayanan.classList.add('is-invalid');
+                    return;
+                }
+
+                const numH = Number(hVal.replace(/[^0-9.-]+/g, ''));
+                if (isNaN(numH) || !/^\d+$/.test(hVal.replace(/\./g, ''))) {
+                    e.preventDefault();
+                    showFieldError('errorHargaLayanan', 'Harga harus berupa angka');
+                    hargaLayanan.classList.add('is-invalid');
+                    return;
+                }
+
+                if (numH <= 0) {
+                    e.preventDefault();
+                    showFieldError('errorHargaLayanan', 'Harga harus lebih dari 0');
+                    hargaLayanan.classList.add('is-invalid');
+                    return;
+                }
+            }
+        });
+    }
+
+
+    // ======================================================
+    // 5. VALIDASI FORM PENGELUARAN / HPP
+    // ======================================================
+    const formPengeluaran = document.getElementById('formPengeluaran');
+    if (formPengeluaran) {
+        formPengeluaran.addEventListener('submit', function (e) {
+            const kategori = document.getElementById('kategoriPengeluaran');
+            const nominal = document.getElementById('nominalPengeluaran');
+
+            if (kategori && (kategori.value === '' || kategori.value === 'pilih')) {
+                e.preventDefault();
+                showFieldError('errorKategori', 'Kategori wajib dipilih');
+                kategori.classList.add('is-invalid');
+                return;
+            }
+
+            if (nominal) {
+                const nVal = nominal.value.trim();
+                if (nVal === '') {
+                    e.preventDefault();
+                    showFieldError('errorNominal', 'Nominal wajib diisi');
+                    nominal.classList.add('is-invalid');
+                    return;
+                }
+
+                const numN = Number(nVal.replace(/[^0-9.-]+/g, ''));
+                if (isNaN(numN) || !/^\d+$/.test(nVal.replace(/\./g, ''))) {
+                    e.preventDefault();
+                    showFieldError('errorNominal', 'Nominal harus berupa angka');
+                    nominal.classList.add('is-invalid');
+                    return;
+                }
+
+                if (numN <= 0) {
+                    e.preventDefault();
+                    showFieldError('errorNominal', 'Nominal harus lebih dari 0');
+                    nominal.classList.add('is-invalid');
+                    return;
+                }
+            }
+        });
+    }
+
+
+
+
+
+    // ======================================================
+    // UTILITY: SHOW ERROR HELPER
+    // ======================================================
+    function showFieldError(targetId, message) {
+        const errEl = document.getElementById(targetId);
+        if (errEl) {
+            errEl.textContent = '*' + message;
+            errEl.style.display = 'block';
+        } else {
+            alert(message);
+        }
+    }
+
+
+    // ======================================================
+    // MODAL DIALOG KONFIRMASI HARGA BERBEDA (JOB 4.1 AC2)
+    // ======================================================
+    function openPriceConfirmModal(onConfirmCallback) {
+        let modalEl = document.getElementById('modalKonfirmasiHarga');
+        if (!modalEl) {
+            modalEl = document.createElement('div');
+            modalEl.id = 'modalKonfirmasiHarga';
+            modalEl.className = 'kataji-modal-overlay';
+            modalEl.innerHTML = `
                 <div class="kataji-modal-box">
                     <div class="kataji-modal-icon">
                         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#D99B00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -352,307 +426,404 @@ document.addEventListener("DOMContentLoaded", function () {
                     </div>
                 </div>
             `;
-      document.body.appendChild(modalEl);
+            document.body.appendChild(modalEl);
+        }
+
+        modalEl.style.display = 'flex';
+
+        const btnBatal = document.getElementById('btnBatalHarga');
+        const btnSimpan = document.getElementById('btnSimpanHarga');
+
+        btnBatal.onclick = function () {
+            modalEl.style.display = 'none';
+        };
+
+        btnSimpan.onclick = function () {
+            modalEl.style.display = 'none';
+            if (typeof onConfirmCallback === 'function') {
+                onConfirmCallback();
+            }
+        };
     }
 
-    modalEl.style.display = "flex";
+    
+    // ======================================================
+    // AMBIL DAFTAR LAYANAN DARI API BACKEND
+    // ======================================================
 
-    const btnBatal = document.getElementById("btnBatalHarga");
-    const btnSimpan = document.getElementById("btnSimpanHarga");
 
-    btnBatal.onclick = function () {
-      modalEl.style.display = "none";
-    };
+async function muatLayananDariAPI() {
+    const container = document.querySelector('.kasir-services');
+    if (!container) return;
 
-    btnSimpan.onclick = function () {
-      modalEl.style.display = "none";
-      if (typeof onConfirmCallback === "function") {
-        onConfirmCallback();
-      }
-    };
-  }
-
-  // ======================================================
-  // AUTOCOMPLETE PELANGGAN KASIR
-  // ======================================================
-  const namaPelangganInput = document.getElementById("namaPelanggan");
-  const idPelangganInput = document.getElementById("idPelanggan");
-  const saranPelanggan = document.getElementById("saranPelanggan");
-
-  if (namaPelangganInput && idPelangganInput && saranPelanggan) {
-    let requestPelanggan = 0;
-
-    function tutupSaranPelanggan() {
-      saranPelanggan.replaceChildren();
-      saranPelanggan.hidden = true;
-    }
-
-    namaPelangganInput.addEventListener("input", async () => {
-      idPelangganInput.value = "";
-
-      const q = namaPelangganInput.value.trim();
-      const requestSaatIni = ++requestPelanggan;
-
-      tutupSaranPelanggan();
-      if (q.length < 2) return;
-
-      try {
+    try {
         const response = await fetch(
-          `/KELOMPOK-5/api/pelanggan/index.php?q=${encodeURIComponent(q)}`,
-          {
-            method: "GET",
-            credentials: "same-origin",
-            headers: { Accept: "application/json" },
-          },
+            '/KELOMPOK-5/api/layanan/index.php',
+            {
+                method: 'GET',
+                credentials: 'same-origin',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            }
         );
 
-        if (!response.ok) return;
+        const result = await response.json();
 
-        const hasil = await response.json();
+        if (!response.ok || !result.success) {
+            throw new Error(result.message || 'Gagal memuat layanan.');
+        }
 
-        if (requestSaatIni !== requestPelanggan) return;
-        if (!hasil.success || !Array.isArray(hasil.data)) return;
+        // Kasir hanya menampilkan layanan yang aktif.
+        const daftarLayananAktif = Array.isArray(result.data)
+            ? result.data.filter(layanan => Number(layanan.aktif) === 1)
+            : [];
 
-        hasil.data.forEach((pelanggan) => {
-          const tombol = document.createElement("button");
-          tombol.type = "button";
-          tombol.className = "customer-suggestion";
-          tombol.setAttribute("role", "option");
+    
 
-          const nama = document.createElement("span");
-          nama.textContent = pelanggan.nama || "";
+        const gambarLayanan = {};
 
-          const noHp = document.createElement("small");
-          noHp.textContent = pelanggan.no_hp || "";
+        container.querySelectorAll('.service-card').forEach(kartu => {
+            const nama = kartu.dataset.service;
+            const gambar = kartu.querySelector('.service-icon img');
 
-          tombol.append(nama, noHp);
-
-          tombol.addEventListener("click", () => {
-            namaPelangganInput.value = pelanggan.nama || "";
-            idPelangganInput.value = String(pelanggan.id_pelanggan);
-            tutupSaranPelanggan();
-          });
-
-          saranPelanggan.appendChild(tombol);
+            if (nama && gambar) {
+                gambarLayanan[nama] = gambar.src;
+            }
         });
 
-        if (hasil.data.length > 0) {
-          saranPelanggan.hidden = false;
+console.log('Gambar layanan tersimpan:', gambarLayanan);
+
+
+        container.innerHTML = '';
+
+            if (daftarLayananAktif.length === 0) {
+                container.textContent = 'Belum ada layanan aktif.';
+                return;
+            }
+
+            daftarLayananAktif.forEach(layanan => {
+            const kartu = document.createElement('button');
+            kartu.type = 'button';
+            kartu.className = 'service-card';
+
+            // Ambil ID, nama, dan harga dari database
+            kartu.dataset.idLayanan = String(layanan.id_layanan);
+            kartu.dataset.service = String(layanan.nama_layanan);
+            kartu.dataset.price = String(layanan.harga);
+
+            
+const ikon = document.createElement('span');
+ikon.className = 'service-icon';
+
+const gambar = document.createElement('img');
+gambar.src = gambarLayanan[layanan.nama_layanan] || '';
+gambar.alt = layanan.nama_layanan;
+
+ikon.appendChild(gambar);
+
+            const info = document.createElement('span');
+            info.className = 'service-info';
+
+            const nama = document.createElement('strong');
+            nama.textContent = layanan.nama_layanan;
+
+            const harga = document.createElement('small');
+            harga.textContent =
+                'Rp' + Number(layanan.harga).toLocaleString('id-ID');
+
+            info.append(nama, harga);
+            kartu.append(ikon, info);
+            container.appendChild(kartu);
+        });
+
+        console.log('Layanan berhasil dimuat:', result.data);
+    } catch (error) {
+        console.error('Gagal memuat layanan:', error);
+        container.textContent = 'Gagal memuat layanan. Silakan muat ulang halaman.';
+    }
+}
+
+muatLayananDariAPI();
+
+
+        // Memuat daftar barber dari API
+        async function muatBarberDariAPI() {
+            const selectBarber = document.getElementById('namaBarber');
+
+            if (!selectBarber) return;
+
+            try {
+                const response = await fetch(
+                    '/KELOMPOK-5/api/barber/index.php',
+                    {
+                        method: 'GET',
+                        credentials: 'same-origin',
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    }
+                );
+
+                const result = await response.json();
+
+                if (!response.ok || !result.success) {
+                    throw new Error(
+                        result.message || 'Gagal mengambil daftar barber.'
+                    );
+                }
+
+                // Pertahankan placeholder dropdown
+                selectBarber.innerHTML =
+                    '<option value="">Ketik disini...</option>';
+
+                result.data.forEach(barber => {
+                    const option = document.createElement('option');
+                    option.value = barber.id_user;
+                    option.textContent = barber.nama;
+                    selectBarber.appendChild(option);
+                });
+
+            } catch (error) {
+                console.error('Gagal memuat barber:', error);
+            }
         }
-      } catch (error) {
-        console.error("Gagal mencari pelanggan:", error);
-        tutupSaranPelanggan();
-      }
-    });
 
-    namaPelangganInput.addEventListener("keydown", (event) => {
-      if (event.key === "Escape") {
-        tutupSaranPelanggan();
-      }
-    });
+        // Panggil API untuk memuat daftar barber
+        muatBarberDariAPI();
 
-    document.addEventListener("click", (event) => {
-      if (
-        !saranPelanggan.contains(event.target) &&
-        event.target !== namaPelangganInput
-      ) {
-        tutupSaranPelanggan();
-      }
-    });
-  }
 
-  // ======================================================
-  // 6. INTERAKSI KASIR - PILIH LAYANAN (JOB 4.1)
-  // ======================================================
+   
+    // ======================================================
+    // 6. INTERAKSI KASIR - PILIH LAYANAN
+    // ======================================================
 
-  // INTERAKSI KASIR: pilihan ini dikirim sebagai form ke backend PHP.
-  const kasirForm = document.getElementById("kasirForm");
-
-  if (kasirForm) {
-    const serviceCards = [
-      ...kasirForm.querySelectorAll(".service-card[data-service-id]"),
-    ];
-    const selectedServicesContainer =
-      document.getElementById("selectedServices");
-    const hiddenServicesContainer = document.getElementById(
-      "kasirHiddenServices",
-    );
-    const kasirTotal = document.getElementById("kasirTotal");
-    const kasirError = document.getElementById("kasirError");
-    const saveButton = document.getElementById("btnSimpanTransaksi");
-    const selectedServices = new Map();
+    const servicesContainer = document.querySelector('.kasir-services');
+    const selectedServicesContainer = document.getElementById('selectedServices');
+    const kasirTotal = document.getElementById('kasirTotal');
+    const selectedServices = {};
 
     function formatRupiah(value) {
-      return "Rp" + Number(value).toLocaleString("id-ID");
-    }
-
-    function makeButton(label, action, serviceId, ariaLabel, className = "") {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = className;
-      button.dataset.action = action;
-      button.dataset.serviceId = serviceId;
-      button.setAttribute("aria-label", ariaLabel);
-      button.textContent = label;
-      return button;
+        return 'Rp' + Number(value).toLocaleString('id-ID');
     }
 
     function renderSelectedServices() {
-      selectedServicesContainer.replaceChildren();
-      hiddenServicesContainer.replaceChildren();
+        if (!selectedServicesContainer || !kasirTotal) return;
 
-      let total = 0;
-      for (const [id, item] of selectedServices) {
-        const subtotal = item.price * item.qty;
-        total += subtotal;
+        const items = Object.values(selectedServices);
+        let total = 0;
 
-        const row = document.createElement("div");
-        row.className = "selected-service-row";
-
-        const name = document.createElement("span");
-        name.className = "selected-service-name";
-        name.textContent = item.name;
-
-        const quantity = document.createElement("span");
-        quantity.className = "selected-service-quantity";
-        quantity.append(
-          makeButton(
-            "-",
-            "decrease",
-            id,
-            `Kurangi ${item.name}`,
-            "selected-service-qty-button",
-          ),
-        );
-        const quantityValue = document.createElement("span");
-        quantityValue.textContent = `${item.qty}x`;
-        quantity.append(quantityValue);
-        quantity.append(
-          makeButton(
-            "+",
-            "increase",
-            id,
-            `Tambah ${item.name}`,
-            "selected-service-qty-button",
-          ),
-        );
-
-        const subtotalNode = document.createElement("span");
-        subtotalNode.textContent = formatRupiah(subtotal);
-
-        row.append(
-          name,
-          quantity,
-          subtotalNode,
-          makeButton(
-            "\u00D7",
-            "remove",
-            id,
-            `Hapus ${item.name}`,
-            "selected-service-remove",
-          ),
-        );
-        selectedServicesContainer.append(row);
-
-        const serviceInput = document.createElement("input");
-        serviceInput.type = "hidden";
-        serviceInput.name = "layanan[]";
-        serviceInput.value = id;
-
-        const quantityInput = document.createElement("input");
-        quantityInput.type = "hidden";
-        quantityInput.name = `jumlah[${id}]`;
-        quantityInput.value = String(item.qty);
-        hiddenServicesContainer.append(serviceInput, quantityInput);
-      }
-
-      if (selectedServices.size === 0) {
-        const empty = document.createElement("p");
-        empty.className = "empty-service";
-        empty.textContent = "Belum ada layanan dipilih";
-        selectedServicesContainer.append(empty);
-      }
-
-      kasirTotal.textContent = formatRupiah(total);
-      serviceCards.forEach((card) => {
-        const isSelected = selectedServices.has(card.dataset.serviceId);
-        card.classList.toggle("selected", isSelected);
-        card.setAttribute("aria-pressed", String(isSelected));
-      });
-    }
-
-    serviceCards.forEach((card) => {
-      card.addEventListener("click", () => {
-        const id = card.dataset.serviceId;
-
-        if (selectedServices.has(id)) {
-          selectedServices.delete(id);
+        if (items.length === 0) {
+            selectedServicesContainer.innerHTML =
+                '<p class="empty-service">Belum ada layanan dipilih</p>';
         } else {
-          selectedServices.set(id, {
-            name: card.dataset.serviceName,
-            price: Number(card.dataset.price),
-            qty: 1,
-          });
+            selectedServicesContainer.innerHTML = items.map(item => {
+                const subtotal = item.price * item.qty;
+                total += subtotal;
+
+                return `
+                    <div class="selected-service-row">
+                        <span>${item.name} ${item.qty}x</span>
+                        <span>${formatRupiah(subtotal)}</span>
+                        <button type="button"
+                            data-action="remove"
+                            data-id-layanan="${item.id_layanan}">×</button>
+                    </div>
+                `;
+            }).join('');
         }
 
-        renderSelectedServices();
-      });
+        kasirTotal.textContent = formatRupiah(total);
+
+        if (servicesContainer) {
+            servicesContainer.querySelectorAll('.service-card').forEach(card => {
+                card.classList.toggle(
+                    'selected',
+                    Boolean(selectedServices[String(card.dataset.idLayanan)])
+                );
+            });
+        }
+    }
+
+    if (servicesContainer) {
+        servicesContainer.addEventListener('click', function (e) {
+            const card = e.target.closest('.service-card');
+            if (!card) return;
+
+            const id = String(card.dataset.idLayanan || '');
+            const name = card.dataset.service;
+            const price = Number(card.dataset.price);
+
+            console.log('ID layanan:', id);
+            console.log('Nama layanan:', name);
+            console.log('Harga layanan:', price);
+
+            console.log('Data kartu layanan:', {
+                id,
+                name,
+                price,
+                kartu: card
+            });
+
+            if (!id || !name || !Number.isFinite(price)) {
+                alert('Data layanan tidak valid.');
+                return;
+            }
+
+
+            if (selectedServices[id]) {
+                delete selectedServices[id];
+            } else {
+                selectedServices[id] = {
+                    id_layanan: Number(id),
+                    name,
+                    price,
+                    qty: 1
+                };
+            }
+
+            renderSelectedServices();
+
+        });
+    }
+
+    if (selectedServicesContainer) {
+        selectedServicesContainer.addEventListener('click', function (e) {
+            const button = e.target.closest('[data-action="remove"]');
+            if (!button) return;
+
+            delete selectedServices[String(button.dataset.idLayanan)];
+            renderSelectedServices();
+        });
+    }
+
+    renderSelectedServices();
+
+    
+function showSuccessNotification(pesan) {
+    const notifikasi = document.createElement('div');
+
+    notifikasi.className = 'transaction-success';
+    notifikasi.textContent = pesan;
+
+    document.body.appendChild(notifikasi);
+
+    requestAnimationFrame(() => {
+        notifikasi.classList.add('show');
     });
 
-    selectedServicesContainer.addEventListener("click", (event) => {
-      const button = event.target.closest("[data-action]");
-      if (!button) return;
+    setTimeout(() => {
+        notifikasi.classList.remove('show');
 
-      const id = button.dataset.serviceId;
-      const item = selectedServices.get(id);
-      if (!item) return;
+        setTimeout(() => {
+            notifikasi.remove();
+        }, 300);
+    }, 2500);
+}
 
-      if (button.dataset.action === "remove") {
-        selectedServices.delete(id);
-      } else if (button.dataset.action === "decrease") {
-        item.qty -= 1;
-        if (item.qty < 1) selectedServices.delete(id);
-      } else if (button.dataset.action === "increase") {
-        item.qty = Math.min(item.qty + 1, 100);
-      }
-      renderSelectedServices();
+    
+
+// ======================================================
+// 7. SIMPAN TRANSAKSI KE API BACKEND
+// ======================================================
+
+const btnSimpanTransaksi = document.getElementById('btnSimpanTransaksi');
+
+if (btnSimpanTransaksi) {
+    btnSimpanTransaksi.addEventListener('click', async function () {
+        const namaPelanggan = document.getElementById('namaPelanggan');
+        const namaBarber = document.getElementById('namaBarber');
+        const metodePembayaran = document.getElementById('metodePembayaran');
+
+        const layanan = Object.values(selectedServices).map(item => ({
+            id_layanan: item.id_layanan,
+            jumlah: item.qty
+        }));
+
+        // Validasi nama pelanggan
+        if (!namaPelanggan || !namaPelanggan.value.trim()) {
+            alert('Nama pelanggan wajib diisi!');
+            namaPelanggan?.focus();
+            return;
+        }
+
+        // Validasi barber
+        if (!namaBarber || !namaBarber.value) {
+            alert('Nama barber wajib dipilih!');
+            namaBarber?.focus();
+            return;
+        }
+
+        // Validasi layanan
+        if (layanan.length === 0) {
+            alert('Pilih minimal satu layanan!');
+            return;
+        }
+
+        // Validasi metode pembayaran
+        if (!metodePembayaran || !metodePembayaran.value) {
+            alert('Metode pembayaran wajib dipilih!');
+            metodePembayaran?.focus();
+            return;
+        }
+
+        btnSimpanTransaksi.disabled = true;
+
+        try {
+            const response = await fetch(
+                '/KELOMPOK-5/api/transaksi/index.php',
+                {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    
+
+                body: JSON.stringify({
+                    nama_pelanggan: namaPelanggan.value.trim(),
+                    id_barber: Number(namaBarber.value),
+                    layanan: layanan,
+                    metode_pembayaran: metodePembayaran.value
+                })
+
+
+                }
+            );
+
+            const result = await response.json();
+
+            if (!response.ok || !result.success) {
+                throw new Error(
+                    result.message || 'Transaksi gagal disimpan.'
+                );
+            }
+
+            showSuccessNotification(
+    'Transaksi Berhasil Ditambahkan'
+);
+
+            // Kosongkan pilihan setelah API berhasil menyimpan
+            Object.keys(selectedServices).forEach(id => {
+                delete selectedServices[id];
+            });
+
+            namaPelanggan.value = '';
+            namaBarber.value = '';
+            metodePembayaran.value = '';
+
+            renderSelectedServices();
+
+        } catch (error) {
+            console.error('Gagal menyimpan transaksi:', error);
+            alert(error.message || 'Terjadi kesalahan saat menyimpan transaksi.');
+        } finally {
+            btnSimpanTransaksi.disabled = false;
+        }
     });
+}
 
-    kasirForm.addEventListener("submit", (event) => {
-      kasirError.hidden = true;
-      const namaPelanggan = kasirForm.elements.nama_pelanggan;
-      if (!namaPelanggan.value.trim()) {
-        event.preventDefault();
-        alert("Nama pelanggan wajib diisi!");
-        namaPelanggan.focus();
-        return;
-      }
 
-      if (selectedServices.size === 0) {
-        event.preventDefault();
-        kasirError.textContent = "Pilih minimal satu layanan.";
-        kasirError.hidden = false;
-        return;
-      }
 
-      if (!kasirForm.elements.id_barber.value) {
-        event.preventDefault();
-        kasirError.textContent = "Pilih barber yang melayani.";
-        kasirError.hidden = false;
-        kasirForm.elements.id_barber.focus();
-        return;
-      }
-
-      if (!kasirForm.elements.metode_pembayaran.value) {
-        event.preventDefault();
-        kasirError.textContent = "Pilih metode pembayaran.";
-        kasirError.hidden = false;
-        kasirForm.elements.metode_pembayaran.focus();
-        return;
-      }
-
-      saveButton.disabled = true;
-      saveButton.textContent = "Menyimpan...";
-    });
-  }
 });
