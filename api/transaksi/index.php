@@ -126,7 +126,7 @@ try {
         if ($namaPelanggan === '') {
             kirimJson(422, [
                 'success' => false,
-                'message' => 'Nama pelanggan wajib diisi.',
+                'message' => 'Nama pelanggan wajib diisi',
                 'error_code' => 'CUSTOMER_NAME_REQUIRED'
             ]);
         }
@@ -231,30 +231,76 @@ try {
 
         $pdo->beginTransaction();
 
-        // Simpan pelanggan jika nama atau nomor HP diberikan.
-        $idPelanggan = null;
+        // Gunakan pelanggan yang dipilih, atau buat pelanggan baru.
+$idPelangganInput = $input['id_pelanggan'] ?? null;
+$idPelanggan = null;
 
-        if ($namaPelanggan !== '' || $noHp !== '') {
-            $stmtPelanggan = $pdo->prepare(
-                'INSERT INTO pelanggan (nama, no_hp)
-                 VALUES (:nama, :no_hp)'
-            );
+if ($idPelangganInput !== null && $idPelangganInput !== '') {
+    $idPelangganTerpilih = filter_var(
+        $idPelangganInput,
+        FILTER_VALIDATE_INT
+    );
 
-            $stmtPelanggan->execute([
-                ':nama' => $namaPelanggan !== '' ? $namaPelanggan : null,
-                ':no_hp' => $noHp !== '' ? $noHp : null
-            ]);
+    if ($idPelangganTerpilih === false || $idPelangganTerpilih < 1) {
+        kirimJson(422, [
+            'success' => false,
+            'message' => 'ID pelanggan tidak valid.',
+            'error_code' => 'VALIDATION_ERROR'
+        ]);
+    }
 
-            $idPelanggan = (int) $pdo->lastInsertId();
-        }
+    $stmtPelanggan = $pdo->prepare(
+        'SELECT id_pelanggan, nama, no_hp
+         FROM pelanggan
+         WHERE id_pelanggan = :id
+         LIMIT 1'
+    );
 
+    $stmtPelanggan->execute([
+        ':id' => $idPelangganTerpilih
+    ]);
+
+    $pelanggan = $stmtPelanggan->fetch(PDO::FETCH_ASSOC);
+
+    if (!$pelanggan) {
+        kirimJson(422, [
+            'success' => false,
+            'message' => 'Pelanggan yang dipilih tidak ditemukan.',
+            'error_code' => 'CUSTOMER_NOT_FOUND'
+        ]);
+    }
+
+    // Gunakan data pelanggan yang tersimpan di database.
+    $idPelanggan = (int) $pelanggan['id_pelanggan'];
+} else {
+    // Nama wajib diisi meskipun pelanggan baru belum memiliki nomor HP.
+    if ($namaPelanggan === '') {
+        kirimJson(422, [
+            'success' => false,
+            'message' => 'Nama pelanggan wajib diisi',
+            'error_code' => 'CUSTOMER_NAME_REQUIRED'
+        ]);
+    }
+
+    $stmtPelanggan = $pdo->prepare(
+        'INSERT INTO pelanggan (nama, no_hp)
+         VALUES (:nama, :no_hp)'
+    );
+
+    $stmtPelanggan->execute([
+        ':nama' => $namaPelanggan,
+        ':no_hp' => $noHp !== '' ? $noHp : null
+    ]);
+
+    $idPelanggan = (int) $pdo->lastInsertId();
+}
         // Ambil harga dari database.
-        $stmtLayanan = $pdo->prepare(
-            'SELECT harga, hpp
-             FROM layanan
-             WHERE id_layanan = :id
-               AND aktif = 1'
-        );
+$stmtLayanan = $pdo->prepare(
+    'SELECT nama_layanan, harga, hpp
+     FROM layanan
+     WHERE id_layanan = :id
+       AND aktif = 1'
+);
 
         $rincian = [];
         $totalHarga = 0;
@@ -280,12 +326,15 @@ try {
                 throw new DomainException('Total harga terlalu besar.');
             }
 
-            $rincian[] = [
-                'id_layanan' => (int) $idLayanan,
-                'harga' => $harga,
-                'hpp_saat_transaksi' => $layanan['hpp'] === null ? null : (int) $layanan['hpp'],
-                'jumlah' => $jumlah
-            ];
+
+$rincian[] = [
+    'id_layanan' => (int) $idLayanan,
+    'nama_layanan' => $layanan['nama_layanan'],
+    'harga' => $harga,
+    'hpp_saat_transaksi' => $layanan['hpp'] === null ? null : (int) $layanan['hpp'],
+    'jumlah' => $jumlah
+];
+
         }
 
         $sekarang = new DateTimeImmutable('now', new DateTimeZone('Asia/Jakarta'));
@@ -315,23 +364,39 @@ try {
 
         $idTransaksi = (int) $pdo->lastInsertId();
 
-        $stmtDetail = $pdo->prepare(
-            'INSERT INTO detail_transaksi
-                (id_transaksi, id_layanan, harga_saat_transaksi,
-                 hpp_saat_transaksi, jumlah)
-             VALUES
-                (:id_transaksi, :id_layanan, :harga, :hpp, :jumlah)'
-        );
 
-        foreach ($rincian as $item) {
-            $stmtDetail->execute([
-                ':id_transaksi' => $idTransaksi,
-                ':id_layanan' => $item['id_layanan'],
-                ':harga' => $item['harga'],
-                ':hpp' => $item['hpp_saat_transaksi'],
-                ':jumlah' => $item['jumlah']
-            ]);
-        }
+$stmtDetail = $pdo->prepare(
+    'INSERT INTO detail_transaksi
+        (
+            id_transaksi,
+            id_layanan,
+            nama_layanan_saat_transaksi,
+            harga_saat_transaksi,
+            hpp_saat_transaksi,
+            jumlah
+        )
+     VALUES
+        (
+            :id_transaksi,
+            :id_layanan,
+            :nama_layanan,
+            :harga,
+            :hpp,
+            :jumlah
+        )'
+);
+
+foreach ($rincian as $item) {
+    $stmtDetail->execute([
+        ':id_transaksi' => $idTransaksi,
+        ':id_layanan' => $item['id_layanan'],
+        ':nama_layanan' => $item['nama_layanan'],
+        ':harga' => $item['harga'],
+        ':hpp' => $item['hpp_saat_transaksi'],
+        ':jumlah' => $item['jumlah']
+    ]);
+}
+
 
         $pdo->commit();
 

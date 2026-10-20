@@ -371,6 +371,96 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     };
   }
+
+  // ======================================================
+  // AUTOCOMPLETE PELANGGAN KASIR
+  // ======================================================
+  const namaPelangganInput = document.getElementById("namaPelanggan");
+  const idPelangganInput = document.getElementById("idPelanggan");
+  const saranPelanggan = document.getElementById("saranPelanggan");
+
+  if (namaPelangganInput && idPelangganInput && saranPelanggan) {
+    let requestPelanggan = 0;
+
+    function tutupSaranPelanggan() {
+      saranPelanggan.replaceChildren();
+      saranPelanggan.hidden = true;
+    }
+
+    namaPelangganInput.addEventListener("input", async () => {
+      idPelangganInput.value = "";
+
+      const q = namaPelangganInput.value.trim();
+      const requestSaatIni = ++requestPelanggan;
+
+      tutupSaranPelanggan();
+      if (q.length < 2) return;
+
+      try {
+        const response = await fetch(
+          `/KELOMPOK-5/api/pelanggan/index.php?q=${encodeURIComponent(q)}`,
+          {
+            method: "GET",
+            credentials: "same-origin",
+            headers: { Accept: "application/json" },
+          },
+        );
+
+        if (!response.ok) return;
+
+        const hasil = await response.json();
+
+        if (requestSaatIni !== requestPelanggan) return;
+        if (!hasil.success || !Array.isArray(hasil.data)) return;
+
+        hasil.data.forEach((pelanggan) => {
+          const tombol = document.createElement("button");
+          tombol.type = "button";
+          tombol.className = "customer-suggestion";
+          tombol.setAttribute("role", "option");
+
+          const nama = document.createElement("span");
+          nama.textContent = pelanggan.nama || "";
+
+          const noHp = document.createElement("small");
+          noHp.textContent = pelanggan.no_hp || "";
+
+          tombol.append(nama, noHp);
+
+          tombol.addEventListener("click", () => {
+            namaPelangganInput.value = pelanggan.nama || "";
+            idPelangganInput.value = String(pelanggan.id_pelanggan);
+            tutupSaranPelanggan();
+          });
+
+          saranPelanggan.appendChild(tombol);
+        });
+
+        if (hasil.data.length > 0) {
+          saranPelanggan.hidden = false;
+        }
+      } catch (error) {
+        console.error("Gagal mencari pelanggan:", error);
+        tutupSaranPelanggan();
+      }
+    });
+
+    namaPelangganInput.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        tutupSaranPelanggan();
+      }
+    });
+
+    document.addEventListener("click", (event) => {
+      if (
+        !saranPelanggan.contains(event.target) &&
+        event.target !== namaPelangganInput
+      ) {
+        tutupSaranPelanggan();
+      }
+    });
+  }
+
   // ======================================================
   // 6. INTERAKSI KASIR - PILIH LAYANAN (JOB 4.1)
   // ======================================================

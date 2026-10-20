@@ -1,25 +1,26 @@
+# API Contract — KATAJI Barber
+
 ## 1. Kontrak Alur Website Lama
 
-| Dari              | Kondisi                               | Tujuan                                      |
-| ----------------- | ------------------------------------- | ------------------------------------------- |
-| login_process.php | Username/password kosong              | `/KELOMPOK-5/pages/login.php?error=empty`   |
-| login_process.php | Username/password salah               | `/KELOMPOK-5/pages/login.php?error=invalid` |
-| login_process.php | Login berhasil                        | `/KELOMPOK-5/pages/dashboard.php`           |
-| auth_check.php    | Belum login, akses halaman terkunci   | `/KELOMPOK-5/pages/login.php`               |
-| auth_check.php    | Sesi habis (lebih dari 30 menit idle) | `/KELOMPOK-5/pages/login.php?expired=1`     |
+| Dari                | Kondisi                               | Tujuan                                      |
+| ------------------- | ------------------------------------- | ------------------------------------------- |
+| `login_process.php` | Username/password kosong              | `/KELOMPOK-5/pages/login.php?error=empty`   |
+| `login_process.php` | Username/password salah               | `/KELOMPOK-5/pages/login.php?error=invalid` |
+| `login_process.php` | Login berhasil                        | `/KELOMPOK-5/pages/dashboard.php`           |
+| `auth_check.php`    | Belum login, akses halaman terkunci   | `/KELOMPOK-5/pages/login.php`               |
+| `auth_check.php`    | Sesi habis (lebih dari 30 menit idle) | `/KELOMPOK-5/pages/login.php?expired=1`     |
 
 ## 2. API Contract — Login
 
 ### Login Pengguna
 
-- **Method:** POST
+- **Method:** `POST`
 - **Endpoint:** `/KELOMPOK-5/api/auth/login.php`
 - **Tujuan:** Memverifikasi username dan password pengguna.
 - **Content-Type:** `application/json`
-- **Request Body:** Username dan password.
-- **Format Response:** JSON
+- **Format respons:** JSON
 
-**Request Body**
+Request body:
 
 ```json
 {
@@ -28,7 +29,7 @@
 }
 ```
 
-**Berhasil — HTTP 200 OK**
+Berhasil — `200 OK`:
 
 ```json
 {
@@ -43,17 +44,20 @@
 }
 ```
 
-Data pengguna di atas merupakan contoh format respons, bukan data tetap.
+Data di atas hanya contoh format respons.
 
-**Format JSON tidak valid — HTTP 400 Bad Request**
+Penanganan kesalahan:
 
-`error_code`: `INVALID_JSON`
+| Kondisi                       |  HTTP | `error_code`             |
+| ----------------------------- | ----: | ------------------------ |
+| JSON tidak valid              | `400` | `INVALID_JSON`           |
+| Username atau password kosong | `422` | `VALIDATION_ERROR`       |
+| Username atau password salah  | `401` | `INVALID_CREDENTIALS`    |
+| Content-Type tidak didukung   | `415` | `UNSUPPORTED_MEDIA_TYPE` |
+| Method tidak didukung         | `405` | `METHOD_NOT_ALLOWED`     |
+| Kesalahan internal            | `500` | `INTERNAL_ERROR`         |
 
-**Username atau password kosong — HTTP 422 Unprocessable Content**
-
-`error_code`: `VALIDATION_ERROR`
-
-**Username atau password salah — HTTP 401 Unauthorized**
+Contoh respons ketika kredensial salah:
 
 ```json
 {
@@ -63,40 +67,31 @@ Data pengguna di atas merupakan contoh format respons, bukan data tetap.
 }
 ```
 
-**Content-Type tidak didukung — HTTP 415 Unsupported Media Type**
-
-`error_code`: `UNSUPPORTED_MEDIA_TYPE`
-
-**Method tidak didukung — HTTP 405 Method Not Allowed**
-
-`error_code`: `METHOD_NOT_ALLOWED`
-
-**Kesalahan internal — HTTP 500 Internal Server Error**
-
-`error_code`: `INTERNAL_ERROR`
-
 ### Hasil Pengujian Login
 
-| Skenario                              | Status HTTP                | Hasil           |
-| ------------------------------------- | -------------------------- | --------------- |
-| Username dan password benar           | 200 OK                     | Login berhasil  |
-| Username atau password salah          | 401 Unauthorized           | Login ditolak   |
-| Request tanpa format JSON yang sesuai | 415 Unsupported Media Type | Request ditolak |
-| Method selain POST                    | 405 Method Not Allowed     | Method ditolak  |
+| Skenario                     | Status HTTP                  | Hasil           |
+| ---------------------------- | ---------------------------- | --------------- |
+| Username dan password benar  | `200 OK`                     | Login berhasil  |
+| Username atau password salah | `401 Unauthorized`           | Login ditolak   |
+| Content-Type tidak sesuai    | `415 Unsupported Media Type` | Request ditolak |
+| Method selain POST           | `405 Method Not Allowed`     | Method ditolak  |
 
 Pengujian dilakukan menggunakan Postman pada server lokal.
 
 ## 3. API Contract — Layanan
 
-### Mengambil Daftar Layanan
+**Base endpoint:** `/api/layanan/`
 
-- **Method:** GET
-- **Endpoint:** `/KELOMPOK-5/api/layanan/`
-- **Tujuan:** Mengambil daftar layanan aktif.
-- **Request Body:** Tidak diperlukan.
-- **Format Response:** JSON
+**Akses:** GET dapat diakses tanpa autentikasi berdasarkan implementasi saat ini. POST, PUT, PATCH, dan DELETE memerlukan sesi login dengan role owner.
 
-**Berhasil — HTTP 200**
+### GET — Mengambil Daftar Layanan
+
+- **Endpoint:** `GET /api/layanan/`
+- **Body:** Tidak diperlukan.
+- **Respons sukses:** `200 OK`
+- **Perilaku:** Mengembalikan seluruh layanan, termasuk layanan nonaktif.
+
+Contoh respons:
 
 ```json
 {
@@ -105,59 +100,123 @@ Pengujian dilakukan menggunakan Postman pada server lokal.
     {
       "id_layanan": 3,
       "nama_layanan": "Creambath",
-      "harga": 100000
+      "harga": 100000,
+      "hpp": 40000,
+      "aktif": 1,
+      "icon_layanan": "uploads/layanan/contoh.jpg"
     }
   ]
 }
 ```
 
-Data di atas merupakan contoh format respons, bukan data tetap.
+Nilai di atas hanya contoh format respons. `icon_layanan` dapat bernilai `null` jika layanan tidak memiliki ikon.
 
-**Method tidak didukung — HTTP 405**
+### POST — Menambahkan Layanan
+
+- **Endpoint:** `POST /api/layanan/`
+- **Content-Type:** `multipart/form-data`
+- **Respons sukses:** `201 Created`
+
+Field form-data:
+
+| Field          | Tipe | Ketentuan                                         |
+| -------------- | ---- | ------------------------------------------------- |
+| `nama_layanan` | Text | Wajib, maksimal 100 karakter                      |
+| `harga`        | Text | Wajib, bilangan bulat lebih dari 0                |
+| `hpp`          | Text | Wajib, bilangan bulat 0 atau lebih                |
+| `icon_layanan` | File | Opsional; JPG/JPEG, PNG, atau WebP; maksimal 2 MB |
+
+Layanan baru dibuat dengan `aktif = 1`. Ikon disimpan pada folder `uploads/layanan/`, sedangkan database menyimpan path relatifnya.
+
+### PUT — Memperbarui Layanan
+
+- **Endpoint logis:** `PUT /api/layanan/`
+- **Metode upload yang digunakan:** `POST /api/layanan/` dengan field `_method=PUT` pada form-data.
+- **Content-Type:** `multipart/form-data`
+- **Respons sukses:** `200 OK`
+
+Field yang diperlukan: `id_layanan`, `nama_layanan`, `harga`, dan `hpp`. Field `icon_layanan` opsional.
+
+Ketentuan:
+
+- Layanan aktif maupun nonaktif dapat diedit.
+- Jika ikon baru tidak dikirim, ikon lama dipertahankan.
+- Jika ikon baru berhasil disimpan, ikon lama dihapus setelah pembaruan database berhasil.
+- Jika ID tidak ditemukan, respons `404 Not Found`.
+
+### PATCH — Mengubah Status Layanan
+
+- **Endpoint:** `PATCH /api/layanan/`
+- **Content-Type:** `application/json`
+- **Respons sukses:** `200 OK`
+
+Contoh menonaktifkan layanan:
 
 ```json
 {
-  "success": false,
-  "message": "Method HTTP tidak diizinkan.",
-  "error_code": "METHOD_NOT_ALLOWED"
+  "id_layanan": 3,
+  "aktif": 0
 }
 ```
 
-**Kesalahan internal — HTTP 500**
+Untuk mengaktifkan kembali, kirim `"aktif": 1`. Nilai yang didukung hanya `0` dan `1`. PATCH hanya mengubah status dan tidak menghapus ikon.
+
+### DELETE — Menghapus Layanan Permanen
+
+- **Endpoint:** `DELETE /api/layanan/`
+- **Content-Type:** `application/json`
+- **Respons sukses:** `200 OK`
+
+Contoh body:
 
 ```json
 {
-  "success": false,
-  "message": "Terjadi kesalahan pada server.",
-  "error_code": "INTERNAL_ERROR"
+  "id_layanan": 3
 }
 ```
 
-### Method yang Didukung
+Layanan dihapus permanen beserta file ikon yang terkait. Gunakan dengan hati-hati karena operasi ini tidak sama dengan menonaktifkan layanan.
 
-| Method | Fungsi                             |
-| ------ | ---------------------------------- |
-| GET    | Mengambil daftar layanan aktif     |
-| POST   | Menambahkan layanan baru           |
-| PUT    | Memperbarui nama dan harga layanan |
-| PATCH  | Menonaktifkan layanan              |
+### Kode Respons
 
-POST, PUT, dan PATCH memerlukan sesi login
-dengan role owner.
+| HTTP Status                 | Keterangan                            |
+| --------------------------- | ------------------------------------- |
+| `200 OK`                    | GET, PUT, PATCH, atau DELETE berhasil |
+| `201 Created`               | Layanan berhasil dibuat               |
+| `400 Bad Request`           | JSON tidak valid                      |
+| `401 Unauthorized`          | Sesi login tidak valid                |
+| `403 Forbidden`             | Role bukan owner                      |
+| `404 Not Found`             | Layanan tidak ditemukan               |
+| `405 Method Not Allowed`    | Method tidak didukung                 |
+| `422 Unprocessable Content` | Validasi field atau ikon gagal        |
+| `500 Internal Server Error` | Kesalahan server                      |
 
-## API Transaksi
+Respons kesalahan umumnya berisi `success: false`, `message`, dan `error_code`.
 
-Base URL lokal:
+### Catatan Implementasi
 
-`{{base_url}} = http://localhost:8080/KELOMPOK-5`
+- Tabel `layanan` harus memiliki kolom `icon_layanan VARCHAR(255) NULL`.
+- Upload ikon menerima JPG/JPEG, PNG, dan WebP dengan ukuran maksimal 2 MB.
+- Folder `uploads/layanan/` harus dapat ditulisi oleh PHP.
+- Permintaan perubahan data memerlukan autentikasi owner melalui sesi yang digunakan proyek.
+- Untuk form-data PUT, Postman mengirim POST dengan `_method=PUT`; jangan mengatur header `Content-Type` secara manual.
+- Hasil pengujian aktual harus dicatat setelah endpoint benar-benar diuji. Dokumentasi ini bukan bukti bahwa semua pengujian telah lulus.
+
+## 4. API Contract — Transaksi
+
+### Base URL Lokal
+
+```text
+{{base_url}} = http://localhost:8080/KELOMPOK-5
+```
 
 Semua endpoint transaksi memerlukan sesi login yang valid.
 
-### 1. Daftar Transaksi
+### 4.1 GET — Daftar Transaksi
 
 **Endpoint:** `GET /api/transaksi/`
 
-Mengambil daftar transaksi yang dapat diakses oleh user yang sedang login.
+Mengambil daftar transaksi yang dapat diakses oleh pengguna yang sedang login.
 
 Hak akses:
 
@@ -175,9 +234,9 @@ Contoh respons sukses (`200 OK`):
       "id_pencatat": 1,
       "id_barber": 2,
       "nama_barber": "Sandi",
-      "id_pelanggan": null,
-      "nama_pelanggan": null,
-      "no_hp": null,
+      "id_pelanggan": 7,
+      "nama_pelanggan": "Pelanggan Tes",
+      "no_hp": "081234567890",
       "tanggal": "2026-10-13",
       "waktu": "09:00:00",
       "total_harga": 50000,
@@ -187,13 +246,13 @@ Contoh respons sukses (`200 OK`):
 }
 ```
 
-Nilai di atas hanya contoh format respons.
+Contoh nilai di atas bukan data tetap. Transaksi lama yang belum memiliki pelanggan dapat saja memiliki `id_pelanggan`, `nama_pelanggan`, atau `no_hp` bernilai `null`, sesuai data database.
 
-### 2. Tambah Transaksi
+### 4.2 POST — Menambahkan Transaksi
 
 **Endpoint:** `POST /api/transaksi/`
 
-Body menggunakan JSON dengan minimal satu layanan.
+Request body menggunakan JSON dan harus memuat minimal satu layanan.
 
 Contoh body untuk owner:
 
@@ -228,26 +287,110 @@ Contoh body untuk barber:
 }
 ```
 
-Aturan:
+#### Aturan Transaksi
 
 - Owner wajib menentukan `id_barber` yang valid dan aktif.
 - Barber yang login otomatis menjadi barber transaksi.
-- `id_pencatat` diambil dari user yang login.
-- `id_pelanggan` dibuat jika nama atau nomor telepon pelanggan diberikan.
-- Harga layanan diambil dari database.
-- Metode pembayaran wajib dikirim dan harus bernilai `cash`, `qris`, atau `transfer`. Jika tidak dikirim atau nilainya kosong, API menolak transaksi dengan HTTP `422 Unprocessable Content` dan kode error `VALIDATION_ERROR`. Form Kasir menampilkan pesan `Pilih metode pembayaran` jika metode belum dipilih.
+- `id_pencatat` diambil dari pengguna yang sedang login.
+- `nama_pelanggan` wajib diisi dan tidak boleh hanya berisi spasi.
+- Jika pelanggan baru, data pelanggan dibuat dan dihubungkan dengan transaksi.
+- Jika pelanggan dipilih dari saran nama yang sudah ada, transaksi harus menggunakan `id_pelanggan` pelanggan tersebut.
+- Memilih pelanggan yang sudah ada tidak boleh membuat baris pelanggan baru untuk orang yang sama hanya karena transaksi baru dicatat.
+- Nomor telepon pelanggan dapat dikirim melalui field `no_hp` sesuai validasi endpoint.
+- Harga layanan diambil dari database, bukan dipercaya dari harga yang dikirim oleh klien.
+- Metode pembayaran wajib dikirim dan harus bernilai `cash`, `qris`, atau `transfer`.
 - Total harga dihitung oleh server.
 - Data transaksi dan detail layanan disimpan dalam satu transaksi database.
 
-Respons sukses: `201 Created`.
+#### Validasi Nama Pelanggan
 
-### 3. Detail Transaksi
+Jika `nama_pelanggan` kosong atau hanya berisi spasi, server harus menolak transaksi.
+
+- **HTTP:** `422 Unprocessable Content`
+- **`error_code`:** `CUSTOMER_NAME_REQUIRED`
+- **Pesan:** `Nama pelanggan wajib diisi.`
+
+Contoh respons:
+
+```json
+{
+  "success": false,
+  "message": "Nama pelanggan wajib diisi.",
+  "error_code": "CUSTOMER_NAME_REQUIRED"
+}
+```
+
+Respons di atas merupakan format yang harus digunakan apabila sesuai dengan implementasi endpoint yang sedang diperbarui.
+
+#### Validasi Metode Pembayaran
+
+Metode pembayaran yang diperbolehkan:
+
+- `cash`
+- `qris`
+- `transfer`
+
+Jika metode pembayaran tidak dikirim atau nilainya kosong, API menolak transaksi dengan HTTP `422 Unprocessable Content` dan kode error `VALIDATION_ERROR`. Form kasir menampilkan pesan `Pilih metode pembayaran` jika metode belum dipilih.
+
+Respons sukses pembuatan transaksi adalah `201 Created`.
+
+### 4.3 Pencatatan dan Saran Pelanggan
+
+Fitur saran nama pelanggan membantu pengguna kasir menemukan pelanggan yang sudah terdaftar.
+
+Alur penggunaan:
+
+1. Pengguna mengetik nama pelanggan pada form transaksi.
+2. Antarmuka menampilkan saran pelanggan yang cocok, jika fitur saran tersedia.
+3. Jika pengguna memilih saran, form menyimpan `id_pelanggan` yang sesuai.
+4. Ketika transaksi dikirim, server menggunakan pelanggan yang dipilih dan tidak membuat data pelanggan duplikat.
+5. Jika nama tersebut merupakan pelanggan baru, server menyimpan pelanggan baru dan menghubungkannya ke transaksi.
+6. Server menolak transaksi jika nama pelanggan kosong atau hanya berisi spasi.
+
+Contoh body ketika pelanggan yang sudah terdaftar dipilih:
+
+```json
+{
+  "id_pelanggan": 7,
+  "nama_pelanggan": "Pelanggan Tes",
+  "no_hp": "081234567890",
+  "metode_pembayaran": "cash",
+  "layanan": [
+    {
+      "id_layanan": 1,
+      "jumlah": 1
+    }
+  ]
+}
+```
+
+Contoh body ketika pelanggan baru dicatat:
+
+```json
+{
+  "nama_pelanggan": "Pelanggan Baru",
+  "no_hp": "081234567890",
+  "metode_pembayaran": "cash",
+  "layanan": [
+    {
+      "id_layanan": 1,
+      "jumlah": 1
+    }
+  ]
+}
+```
+
+**Catatan endpoint saran:** nama route dan format respons khusus untuk pencarian/saran pelanggan harus dicocokkan dengan file PHP aktual. Jangan menetapkan URL baru dalam dokumentasi sebelum endpoint tersebut dipastikan ada di proyek.
+
+### 4.4 GET — Detail Transaksi
 
 **Endpoint:** `GET /api/transaksi/detail.php?id={id_transaksi}`
 
 Contoh URL Postman:
 
-`{{base_url}}/api/transaksi/detail.php?id=1`
+```text
+{{base_url}}/api/transaksi/detail.php?id=1
+```
 
 Mengambil informasi transaksi beserta rincian layanan, jumlah, harga saat transaksi, dan subtotal.
 
@@ -258,7 +401,7 @@ Hak akses:
 
 Respons sukses: `200 OK`.
 
-### 4. Kode Respons
+### 4.5 Kode Respons Transaksi
 
 | HTTP Status                 | Keterangan                                         |
 | --------------------------- | -------------------------------------------------- |
@@ -272,34 +415,34 @@ Respons sukses: `200 OK`.
 | `422 Unprocessable Content` | Validasi data gagal                                |
 | `500 Internal Server Error` | Kesalahan server                                   |
 
-### 5. Catatan Implementasi
+### 4.6 Catatan Implementasi Transaksi
 
 - Format respons menggunakan JSON.
 - Harga pada detail transaksi menyimpan snapshot harga ketika transaksi dibuat.
-- Database yang sudah ada perlu menjalankan `database/migrations/2026-10-13-add-metode-pembayaran.sql` satu kali.
+- Database yang sudah ada perlu menjalankan `database/migrations/2026-10-13-add-metode-pembayaran.sql` satu kali, jika migrasi tersebut belum diterapkan.
 - Endpoint daftar dan detail transaksi menerapkan pembatasan akses berdasarkan role.
 - Semua URL pengujian Postman menggunakan variabel `{{base_url}}` pada environment Postman `Local KELOMPOK-5`.
 
-## API Rekap Pemasukan Harian — WBS 4.5
+## 5. API Rekap Pemasukan Harian — WBS 4.5
 
 **Endpoint:** `GET /api/rekap/pemasukan.php`
 
 **Akses:** Owner yang sudah login.
 
-### Query parameter
+### Query Parameter
 
 | Parameter | Wajib | Keterangan                                                                                                                                      |
 | --------- | ----- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
 | `tanggal` | Tidak | Tanggal rekap dalam format `YYYY-MM-DD`. Jika tidak dikirim, endpoint menggunakan tanggal hari ini berdasarkan zona waktu WIB (`Asia/Jakarta`). |
 
-### Contoh request
+### Contoh Request
 
 ```http
 GET {{base_url}}/api/rekap/pemasukan.php
 GET {{base_url}}/api/rekap/pemasukan.php?tanggal=2026-10-19
 ```
 
-### Contoh response sukses
+### Contoh Respons Sukses
 
 ```json
 {
@@ -319,9 +462,9 @@ GET {{base_url}}/api/rekap/pemasukan.php?tanggal=2026-10-19
 }
 ```
 
-Nilai di atas merupakan contoh.
+Nilai di atas hanya contoh.
 
-### Struktur data
+### Struktur Data
 
 - `tanggal`: tanggal rekap.
 - `total_pemasukan`: total `total_harga` seluruh transaksi pada tanggal tersebut.
@@ -335,37 +478,40 @@ Nilai di atas merupakan contoh.
 
 - Rekap menggunakan data transaksi dari tabel `transaksi`.
 - Tanggal transaksi mengikuti tanggal yang dicatat dalam zona waktu WIB.
-- Tanggal tanpa transaksi tetap mengembalikan response sukses (`200 OK`), dengan `total_pemasukan` bernilai `0` dan `rincian_per_barber` berupa array kosong.
+- Tanggal tanpa transaksi tetap mengembalikan respons sukses (`200 OK`), dengan `total_pemasukan` bernilai `0` dan `rincian_per_barber` berupa array kosong.
 - Format tanggal tidak valid ditolak dengan `422 Unprocessable Entity`.
 - Pengguna yang belum login harus melewati autentikasi terlebih dahulu.
 - Pengguna selain owner ditolak dengan `403 Forbidden`.
 - Method selain `GET` ditolak dengan `405 Method Not Allowed`.
 
-## API Pengeluaran — WBS 4.3
+## 6. API Pengeluaran — WBS 4.3
 
-Base endpoint: `/api/pengeluaran/`
+**Base endpoint:** `/api/pengeluaran/`
 
-Akses: owner yang sudah login.
+**Akses:** Owner yang sudah login.
 
-### GET — Daftar Pengeluaran Berdasarkan Tanggal
+### 6.1 GET — Daftar Pengeluaran Berdasarkan Tanggal
 
 Endpoint:
+
 `GET /api/pengeluaran/?tanggal=YYYY-MM-DD`
 
 Parameter `tanggal` bersifat opsional. Jika tidak diberikan, endpoint menggunakan tanggal hari ini berdasarkan zona waktu `Asia/Jakarta` (WIB). Filter dan rekap menggunakan kolom `tanggal` bertipe `DATE`.
 
-Response berhasil (`200 OK`) memuat:
+Respons berhasil (`200 OK`) memuat:
 
 - `tanggal`: tanggal yang diminta.
 - `pengeluaran`: daftar pengeluaran pada tanggal tersebut.
 - `total_pengeluaran`: total nominal pengeluaran pada tanggal tersebut.
 
-### POST — Menambahkan Pengeluaran
+### 6.2 POST — Menambahkan Pengeluaran
 
 Endpoint:
+
 `POST /api/pengeluaran/`
 
 Header:
+
 `Content-Type: application/json`
 
 Contoh body:
@@ -383,11 +529,11 @@ Aturan validasi:
 
 - `kategori` wajib diisi dan maksimal 100 karakter.
 - `nominal` wajib berupa bilangan bulat lebih dari nol.
-- - `tanggal` opsional; jika tidak diberikan, digunakan tanggal hari ini berdasarkan zona waktu `Asia/Jakarta` (WIB).
+- `tanggal` opsional; jika tidak diberikan, digunakan tanggal hari ini berdasarkan zona waktu `Asia/Jakarta` (WIB).
 - `keterangan` opsional dan maksimal 255 karakter.
 - `id_user` diambil dari sesi login, bukan dari body request.
 
-Response berhasil: `201 Created`.
+Respons sukses: `201 Created`.
 
 Jika nominal kosong, nol, negatif, bukan bilangan bulat, atau melebihi batas integer, API mengembalikan `422 Unprocessable Content` dengan kode `VALIDATION_ERROR` dan pesan:
 
@@ -395,14 +541,16 @@ Jika nominal kosong, nol, negatif, bukan bilangan bulat, atau melebihi batas int
 
 ### Status HTTP
 
-- `400 Bad Request`: JSON tidak valid (`INVALID_JSON`).
-- `401 Unauthorized`: sesi login tidak valid.
-- `403 Forbidden`: pengguna bukan owner.
-- `405 Method Not Allowed`: method tidak didukung.
-- `422 Unprocessable Content`: validasi gagal (`VALIDATION_ERROR`).
-- `500 Internal Server Error`: kesalahan server.
+| HTTP Status                 | Keterangan                          |
+| --------------------------- | ----------------------------------- |
+| `400 Bad Request`           | JSON tidak valid (`INVALID_JSON`)   |
+| `401 Unauthorized`          | Sesi login tidak valid              |
+| `403 Forbidden`             | Pengguna bukan owner                |
+| `405 Method Not Allowed`    | Method tidak didukung               |
+| `422 Unprocessable Content` | Validasi gagal (`VALIDATION_ERROR`) |
+| `500 Internal Server Error` | Kesalahan server                    |
 
-### Skenario Pengujian
+### Skenario Pengujian Pengeluaran
 
 - [x] Simpan pengeluaran kategori Bahan sebesar Rp150.000.
 - [x] Pastikan nominal kosong, nol, dan negatif ditolak.
@@ -411,3 +559,37 @@ Jika nominal kosong, nol, negatif, bukan bilangan bulat, atau melebihi batas int
 - [x] Pastikan pengguna selain owner ditolak.
 - [x] Pastikan tanggal default menggunakan tanggal WIB ketika parameter atau field `tanggal` tidak diberikan.
 - [x] Pastikan tanggal yang tidak memiliki pengeluaran menghasilkan `pengeluaran` berupa array kosong dan `total_pengeluaran` sebesar `0`.
+
+## 7. Skenario Pengujian Fitur Pelanggan dan Layanan
+
+### Pencatatan Pelanggan
+
+- [ ] Mencatat transaksi untuk pelanggan baru.
+- [ ] Memastikan pelanggan baru tersimpan dan terhubung dengan transaksi.
+- [ ] Memilih nama pelanggan dari saran yang tersedia.
+- [ ] Memastikan pelanggan yang dipilih menggunakan `id_pelanggan` yang benar.
+- [ ] Memastikan transaksi baru untuk pelanggan yang dipilih tidak membuat data pelanggan duplikat.
+- [ ] Mengirim transaksi dengan `nama_pelanggan` kosong dan memastikan server menolak request.
+- [ ] Mengirim transaksi dengan `nama_pelanggan` berisi spasi saja dan memastikan server menolak request.
+- [ ] Memastikan pesan validasi nama pelanggan adalah `Nama pelanggan wajib diisi.`
+
+### Pengelolaan Layanan
+
+- [ ] GET layanan mengembalikan daftar layanan beserta status aktif/nonaktif.
+- [ ] Layanan nonaktif tetap terlihat pada halaman pengelolaan layanan.
+- [ ] Owner dapat mengaktifkan kembali layanan nonaktif.
+- [ ] Owner dapat menonaktifkan layanan aktif.
+- [ ] Pengguna selain owner tidak dapat melakukan perubahan layanan.
+
+## 8. Catatan Verifikasi Dokumentasi
+
+Dokumen ini dirapikan berdasarkan kontrak API dan ERD yang tersedia serta kebutuhan fitur pelanggan dan layanan.
+
+Sebelum dianggap sebagai dokumentasi final, cocokkan dengan kode aktual di repository, terutama:
+
+- Nama endpoint dan format respons API saran pelanggan.
+- Nama kolom serta nilai status aktif/nonaktif layanan.
+- Struktur tabel `pelanggan` dan foreign key `transaksi.id_pelanggan`.
+- Nama kolom transaksi dan detail transaksi.
+- Status HTTP serta `error_code` yang benar-benar dikembalikan oleh endpoint.
+- Status pengujian yang telah dilakukan. Jangan tandai pengujian sebagai selesai sebelum benar-benar dijalankan.

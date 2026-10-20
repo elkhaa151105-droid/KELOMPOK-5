@@ -62,6 +62,7 @@ if ($id_barber === false) {
 // Ambil data form
 // ======================================================
 
+$idPelangganRaw = $_POST['id_pelanggan'] ?? '';
 $layananDipilih = $_POST['layanan'] ?? [];
 $jumlahInput = $_POST['jumlah'] ?? [];
 // FE kasir tidak menyediakan harga manual; harga selalu diambil dari database.
@@ -84,6 +85,7 @@ if (
     !is_string($namaPelangganRaw) ||
     !is_string($noHpRaw) ||
     !is_string($metodePembayaran) ||
+    !is_string($idPelangganRaw) ||
     !in_array($metodePembayaran, ['cash', 'qris', 'transfer'], true) ||
     strlen(trim($namaPelangganRaw)) > 100 ||
     strlen(trim($noHpRaw)) > 20
@@ -94,12 +96,17 @@ if (
 
 $namaPelanggan = trim($namaPelangganRaw);
 $noHp = trim($noHpRaw);
+$idPelangganRaw = $_POST['id_pelanggan'] ?? '';
 
 if ($namaPelanggan === '') {
     header('Location: /KELOMPOK-5/pages/transaksi.php?error=customer_required');
     exit;
 }
 
+if ($namaPelanggan === '') {
+    header('Location: /KELOMPOK-5/pages/transaksi.php?error=customer_required');
+    exit;
+}
 
 // ======================================================
 // Validasi barber pelaksana
@@ -660,17 +667,53 @@ try {
     );
 
 
+    
     $idPelanggan = null;
-    if ($namaPelanggan !== '' || $noHp !== '') {
+
+    if ($idPelangganRaw !== '') {
+        $idPelangganTerpilih = filter_var(
+            $idPelangganRaw,
+            FILTER_VALIDATE_INT
+        );
+
+        if ($idPelangganTerpilih === false || $idPelangganTerpilih < 1) {
+            throw new DomainException('Pelanggan yang dipilih tidak valid.');
+        }
+
         $stmtPelanggan = $pdo->prepare(
-            'INSERT INTO pelanggan (nama, no_hp) VALUES (?, ?)'
+            'SELECT id_pelanggan
+             FROM pelanggan
+             WHERE id_pelanggan = ?
+             LIMIT 1'
+        );
+        $stmtPelanggan->execute([$idPelangganTerpilih]);
+
+        $pelangganAda = $stmtPelanggan->fetchColumn();
+
+        if ($pelangganAda === false) {
+            throw new DomainException(
+                'Pelanggan yang dipilih tidak ditemukan.'
+            );
+        }
+
+        $idPelanggan = (int) $pelangganAda;
+    } else {
+        if ($namaPelanggan === '') {
+            throw new DomainException('Nama pelanggan wajib diisi');
+        }
+
+        $stmtPelanggan = $pdo->prepare(
+            'INSERT INTO pelanggan (nama, no_hp)
+             VALUES (?, ?)'
         );
         $stmtPelanggan->execute([
-            $namaPelanggan !== '' ? $namaPelanggan : null,
+            $namaPelanggan,
             $noHp !== '' ? $noHp : null
         ]);
+
         $idPelanggan = (int) $pdo->lastInsertId();
     }
+
 
 
     $stmtTransaksi->execute([
@@ -691,37 +734,30 @@ try {
     // Insert detail transaksi
     // -----------------------------------------------
 
-    $stmtDetail = $pdo->prepare(
-        "INSERT INTO detail_transaksi
-        (
-            id_transaksi,
-            id_layanan,
-            harga_saat_transaksi,
-            hpp_saat_transaksi,
-            jumlah
-        )
-        VALUES
-        (
-            ?,
-            ?,
-            ?,
-            ?,
-            ?
-        )"
-    );
+$stmtDetail = $pdo->prepare(
+    "INSERT INTO detail_transaksi
+    (
+        id_transaksi,
+        id_layanan,
+        nama_layanan_saat_transaksi,
+        harga_saat_transaksi,
+        hpp_saat_transaksi,
+        jumlah
+    )
+    VALUES (?, ?, ?, ?, ?, ?)"
+);
 
+foreach ($detailTransaksi as $detail) {
+    $stmtDetail->execute([
+        $idTransaksi,
+        $detail['id_layanan'],
+        $detail['nama_layanan'],
+        $detail['harga_final'],
+        $detail['hpp_saat_transaksi'],
+        $detail['jumlah']
+    ]);
+}
 
-    foreach ($detailTransaksi as $detail) {
-
-        $stmtDetail->execute([
-            $idTransaksi,
-            $detail['id_layanan'],
-            $detail['harga_final'],
-            $detail['hpp_saat_transaksi'],
-            $detail['jumlah']
-        ]);
-
-    }
 
 
     // -----------------------------------------------

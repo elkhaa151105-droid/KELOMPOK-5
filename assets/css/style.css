@@ -2235,3 +2235,43 @@ body:has(.login-page) main.container {
   background: #3b3da8;
   color: #ffffff;
 }
+
+.customer-suggestions {
+  margin-top: 6px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.customer-suggestions[hidden] {
+  display: none;
+}
+
+.customer-suggestion {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 0;
+  border-bottom: 1px solid #e5e7eb;
+  background: #fff;
+  color: #111827;
+  text-align: left;
+  cursor: pointer;
+}
+
+.customer-suggestion:last-child {
+  border-bottom: 0;
+}
+
+.customer-suggestion:hover,
+.customer-suggestion:focus {
+  background: #f3f4f6;
+}
+
+.customer-suggestion small {
+  color: #6b7280;
+}

@@ -117,6 +117,18 @@ include __DIR__ . '/../includes/header.php';
                         maxlength="100"
                         placeholder="Ketik di sini..."
                     >
+                    <input
+    type="hidden"
+    id="idPelanggan"
+    name="id_pelanggan"
+    value=""
+>
+<div
+    id="saranPelanggan"
+    class="customer-suggestions"
+    role="listbox"
+    hidden
+></div>
                 </div>
 
                 <div class="kasir-field">

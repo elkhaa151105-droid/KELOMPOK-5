@@ -14,13 +14,12 @@ $stmtRiwayat = $pdo->prepare(
     "SELECT t.id_transaksi, t.tanggal, t.waktu, t.total_harga,
             t.metode_pembayaran, p.nama AS nama_pelanggan,
             GROUP_CONCAT(
-                CONCAT(l.nama_layanan, ' (', dt.jumlah, 'x)')
+                CONCAT(dt.nama_layanan_saat_transaksi, ' (', dt.jumlah, 'x)')
                 ORDER BY dt.id_detail SEPARATOR ', '
             ) AS layanan
      FROM transaksi t
      LEFT JOIN pelanggan p ON p.id_pelanggan = t.id_pelanggan
      JOIN detail_transaksi dt ON dt.id_transaksi = t.id_transaksi
-     JOIN layanan l ON l.id_layanan = dt.id_layanan
      $where
      GROUP BY t.id_transaksi, t.tanggal, t.waktu, t.total_harga,
               t.metode_pembayaran, p.nama

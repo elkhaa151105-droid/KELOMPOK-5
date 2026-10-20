@@ -96,18 +96,17 @@ try {
     }
 
     $stmtDetail = $pdo->prepare("
-        SELECT
-            dt.id_layanan,
-            l.nama_layanan,
-            dt.harga_saat_transaksi AS harga,
-            dt.hpp_saat_transaksi,
-            dt.jumlah,
-            (dt.harga_saat_transaksi * dt.jumlah) AS subtotal
-        FROM detail_transaksi dt
-        JOIN layanan l ON l.id_layanan = dt.id_layanan
-        WHERE dt.id_transaksi = :id_transaksi
-        ORDER BY dt.id_detail ASC
-    ");
+    SELECT
+        dt.id_layanan,
+        dt.nama_layanan_saat_transaksi AS nama_layanan,
+        dt.harga_saat_transaksi AS harga,
+        dt.hpp_saat_transaksi,
+        dt.jumlah,
+        (dt.harga_saat_transaksi * dt.jumlah) AS subtotal
+    FROM detail_transaksi dt
+    WHERE dt.id_transaksi = :id_transaksi
+    ORDER BY dt.id_detail ASC
+");
 
     $stmtDetail->execute([
         ':id_transaksi' => $idTransaksi

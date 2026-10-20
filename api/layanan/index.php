@@ -6,7 +6,6 @@ header('Content-Type: application/json; charset=utf-8');
 function kirimJson(int $status, array $body): void
 {
     http_response_code($status);
-
     echo json_encode($body, JSON_UNESCAPED_UNICODE);
     exit;
 }
@@ -27,9 +26,135 @@ function bacaJson(): array
     return $data;
 }
 
-$method = $_SERVER['REQUEST_METHOD'];
+function bacaDataRequest(): array
+{
+    $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
 
-if (!in_array($method, ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'], true)) {
+    if (stripos($contentType, 'multipart/form-data') === 0) {
+        return $_POST;
+    }
+
+    return bacaJson();
+}
+
+function simpanIkon(?array $file, ?string $ikonLama = null): ?string
+{
+    if (
+        $file === null ||
+        !isset($file['error']) ||
+        $file['error'] === UPLOAD_ERR_NO_FILE
+    ) {
+        return $ikonLama;
+    }
+
+    if ($file['error'] !== UPLOAD_ERR_OK) {
+        kirimJson(422, [
+            'success' => false,
+            'message' => 'Upload ikon gagal.',
+            'error_code' => 'ICON_UPLOAD_FAILED'
+        ]);
+    }
+
+    if (
+        !isset($file['size'], $file['tmp_name']) ||
+        $file['size'] > 2 * 1024 * 1024
+    ) {
+        kirimJson(422, [
+            'success' => false,
+            'message' => 'Ukuran ikon maksimal 2 MB.',
+            'error_code' => 'ICON_TOO_LARGE'
+        ]);
+    }
+
+    if (!is_uploaded_file($file['tmp_name'])) {
+        kirimJson(422, [
+            'success' => false,
+            'message' => 'File upload tidak valid.',
+            'error_code' => 'INVALID_UPLOAD'
+        ]);
+    }
+
+    $finfo = new finfo(FILEINFO_MIME_TYPE);
+    $mime = $finfo->file($file['tmp_name']);
+
+    $formatDiizinkan = [
+        'image/jpeg' => 'jpg',
+        'image/png' => 'png',
+        'image/webp' => 'webp'
+    ];
+
+    if (!isset($formatDiizinkan[$mime])) {
+        kirimJson(422, [
+            'success' => false,
+            'message' => 'Ikon harus berformat JPG, PNG, atau WebP.',
+            'error_code' => 'INVALID_ICON_TYPE'
+        ]);
+    }
+
+    $folder = __DIR__ . '/../../uploads/layanan';
+
+    if (
+        !is_dir($folder) &&
+        !mkdir($folder, 0755, true) &&
+        !is_dir($folder)
+    ) {
+        throw new RuntimeException(
+            'Folder upload ikon tidak dapat dibuat.'
+        );
+    }
+
+    $namaFile = bin2hex(random_bytes(16))
+        . '.'
+        . $formatDiizinkan[$mime];
+
+    $tujuan = $folder . '/' . $namaFile;
+
+    if (!move_uploaded_file($file['tmp_name'], $tujuan)) {
+        throw new RuntimeException('File ikon gagal disimpan.');
+    }
+
+    return 'uploads/layanan/' . $namaFile;
+}
+
+function hapusFileIkon(?string $path): void
+{
+    if (!$path || strpos($path, 'uploads/layanan/') !== 0) {
+        return;
+    }
+
+    $namaFile = basename($path);
+
+    if (
+        $namaFile === '' ||
+        $namaFile === '.' ||
+        $namaFile === '..'
+    ) {
+        return;
+    }
+
+    $file = __DIR__ . '/../../uploads/layanan/' . $namaFile;
+
+    if (is_file($file)) {
+        unlink($file);
+    }
+}
+
+$methodAsli = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+$method = $methodAsli;
+
+// Dukungan PUT dengan multipart/form-data.
+if (
+    $methodAsli === 'POST' &&
+    ($_POST['_method'] ?? '') === 'PUT'
+) {
+    $method = 'PUT';
+}
+
+if (!in_array(
+    $method,
+    ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+    true
+)) {
     header('Allow: GET, POST, PUT, PATCH, DELETE');
 
     kirimJson(405, [
@@ -41,17 +166,17 @@ if (!in_array($method, ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'], true)) {
 
 try {
     require_once __DIR__ . '/../../config/config.php';
-    if (in_array($method, ['POST', 'PUT', 'PATCH', 'DELETE'], true)) {
-    require_once __DIR__ . '/../middleware/auth.php';
-    apiWajibOwner();
-}
 
-    // GET: mengambil daftar layanan aktif
+    if (in_array($method, ['POST', 'PUT', 'PATCH', 'DELETE'], true)) {
+        require_once __DIR__ . '/../middleware/auth.php';
+        apiWajibOwner();
+    }
+
+    // GET: mengambil semua layanan, termasuk yang nonaktif.
     if ($method === 'GET') {
         $stmt = $pdo->prepare(
-            'SELECT id_layanan, nama_layanan, harga, hpp
+            'SELECT id_layanan, nama_layanan, harga, hpp, aktif, icon_layanan
              FROM layanan
-             WHERE aktif = 1
              ORDER BY id_layanan DESC'
         );
 
@@ -63,11 +188,12 @@ try {
         ]);
     }
 
-    // POST: menambahkan layanan baru
+    // POST: menambahkan layanan baru.
     if ($method === 'POST') {
-        $data = bacaJson();
+        $data = bacaDataRequest();
 
         $namaRaw = $data['nama_layanan'] ?? null;
+
         if (!is_string($namaRaw)) {
             kirimJson(422, [
                 'success' => false,
@@ -75,6 +201,7 @@ try {
                 'error_code' => 'INVALID_NAMA_LAYANAN'
             ]);
         }
+
         $nama = trim($namaRaw);
         $harga = filter_var(
             $data['harga'] ?? null,
@@ -101,7 +228,12 @@ try {
             ]);
         }
 
-        if ($hpp === false || $hpp === null || $hpp < 0 || $hpp > 2147483647) {
+        if (
+            $hpp === false ||
+            $hpp === null ||
+            $hpp < 0 ||
+            $hpp > 2147483647
+        ) {
             kirimJson(422, [
                 'success' => false,
                 'message' => 'HPP harus berupa bilangan bulat nol atau lebih.',
@@ -109,12 +241,25 @@ try {
             ]);
         }
 
-        $stmt = $pdo->prepare(
-            'INSERT INTO layanan (nama_layanan, harga, hpp, aktif)
-             VALUES (?, ?, ?, 1)'
-        );
+        $ikonBaru = simpanIkon($_FILES['icon_layanan'] ?? null);
 
-        $stmt->execute([$nama, $harga, $hpp]);
+        try {
+            $stmt = $pdo->prepare(
+                'INSERT INTO layanan
+                    (nama_layanan, harga, hpp, icon_layanan, aktif)
+                 VALUES (?, ?, ?, ?, 1)'
+            );
+
+            $stmt->execute([
+                $nama,
+                $harga,
+                $hpp,
+                $ikonBaru
+            ]);
+        } catch (Throwable $e) {
+            hapusFileIkon($ikonBaru);
+            throw $e;
+        }
 
         kirimJson(201, [
             'success' => true,
@@ -123,20 +268,24 @@ try {
                 'id_layanan' => (int) $pdo->lastInsertId(),
                 'nama_layanan' => $nama,
                 'harga' => $harga,
-                'hpp' => $hpp
+                'hpp' => $hpp,
+                'aktif' => 1,
+                'icon_layanan' => $ikonBaru
             ]
         ]);
     }
 
-    // PUT: mengubah nama dan harga layanan
+    // PUT: mengedit layanan aktif maupun nonaktif.
     if ($method === 'PUT') {
-        $data = bacaJson();
+        $data = bacaDataRequest();
 
         $id = filter_var(
             $data['id_layanan'] ?? null,
             FILTER_VALIDATE_INT
         );
+
         $namaRaw = $data['nama_layanan'] ?? null;
+
         if (!is_string($namaRaw)) {
             kirimJson(422, [
                 'success' => false,
@@ -144,6 +293,7 @@ try {
                 'error_code' => 'INVALID_NAMA_LAYANAN'
             ]);
         }
+
         $nama = trim($namaRaw);
         $harga = filter_var(
             $data['harga'] ?? null,
@@ -178,7 +328,12 @@ try {
             ]);
         }
 
-        if ($hpp === false || $hpp === null || $hpp < 0 || $hpp > 2147483647) {
+        if (
+            $hpp === false ||
+            $hpp === null ||
+            $hpp < 0 ||
+            $hpp > 2147483647
+        ) {
             kirimJson(422, [
                 'success' => false,
                 'message' => 'HPP harus berupa bilangan bulat nol atau lebih.',
@@ -186,37 +341,75 @@ try {
             ]);
         }
 
-        $stmt = $pdo->prepare(
-            'UPDATE layanan
-             SET nama_layanan = ?, harga = ?, hpp = ?
-             WHERE id_layanan = ? AND aktif = 1'
+        // Tidak memakai kondisi "aktif = 1", jadi layanan nonaktif tetap bisa diedit.
+        $cek = $pdo->prepare(
+            'SELECT icon_layanan
+             FROM layanan
+             WHERE id_layanan = ?'
         );
 
-        $stmt->execute([$nama, $harga, $hpp, $id]);
+        $cek->execute([$id]);
+        $layananLama = $cek->fetch(PDO::FETCH_ASSOC);
 
-        if ($stmt->rowCount() === 0) {
-            $cek = $pdo->prepare(
-                'SELECT id_layanan FROM layanan
-                 WHERE id_layanan = ? AND aktif = 1'
+        if (!$layananLama) {
+            kirimJson(404, [
+                'success' => false,
+                'message' => 'Layanan tidak ditemukan.',
+                'error_code' => 'LAYANAN_NOT_FOUND'
+            ]);
+        }
+
+        $ikonLama = $layananLama['icon_layanan'];
+
+        $fileIkonDiunggah = isset($_FILES['icon_layanan'])
+            && $_FILES['icon_layanan']['error'] !== UPLOAD_ERR_NO_FILE;
+
+        $ikonBaru = simpanIkon(
+            $_FILES['icon_layanan'] ?? null,
+            $ikonLama
+        );
+
+        try {
+            $stmt = $pdo->prepare(
+                'UPDATE layanan
+                 SET nama_layanan = ?, harga = ?, hpp = ?, icon_layanan = ?
+                 WHERE id_layanan = ?'
             );
-            $cek->execute([$id]);
 
-            if (!$cek->fetch()) {
-                kirimJson(404, [
-                    'success' => false,
-                    'message' => 'Layanan tidak ditemukan atau sudah nonaktif.',
-                    'error_code' => 'LAYANAN_NOT_FOUND'
-                ]);
+            $stmt->execute([
+                $nama,
+                $harga,
+                $hpp,
+                $ikonBaru,
+                $id
+            ]);
+        } catch (Throwable $e) {
+            if ($fileIkonDiunggah && $ikonBaru !== $ikonLama) {
+                hapusFileIkon($ikonBaru);
             }
+
+            throw $e;
+        }
+
+        // Hapus ikon lama hanya setelah database berhasil diperbarui.
+        if ($fileIkonDiunggah && $ikonLama !== $ikonBaru) {
+            hapusFileIkon($ikonLama);
         }
 
         kirimJson(200, [
             'success' => true,
-            'message' => 'Layanan berhasil diperbarui.'
+            'message' => 'Layanan berhasil diperbarui.',
+            'data' => [
+                'id_layanan' => (int) $id,
+                'nama_layanan' => $nama,
+                'harga' => $harga,
+                'hpp' => $hpp,
+                'icon_layanan' => $ikonBaru
+            ]
         ]);
     }
 
-    // PATCH: mengubah status layanan; tanpa nilai aktif tetap menonaktifkan
+    // PATCH: hanya mengubah status aktif/nonaktif.
     if ($method === 'PATCH') {
         $data = bacaJson();
 
@@ -236,6 +429,7 @@ try {
         $aktif = array_key_exists('aktif', $data)
             ? filter_var($data['aktif'], FILTER_VALIDATE_INT)
             : 0;
+
         if (!in_array($aktif, [0, 1], true)) {
             kirimJson(422, [
                 'success' => false,
@@ -254,15 +448,19 @@ try {
 
         if ($stmt->rowCount() === 0) {
             $cek = $pdo->prepare(
-                'SELECT id_layanan FROM layanan WHERE id_layanan = ?'
+                'SELECT id_layanan
+                 FROM layanan
+                 WHERE id_layanan = ?'
             );
+
             $cek->execute([$id]);
-            if (!$cek->fetch()) {
-            kirimJson(404, [
-                'success' => false,
-                'message' => 'Layanan tidak ditemukan.',
-                'error_code' => 'LAYANAN_NOT_FOUND'
-            ]);
+
+            if (!$cek->fetchColumn()) {
+                kirimJson(404, [
+                    'success' => false,
+                    'message' => 'Layanan tidak ditemukan.',
+                    'error_code' => 'LAYANAN_NOT_FOUND'
+                ]);
             }
         }
 
@@ -274,14 +472,17 @@ try {
         ]);
     }
 
+    // DELETE: menghapus layanan permanen beserta file ikonnya.
     if ($method === 'DELETE') {
         $data = bacaJson();
+
         $id = filter_var(
             $data['id_layanan'] ?? null,
             FILTER_VALIDATE_INT,
             ['options' => ['min_range' => 1]]
         );
-        if ($id === false) {
+
+        if ($id === false || $id === null) {
             kirimJson(422, [
                 'success' => false,
                 'message' => 'ID layanan tidak valid.',
@@ -289,13 +490,16 @@ try {
             ]);
         }
 
-        $pdo->beginTransaction();
-        $stmt = $pdo->prepare(
-            'SELECT id_layanan FROM layanan WHERE id_layanan = ? FOR UPDATE'
+        $cek = $pdo->prepare(
+            'SELECT icon_layanan
+             FROM layanan
+             WHERE id_layanan = ?'
         );
-        $stmt->execute([$id]);
-        if (!$stmt->fetchColumn()) {
-            $pdo->rollBack();
+
+        $cek->execute([$id]);
+        $layananLama = $cek->fetch(PDO::FETCH_ASSOC);
+
+        if (!$layananLama) {
             kirimJson(404, [
                 'success' => false,
                 'message' => 'Layanan tidak ditemukan.',
@@ -304,28 +508,19 @@ try {
         }
 
         $stmt = $pdo->prepare(
-            'SELECT 1 FROM detail_transaksi WHERE id_layanan = ? LIMIT 1'
+            'DELETE FROM layanan
+             WHERE id_layanan = ?'
         );
-        $stmt->execute([$id]);
-        if ($stmt->fetchColumn()) {
-            $pdo->rollBack();
-            kirimJson(409, [
-                'success' => false,
-                'message' => 'Layanan yang tercatat pada transaksi tidak dapat dihapus.',
-                'error_code' => 'LAYANAN_IN_USE'
-            ]);
-        }
 
-        $stmt = $pdo->prepare('DELETE FROM layanan WHERE id_layanan = ?');
         $stmt->execute([$id]);
-        $pdo->commit();
+
+        hapusFileIkon($layananLama['icon_layanan']);
 
         kirimJson(200, [
             'success' => true,
-            'message' => 'Layanan berhasil dihapus.'
+            'message' => 'Layanan berhasil dihapus permanen.'
         ]);
     }
-
 } catch (Throwable $e) {
     error_log($e->getMessage());
 

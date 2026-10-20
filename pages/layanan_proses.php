@@ -279,6 +279,8 @@ if ($action === 'aktifkan' || $action === 'status') {
     exit;
 }
 
+
+
 if ($action === 'hapus') {
     $id_layanan = filter_var(
         $_POST['id_layanan'] ?? null,
@@ -291,46 +293,20 @@ if ($action === 'hapus') {
         exit;
     }
 
-    try {
-        $pdo->beginTransaction();
-        $stmt = $pdo->prepare(
-            'SELECT id_layanan FROM layanan WHERE id_layanan = ? FOR UPDATE'
-        );
-        $stmt->execute([$id_layanan]);
-        if (!$stmt->fetchColumn()) {
-            $pdo->rollBack();
-            header('Location: /KELOMPOK-5/pages/layanan.php?status=gagal');
-            exit;
-        }
+    $stmt = $pdo->prepare(
+        'DELETE FROM layanan WHERE id_layanan = ?'
+    );
+    $stmt->execute([$id_layanan]);
 
-        $stmt = $pdo->prepare(
-            'SELECT 1 FROM detail_transaksi WHERE id_layanan = ? LIMIT 1'
-        );
-        $stmt->execute([$id_layanan]);
-        if ($stmt->fetchColumn()) {
-            $pdo->rollBack();
-            header('Location: /KELOMPOK-5/pages/layanan.php?status=layanan_digunakan');
-            exit;
-        }
-
-        $stmt = $pdo->prepare('DELETE FROM layanan WHERE id_layanan = ?');
-        $stmt->execute([$id_layanan]);
-        $pdo->commit();
-    } catch (Throwable $e) {
-        if ($pdo->inTransaction()) {
-            $pdo->rollBack();
-        }
-        error_log('Hapus layanan gagal: ' . $e->getMessage());
-        $status = $e instanceof PDOException && $e->getCode() === '23000'
-            ? 'layanan_digunakan'
-            : 'gagal';
-        header('Location: /KELOMPOK-5/pages/layanan.php?status=' . $status);
+    if ($stmt->rowCount() === 0) {
+        header('Location: /KELOMPOK-5/pages/layanan.php?status=gagal');
         exit;
     }
 
     header('Location: /KELOMPOK-5/pages/layanan.php?status=hapus_sukses');
     exit;
 }
+   
 
 // Action tidak dikenal
 header('Location: /KELOMPOK-5/pages/layanan.php?status=gagal');
