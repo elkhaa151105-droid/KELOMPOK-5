@@ -78,8 +78,9 @@ if (isset($_GET['both_empty'])) {
         </div>
 
         <h1>Masuk Ke Akun</h1>
+        
         <p class="login-description">
-            Masukkan email/username dan password akunmu.
+            Silahkan masuk untuk mengakses sistem Kataji Barber
         </p>
 
         <form

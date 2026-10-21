@@ -153,7 +153,7 @@ body:has(.login-page) main.container {
 }
 
 .login-description {
-    width: 100%;
+    max-width: 320px;
     margin: 0 0 auto 20px 0;
     text-align: left;
     color: #777777;
@@ -445,8 +445,8 @@ body:has(.login-page) main.container {
 }
 
 .sidebar-brand-link img {
-    width: 58px;
-    height: 58px;
+    width: 100px;
+    height: 100px;
     border-radius: 50%;
     object-fit: contain;
     display: block;
@@ -455,10 +455,16 @@ body:has(.login-page) main.container {
 .sidebar-brand-text {
     display: block;
     margin-top: 6px;
-    color: #FFFFFF;
-    font-size: 11px;
-    font-weight: 700;
+    color: #fdfdfd;
+    font-size: 14px;
+    font-weight: 400;
     letter-spacing: 0.8px;
+    font-family: 'New Amsterdam', sans-serif;
+
+    /* background font 
+    background-color: #fdfdfd;
+    padding: 4px 8px;
+    border-radius: 4px;*/
 }
 
 /* Menu Navigasi */
@@ -2224,7 +2230,6 @@ body.layanan-modal-open {
     margin: 0 0 4px;
     color: #202020;
     font-size: 26px;
-    font-weight: bold;
 }
 
 .pemasukan-heading p {
@@ -3055,7 +3060,60 @@ body .pengeluaran-toast[hidden] {
     text-align: left;
     cursor: pointer;
     color: #333;
-    font-size: 10px;
+    font-size: 10px
+}
+
+.pelanggan-suggestion-item:hover {
+    background: #f0f5f9;
+}
+
+.pelanggan-suggestion-empty {
+    padding: 10px 12px;
+    color: #777;
+    font-size: 14px;
+}
+
+
+/* Validasi nama pelanggan pada halaman kasir */
+.kasir-field-error {
+    display: block;
+    color: #e53935;
+    font-size: 12px;
+    margin-top: 3px;
+}
+
+.kasir-field-error[hidden] {
+    display: none;
+}
+
+#namaPelanggan.is-invalid {
+    border: 1px solid #e53935;
+    outline: none;
+}
+
+/* Daftar saran pelanggan */
+.pelanggan-suggestions {
+    margin-top: 4px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #fff;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.pelanggan-suggestions[hidden] {
+    display: none;
+}
+
+.pelanggan-suggestion-item {
+    display: block;
+    width: 100%;
+    padding: 10px 12px;
+    border: none;
+    background: #fff;
+    text-align: left;
+    cursor: pointer;
+    color: #333;
 }
 
 .pelanggan-suggestion-item:hover {

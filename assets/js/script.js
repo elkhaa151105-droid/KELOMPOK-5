@@ -770,6 +770,34 @@ document.addEventListener('DOMContentLoaded', function () {
     // ======================================================
 
     const btnSimpanTransaksi = document.getElementById('btnSimpanTransaksi');
+    
+    // Validasi nama pelanggan di halaman kasir.
+    const errorNamaKasir = document.getElementById('errorNamaKasir');
+
+    function tampilkanErrorNamaKasir() {
+        if (errorNamaKasir) {
+            errorNamaKasir.textContent = '*Nama Wajib Diisi';
+            errorNamaKasir.hidden = false;
+        }
+
+        if (namaPelangganKasir) {
+            namaPelangganKasir.classList.add('is-invalid');
+            namaPelangganKasir.focus();
+        }
+    }
+
+    const namaPelangganKasir = document.getElementById('namaPelanggan');
+
+    function bersihkanErrorNamaKasir() {
+        if (errorNamaKasir) {
+            errorNamaKasir.textContent = '';
+            errorNamaKasir.hidden = true;
+        }
+
+        namaPelangganKasir?.classList.remove('is-invalid');
+    }
+
+    namaPelangganKasir?.addEventListener('input', bersihkanErrorNamaKasir);
 
     if (btnSimpanTransaksi) {
         btnSimpanTransaksi.addEventListener('click', async function () {
@@ -783,11 +811,11 @@ document.addEventListener('DOMContentLoaded', function () {
             }));
 
             if (!namaPelanggan || !namaPelanggan.value.trim()) {
-                alert('Nama pelanggan wajib diisi!');
-                namaPelanggan?.focus();
+                tampilkanErrorNamaKasir();
                 return;
             }
 
+            bersihkanErrorNamaKasir();
             if (!namaBarber || !namaBarber.value) {
                 alert('Nama barber wajib dipilih!');
                 namaBarber?.focus();
@@ -866,8 +894,13 @@ document.addEventListener('DOMContentLoaded', function () {
         saranPelanggan.className = 'pelanggan-suggestions';
         saranPelanggan.hidden = true;
 
-        inputPelanggan.insertAdjacentElement('afterend', saranPelanggan);
+       const errorNamaKasir = document.getElementById('errorNamaKasir');
 
+if (errorNamaKasir) {
+    errorNamaKasir.insertAdjacentElement('afterend', saranPelanggan);
+} else {
+    inputPelanggan.insertAdjacentElement('afterend', saranPelanggan);
+}
         let timerSaran;
         let permintaanSaran;
 

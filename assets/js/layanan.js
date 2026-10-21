@@ -35,10 +35,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
         clearTimeout(notificationTimer);
 
-        // Gunakan gaya notifikasi yang sama dengan halaman kasir.
-        // Notifikasi sukses memakai hijau lembut; error memakai merah lembut.
+        // Hijau untuk tindakan berhasil/layanan aktif.
+        // Merah untuk hapus, nonaktif, dan kegagalan.
         notification.className = 'transaction-success';
-        if (jenis === 'error') {
+        if (['error', 'hapus', 'nonaktif'].includes(jenis)) {
             notification.classList.add('transaction-error');
         }
         notification.textContent = pesan;

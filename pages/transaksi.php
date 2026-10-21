@@ -132,8 +132,16 @@ require_login();
                     type="text"
                     id="namaPelanggan"
                     placeholder="Ketik disini..."
+                    autocomplete="off"
+                    aria-describedby="errorNamaKasir"
                 >
+                <small
+                    id="errorNamaKasir"
+                    class="kasir-field-error"
+                    hidden
+                ></small>
             </div>
+           
 
             <!-- NAMA BARBER -->
             <div class="kasir-field">
