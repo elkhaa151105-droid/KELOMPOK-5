@@ -186,8 +186,92 @@ try {
             ]
         ]);
     }
+    // DELETE: hapus pengeluaran hanya jika tanggalnya hari ini (WIB).
+    if ($method === 'DELETE') {
+        $input = json_decode(file_get_contents('php://input'), true);
+        if (!is_array($input)) {
+            $input = [];
+        }
 
-    header('Allow: GET, POST');
+        // Terima ID melalui query string atau JSON body.
+        $idInput = $_GET['id_pengeluaran']
+            ?? $input['id_pengeluaran']
+            ?? null;
+
+        // Validasi ID: wajib bilangan bulat positif.
+        $idValid = (
+            is_int($idInput)
+            || (is_string($idInput)
+                && preg_match('/^[1-9][0-9]*$/', $idInput))
+        );
+
+        if (!$idValid || (float) $idInput > PHP_INT_MAX) {
+            kirimJsonPengeluaran(422, [
+                'success' => false,
+                'message' => 'ID pengeluaran tidak valid.',
+                'error_code' => 'VALIDATION_ERROR'
+            ]);
+        }
+
+        $idPengeluaran = (int) $idInput;
+        $tanggalHariIni = tanggalHariIniWIBPengeluaran();
+
+        // Cari data berdasarkan ID.
+        $stmt = $pdo->prepare(
+            'SELECT id_pengeluaran, tanggal
+             FROM pengeluaran
+             WHERE id_pengeluaran = :id_pengeluaran
+             LIMIT 1'
+        );
+        $stmt->execute(['id_pengeluaran' => $idPengeluaran]);
+        $pengeluaran = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$pengeluaran) {
+            kirimJsonPengeluaran(404, [
+                'success' => false,
+                'message' => 'Pengeluaran tidak ditemukan.',
+                'error_code' => 'NOT_FOUND'
+            ]);
+        }
+
+        // Tolak penghapusan data dari tanggal selain hari ini.
+        if ($pengeluaran['tanggal'] !== $tanggalHariIni) {
+            kirimJsonPengeluaran(403, [
+                'success' => false,
+                'message' => 'Hanya pengeluaran hari ini yang dapat dihapus.',
+                'error_code' => 'DATE_NOT_ALLOWED'
+            ]);
+        }
+
+        // Kondisi tanggal di query DELETE menjadi pemeriksaan tambahan.
+        $stmtDelete = $pdo->prepare(
+            'DELETE FROM pengeluaran
+             WHERE id_pengeluaran = :id_pengeluaran
+               AND tanggal = :tanggal'
+        );
+        $stmtDelete->execute([
+            'id_pengeluaran' => $idPengeluaran,
+            'tanggal' => $tanggalHariIni
+        ]);
+
+        if ($stmtDelete->rowCount() !== 1) {
+            kirimJsonPengeluaran(409, [
+                'success' => false,
+                'message' => 'Pengeluaran tidak dapat dihapus. Muat ulang data lalu coba lagi.',
+                'error_code' => 'DELETE_CONFLICT'
+            ]);
+        }
+
+        kirimJsonPengeluaran(200, [
+            'success' => true,
+            'message' => 'Pengeluaran berhasil dihapus.',
+            'data' => [
+                'id_pengeluaran' => $idPengeluaran,
+                'tanggal' => $tanggalHariIni
+            ]
+        ]);
+    }
+    header('Allow: GET, POST, DELETE');
 
     kirimJsonPengeluaran(405, [
         'success' => false,
