@@ -153,8 +153,8 @@ body:has(.login-page) main.container {
 }
 
 .login-description {
-    max-width: 320px;
-    margin: 0 auto 20px;
+    width: 100%;
+    margin: 0 0 auto 20px 0;
     text-align: left;
     color: #777777;
     font-size: 11.5px;
@@ -1391,6 +1391,14 @@ body:has(.login-page) main.container {
     transform: translateX(-50%) translateY(0);
 }
 
+/* Notifikasi error di halaman layanan tetap mengikuti gaya kasir,
+   dengan palet merah lembut agar berbeda dari notifikasi sukses. */
+.transaction-success.transaction-error {
+    background: #FBEAEA;
+    color: #D64545;
+    border: 1px solid #F0BABA;
+}
+
 /* ======================================================
    LAYANAN & PRICELIST (JOB 5.3)
    Penyesuaian visual berdasarkan Layanan.svg
@@ -2216,6 +2224,7 @@ body.layanan-modal-open {
     margin: 0 0 4px;
     color: #202020;
     font-size: 26px;
+    font-weight: bold;
 }
 
 .pemasukan-heading p {
@@ -3021,4 +3030,40 @@ body .pengeluaran-toast.gagal {
 
 body .pengeluaran-toast[hidden] {
     display: none !important;
+}
+
+/* Daftar saran nama pelanggan */
+.pelanggan-suggestions {
+    margin-top: 4px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.pelanggan-suggestions[hidden] {
+    display: none;
+}
+
+.pelanggan-suggestion-item {
+    display: block;
+    width: 100%;
+    padding: 10px 12px;
+    border: none;
+    background: #fff;
+    text-align: left;
+    cursor: pointer;
+    color: #333;
+    font-size: 10px;
+}
+
+.pelanggan-suggestion-item:hover {
+    background: #f0f5f9;
+}
+
+.pelanggan-suggestion-empty {
+    padding: 10px 12px;
+    color: #777;
+    font-size: 14px;
 }

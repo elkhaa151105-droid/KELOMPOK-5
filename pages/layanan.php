@@ -81,7 +81,9 @@ require_role(['owner']);
                 <input
                     type="number"
                     id="hppLayanan"
-                    min="0"
+                    min="1"
+                    step="1"
+                    required
                 >
                 <span
                     id="errorHppLayanan"
@@ -167,8 +169,7 @@ require_role(['owner']);
                     >
 
                     <small class="layanan-modal-hint">
-                        Unggah ikon hanya untuk pratinjau.
-                        API saat ini belum menyimpan ikon.
+                        *Format .PNG Maks 2 mb
                     </small>
                 </div>
 
@@ -199,7 +200,9 @@ require_role(['owner']);
                     <input
                         type="number"
                         id="editHppLayanan"
-                        min="0"
+                        min="1"
+                        step="1"
+                        required
                         placeholder="Masukkan HPP"
                         required
                     >

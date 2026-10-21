@@ -1,13 +1,13 @@
 document.addEventListener('DOMContentLoaded', function () {
-    const API_LAYANAN = '/KELOMPOK-5/api/layanan/';
+    const API_LAYANAN = '/KELOMPOK-5/api/layanan/index.php';
 
     // Elemen form tambah dan tabel.
     const form = document.getElementById('formTambahLayanan');
     const namaInput = document.getElementById('namaLayanan');
     const hargaInput = document.getElementById('hargaLayanan');
     const hppInput = document.getElementById('hppLayanan');
+    const iconInput = document.getElementById('iconLayanan');
     const tableBody = document.getElementById('layananTableBody');
-    let notification = document.getElementById('layananNotifikasi');
 
     // Elemen modal edit.
     const modal = document.getElementById('modalEditLayanan');
@@ -23,44 +23,36 @@ document.addEventListener('DOMContentLoaded', function () {
     let notificationTimer;
     let layananSedangDiedit = null;
 
-    // Membuat notifikasi otomatis jika elemen belum tersedia di HTML.
-// Menampilkan notifikasi dengan gaya yang sama seperti Kasir.
+    // Menampilkan notifikasi.
+    function tampilkanNotifikasi(pesan, jenis) {
+        let notification = document.getElementById('layananNotifikasi');
 
-function tampilkanNotifikasi(pesan, jenis) {
-    let notification = document.getElementById('layananNotifikasi');
+        if (!notification) {
+            notification = document.createElement('div');
+            notification.id = 'layananNotifikasi';
+            document.body.appendChild(notification);
+        }
 
-    if (!notification) {
-        notification = document.createElement('div');
-        notification.id = 'layananNotifikasi';
-        document.body.appendChild(notification);
+        clearTimeout(notificationTimer);
+
+        // Gunakan gaya notifikasi yang sama dengan halaman kasir.
+        // Notifikasi sukses memakai hijau lembut; error memakai merah lembut.
+        notification.className = 'transaction-success';
+        if (jenis === 'error') {
+            notification.classList.add('transaction-error');
+        }
+        notification.textContent = pesan;
+
+        requestAnimationFrame(function () {
+            notification.classList.add('show');
+        });
+
+        notificationTimer = setTimeout(function () {
+            notification.classList.remove('show');
+        }, 2500);
     }
 
-    clearTimeout(notificationTimer);
-
-    notification.className = 'transaction-success';
-    notification.textContent = pesan;
-
-    // Warna merah untuk hapus, nonaktif, dan error.
-    if (jenis === 'hapus' || jenis === 'nonaktif' || jenis === 'error') {
-        notification.style.backgroundColor = '#dc3545';
-        notification.style.color = '#ffffff';
-    } else {
-        // Warna hijau untuk tambah, edit, dan aktivasi.
-        notification.style.backgroundColor = '#2E9E5B';
-        notification.style.color = '#ffffff';
-    }
-
-    requestAnimationFrame(function () {
-        notification.classList.add('show');
-    });
-
-    notificationTimer = setTimeout(function () {
-        notification.classList.remove('show');
-    }, 2500);
-}
-
-
-    // Mengirim request ke API.
+    // Mengirim request JSON atau FormData ke API.
     async function requestAPI(method, data) {
         const options = {
             method: method,
@@ -70,7 +62,9 @@ function tampilkanNotifikasi(pesan, jenis) {
             }
         };
 
-        if (data !== undefined) {
+        if (data instanceof FormData) {
+            options.body = data;
+        } else if (data !== undefined) {
             options.headers['Content-Type'] = 'application/json';
             options.body = JSON.stringify(data);
         }
@@ -85,55 +79,64 @@ function tampilkanNotifikasi(pesan, jenis) {
         }
 
         if (!response.ok || result.success === false) {
-        throw new Error(
-            result.message ||
-            'Gagal menyimpan layanan. Status HTTP: ' + response.status
-        );
-    }
+            throw new Error(
+                result.message ||
+                'Gagal memproses layanan. Status HTTP: ' + response.status
+            );
+        }
 
         return result;
     }
 
-    // Format angka menjadi Rupiah.
-    function rupiah(nilai) {
-        return new Intl.NumberFormat('id-ID', {
-            style: 'currency',
-            currency: 'IDR',
-            maximumFractionDigits: 0
-        }).format(Number(nilai) || 0);
+    // Membuat FormData untuk tambah layanan.
+    function buatDataLayanan(nama, harga, hpp, fileIcon) {
+        const data = new FormData();
+
+        data.append('nama_layanan', nama);
+        data.append('harga', String(harga));
+        data.append('hpp', String(hpp));
+
+        if (fileIcon && fileIcon.size > 0) {
+            data.append('icon_layanan', fileIcon);
+        }
+
+        return data;
     }
 
-    // Membuat input angka untuk tabel.
-    function buatInputAngka(className, value, min) {
-        const input = document.createElement('input');
+    // Memeriksa file ikon.
+    function validasiIkon(file) {
+        if (!file) return '';
 
-        input.type = 'number';
-        input.className = className;
-        input.min = String(min);
-        input.step = '1';
-        input.value = Number(value) || 0;
+        const tipeDiizinkan = [
+            'image/jpeg',
+            'image/png',
+            'image/webp'
+        ];
 
-        input.setAttribute(
-            'aria-label',
-            className.includes('price') ? 'Harga layanan' : 'HPP layanan'
-        );
+        if (!tipeDiizinkan.includes(file.type)) {
+            return 'Ikon harus berupa JPG, PNG, atau WebP.';
+        }
 
-        return input;
+        if (file.size > 2 * 1024 * 1024) {
+            return 'Ukuran ikon maksimal 2 MB.';
+        }
+
+        return '';
     }
 
-    // Membuat tombol dengan aksi tertentu.
-    function buatTombol(teks, className, aksi) {
-        const tombol = document.createElement('button');
-
-        tombol.type = 'button';
-        tombol.className = className;
-        tombol.textContent = teks;
-        tombol.addEventListener('click', aksi);
-
-        return tombol;
+    // Membersihkan pesan error form tambah.
+    function hapusErrorTambah() {
+        [
+            'errorNamaLayanan',
+            'errorHargaLayanan',
+            'errorHppLayanan'
+        ].forEach(function (id) {
+            const elemen = document.getElementById(id);
+            if (elemen) elemen.textContent = '';
+        });
     }
 
-    // Membersihkan pesan error pada modal edit.
+    // Membersihkan pesan error modal edit.
     function bersihkanErrorEdit() {
         [
             'errorEditNamaLayanan',
@@ -145,16 +148,51 @@ function tampilkanNotifikasi(pesan, jenis) {
         });
     }
 
-    // Membuka modal dan mengisi data layanan.
+    // Membuat input angka.
+    function buatInputAngka(className, value, min) {
+        const input = document.createElement('input');
+
+        input.type = 'number';
+        input.className = className;
+        input.min = String(min);
+        input.step = '1';
+        input.value = value === null || value === undefined || value === ''
+            ? ''
+            : String(value);
+
+        input.setAttribute(
+            'aria-label',
+            className.includes('price') ? 'Harga layanan' : 'HPP layanan'
+        );
+
+        return input;
+    }
+
+    // Membuat tombol aksi.
+    function buatTombol(teks, className, aksi) {
+        const tombol = document.createElement('button');
+
+        tombol.type = 'button';
+        tombol.className = className;
+        tombol.textContent = teks;
+        tombol.addEventListener('click', aksi);
+
+        return tombol;
+    }
+
+    // Membuka modal edit dan mengisi data.
     function bukaModalEdit(layanan) {
+        if (!modal || !formEdit) return;
+
         layananSedangDiedit = layanan;
 
         editId.value = layanan.id_layanan;
         editNama.value = layanan.nama_layanan || '';
         editHarga.value = Number(layanan.harga) || 0;
-        editHpp.value = Number(layanan.hpp) || 0;
+        editHpp.value = layanan.hpp === null || layanan.hpp === undefined
+            ? ''
+            : String(layanan.hpp);
 
-        // Ikon belum dapat disimpan melalui API yang tersedia.
         if (editIcon) editIcon.value = '';
 
         bersihkanErrorEdit();
@@ -183,7 +221,6 @@ function tampilkanNotifikasi(pesan, jenis) {
         tombolTutupModal.addEventListener('click', tutupModalEdit);
     }
 
-    // Klik area gelap di luar modal untuk menutup modal.
     if (modal) {
         modal.addEventListener('click', function (event) {
             if (event.target === modal) {
@@ -192,7 +229,6 @@ function tampilkanNotifikasi(pesan, jenis) {
         });
     }
 
-    // Tombol Escape menutup modal.
     document.addEventListener('keydown', function (event) {
         if (
             event.key === 'Escape' &&
@@ -211,13 +247,14 @@ function tampilkanNotifikasi(pesan, jenis) {
 
             const nama = editNama.value.trim();
             const harga = Number(editHarga.value);
-            const hpp = Number(editHpp.value);
-
-            let valid = true;
+            const hppRaw = editHpp.value.trim();
+            const hpp = Number(hppRaw);
 
             const errorNama = document.getElementById('errorEditNamaLayanan');
             const errorHarga = document.getElementById('errorEditHargaLayanan');
             const errorHpp = document.getElementById('errorEditHppLayanan');
+
+            let valid = true;
 
             if (!nama || nama.length > 100) {
                 if (errorNama) {
@@ -235,11 +272,22 @@ function tampilkanNotifikasi(pesan, jenis) {
                 valid = false;
             }
 
-            if (!Number.isInteger(hpp) || hpp < 0) {
+            if (hppRaw === '' || !Number.isInteger(hpp) || hpp <= 0 || hpp > 2147483647) {
                 if (errorHpp) {
                     errorHpp.textContent =
-                        'HPP harus berupa bilangan bulat nol atau lebih.';
+                        'HPP wajib berupa bilangan bulat lebih dari nol.';
                 }
+                valid = false;
+            }
+
+            const fileIcon = editIcon && editIcon.files
+                ? editIcon.files[0]
+                : null;
+
+            const errorIkon = validasiIkon(fileIcon);
+
+            if (errorIkon) {
+                tampilkanNotifikasi(errorIkon, 'error');
                 valid = false;
             }
 
@@ -249,12 +297,24 @@ function tampilkanNotifikasi(pesan, jenis) {
             tombolSimpanEdit.textContent = 'Menyimpan...';
 
             try {
-                const result = await requestAPI('PUT', {
-                    id_layanan: Number(editId.value),
-                    nama_layanan: nama,
-                    harga: harga,
-                    hpp: hpp
-                });
+                let result;
+
+                if (fileIcon) {
+                    // BE menerima upload edit melalui POST dengan _method=PUT.
+                    const data = buatDataLayanan(nama, harga, hpp, fileIcon);
+                    data.append('_method', 'PUT');
+                    data.append('id_layanan', String(editId.value));
+
+                    result = await requestAPI('POST', data);
+                } else {
+                    // Tanpa ikon baru, gunakan request PUT JSON.
+                    result = await requestAPI('PUT', {
+                        id_layanan: Number(editId.value),
+                        nama_layanan: nama,
+                        harga: harga,
+                        hpp: hpp
+                    });
+                }
 
                 tutupModalEdit();
 
@@ -273,9 +333,10 @@ function tampilkanNotifikasi(pesan, jenis) {
         });
     }
 
-    // Membuat satu baris data layanan.
+    // Membuat baris tabel layanan.
     function buatBaris(layanan) {
         const row = document.createElement('tr');
+
         row.dataset.serviceRow = 'true';
         row.dataset.idLayanan = layanan.id_layanan;
 
@@ -304,7 +365,7 @@ function tampilkanNotifikasi(pesan, jenis) {
         const hppInputBaris = buatInputAngka(
             'layanan-hpp-input',
             layanan.hpp,
-            0
+            1
         );
         hppCell.appendChild(hppInputBaris);
 
@@ -314,7 +375,6 @@ function tampilkanNotifikasi(pesan, jenis) {
 
         status.type = 'checkbox';
         status.className = 'layanan-checkbox';
-        // Checkbox mengikuti status asli layanan dari API.
         status.checked = Number(layanan.aktif) === 1;
         status.setAttribute('aria-label', 'Status layanan aktif');
         statusCell.appendChild(status);
@@ -323,21 +383,19 @@ function tampilkanNotifikasi(pesan, jenis) {
         const aksiCell = document.createElement('td');
         aksiCell.className = 'layanan-aksi';
 
-        
-        // Tombol edit bisa digunakan untuk semua layanan.
         aksiCell.appendChild(
             buatTombol('Edit', 'layanan-edit-button', function () {
                 bukaModalEdit({
                     id_layanan: layanan.id_layanan,
                     nama_layanan: namaInputBaris.value.trim(),
                     harga: hargaInputBaris.value,
-                    hpp: hppInputBaris.value
+                    hpp: hppInputBaris.value,
+                    icon_layanan: layanan.icon_layanan
                 });
             })
         );
 
-
-        // Tombol hapus permanen.
+        // Menghapus layanan secara permanen.
         aksiCell.appendChild(
             buatTombol('Hapus', 'layanan-hapus-button', async function () {
                 const nama =
@@ -352,12 +410,10 @@ function tampilkanNotifikasi(pesan, jenis) {
                         id_layanan: Number(layanan.id_layanan)
                     });
 
-                    
-                tampilkanNotifikasi(
-                    result.message || 'Layanan berhasil dihapus.',
-                    'hapus'
-                );
-
+                    tampilkanNotifikasi(
+                        result.message || 'Layanan berhasil dihapus.',
+                        'hapus'
+                    );
 
                     await muatLayanan();
                 } catch (error) {
@@ -366,8 +422,6 @@ function tampilkanNotifikasi(pesan, jenis) {
             })
         );
 
-        // Checkbox untuk menonaktifkan layanan.
-       
         // Mengaktifkan atau menonaktifkan layanan.
         status.addEventListener('change', async function () {
             const statusSebelumnya = !status.checked;
@@ -391,15 +445,13 @@ function tampilkanNotifikasi(pesan, jenis) {
                     aktif: aktifBaru
                 });
 
-                layanan.aktif = aktifBaru;
-
                 tampilkanNotifikasi(
                     result.message || (
                         aktifBaru === 1
                             ? 'Layanan berhasil diaktifkan.'
                             : 'Layanan berhasil dinonaktifkan.'
                     ),
-                     aktifBaru === 1 ? 'berhasil' : 'nonaktif'
+                    aktifBaru === 1 ? 'berhasil' : 'nonaktif'
                 );
 
                 await muatLayanan();
@@ -410,7 +462,6 @@ function tampilkanNotifikasi(pesan, jenis) {
                 status.disabled = false;
             }
         });
-
 
         row.append(namaCell, hargaCell, hppCell, statusCell, aksiCell);
 
@@ -445,7 +496,6 @@ function tampilkanNotifikasi(pesan, jenis) {
                 cell.textContent = 'Belum ada layanan.';
                 row.appendChild(cell);
                 tableBody.appendChild(row);
-
                 return;
             }
 
@@ -467,18 +517,6 @@ function tampilkanNotifikasi(pesan, jenis) {
         }
     }
 
-    // Membersihkan pesan error pada form tambah.
-    function hapusErrorTambah() {
-        [
-            'errorNamaLayanan',
-            'errorHargaLayanan',
-            'errorHppLayanan'
-        ].forEach(function (id) {
-            const elemen = document.getElementById(id);
-            if (elemen) elemen.textContent = '';
-        });
-    }
-
     // Menambah layanan menggunakan API POST.
     if (form) {
         form.addEventListener('submit', async function (event) {
@@ -487,13 +525,14 @@ function tampilkanNotifikasi(pesan, jenis) {
 
             const nama = namaInput.value.trim();
             const harga = Number(hargaInput.value);
-            const hpp = Number(hppInput.value);
-
-            let valid = true;
+            const hppRaw = hppInput.value.trim();
+            const hpp = Number(hppRaw);
 
             const errorNama = document.getElementById('errorNamaLayanan');
             const errorHarga = document.getElementById('errorHargaLayanan');
             const errorHpp = document.getElementById('errorHppLayanan');
+
+            let valid = true;
 
             if (!nama || nama.length > 100) {
                 if (errorNama) {
@@ -511,25 +550,36 @@ function tampilkanNotifikasi(pesan, jenis) {
                 valid = false;
             }
 
-            if (!Number.isInteger(hpp) || hpp < 0) {
+            if (hppRaw === '' || !Number.isInteger(hpp) || hpp <= 0 || hpp > 2147483647) {
                 if (errorHpp) {
                     errorHpp.textContent =
-                        'HPP harus berupa bilangan bulat nol atau lebih.';
+                        'HPP wajib berupa bilangan bulat lebih dari nol.';
                 }
+                valid = false;
+            }
+
+            const fileIcon = iconInput && iconInput.files
+                ? iconInput.files[0]
+                : null;
+
+            const errorIkon = validasiIkon(fileIcon);
+
+            if (errorIkon) {
+                tampilkanNotifikasi(errorIkon, 'error');
                 valid = false;
             }
 
             if (!valid) return;
 
             const submitButton = form.querySelector('[type="submit"]');
-            if (submitButton) submitButton.disabled = true;
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.textContent = 'Menyimpan...';
+            }
 
             try {
-                const result = await requestAPI('POST', {
-                    nama_layanan: nama,
-                    harga: harga,
-                    hpp: hpp
-                });
+                const data = buatDataLayanan(nama, harga, hpp, fileIcon);
+                const result = await requestAPI('POST', data);
 
                 form.reset();
 
@@ -542,11 +592,14 @@ function tampilkanNotifikasi(pesan, jenis) {
             } catch (error) {
                 tampilkanNotifikasi(error.message, 'error');
             } finally {
-                if (submitButton) submitButton.disabled = false;
+                if (submitButton) {
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Tambah';
+                }
             }
         });
     }
 
-    // Menampilkan data saat halaman dibuka.
+    // Memuat data saat halaman dibuka.
     muatLayanan();
 });
