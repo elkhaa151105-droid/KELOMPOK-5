@@ -61,10 +61,11 @@ try {
         JOIN users u ON u.id_user = t.id_barber
         LEFT JOIN pelanggan p ON p.id_pelanggan = t.id_pelanggan
         WHERE t.id_transaksi = :id_transaksi
+  AND t.dihapus_pada IS NULL
     ";
 
     if ($role === 'barber') {
-        $sql .= " AND t.id_barber = :id_user";
+        $sql .= " AND t.id_pencatat = :id_user";
     } elseif ($role !== 'owner') {
         kirimJsonDetail(403, [
             'success' => false,

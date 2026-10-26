@@ -593,3 +593,100 @@ Sebelum dianggap sebagai dokumentasi final, cocokkan dengan kode aktual di repos
 - Nama kolom transaksi dan detail transaksi.
 - Status HTTP serta `error_code` yang benar-benar dikembalikan oleh endpoint.
 - Status pengujian yang telah dilakukan. Jangan tandai pengujian sebagai selesai sebelum benar-benar dijalankan.
+
+## WBS 4.4 — Riwayat Transaksi yang Dicatat Barber
+
+### Deskripsi
+
+Fitur ini memungkinkan barber melihat transaksi yang dicatat sendiri pada tanggal tertentu untuk memeriksa kemungkinan kesalahan input transaksi.
+
+### Endpoint
+
+#### 1. Mengambil daftar riwayat transaksi
+
+- **Method:** `GET`
+- **URL:** `/api/transaksi/index.php`
+- **Autentikasi:** Wajib login.
+- **Role yang diizinkan:** `owner`, `barber`.
+- **Query parameter:** `tanggal` (opsional), format `YYYY-MM-DD`.
+
+Contoh request:
+
+```http
+GET /api/transaksi/index.php?tanggal=2026-10-23
+```
+
+Aturan:
+
+- Jika role adalah `barber` dan parameter `tanggal` tidak diberikan, API menggunakan tanggal hari ini berdasarkan zona waktu `Asia/Jakarta`.
+- Jika parameter `tanggal` diberikan, daftar transaksi difilter berdasarkan tanggal tersebut.
+- Barber hanya dapat melihat transaksi yang dicatat oleh akun barber yang sedang login (`id_pencatat`).
+- Transaksi yang sudah dihapus secara logis (`dihapus_pada` tidak NULL) tidak ditampilkan.
+- Daftar diurutkan berdasarkan tanggal, waktu, dan ID transaksi dari terbaru ke terlama.
+- Format tanggal yang tidak valid menghasilkan status `400 Bad Request`.
+- Pengguna tanpa autentikasi atau role yang diizinkan ditolak sesuai middleware dan aturan otorisasi API.
+
+Contoh respons sukses:
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id_transaksi": 12,
+      "id_pencatat": 3,
+      "id_barber": 3,
+      "nama_barber": "Sandi",
+      "id_pelanggan": 5,
+      "nama_pelanggan": "Contoh Pelanggan",
+      "tanggal": "2026-10-23",
+      "waktu": "11:40:00",
+      "total_harga": 50000,
+      "metode_pembayaran": "Tunai"
+    }
+  ]
+}
+```
+
+Data di atas hanya contoh struktur respons; nilai aktual mengikuti database.
+
+#### 2. Mengambil detail transaksi
+
+- **Method:** `GET`
+- **URL:** `/api/transaksi/detail.php?id={id_transaksi}`
+- **Autentikasi:** Wajib login.
+
+Aturan:
+
+- Parameter `id` digunakan untuk menentukan transaksi yang diminta.
+- Barber hanya boleh mengakses detail transaksi yang dicatat oleh akun yang sedang login (`id_pencatat`).
+- Transaksi yang sudah dihapus secara logis seharusnya tidak dapat diakses melalui endpoint detail.
+- Hasil pengujian otorisasi harus diverifikasi melalui Postman.
+
+### Perilaku antarmuka
+
+- Riwayat menampilkan tanggal transaksi dan waktu transaksi.
+- Barber dapat memilih tanggal untuk melihat transaksi yang dicatat pada tanggal tersebut.
+- Transaksi ditampilkan dari waktu terbaru ke terlama.
+- Jika tidak ada transaksi pada hari ini, antarmuka menampilkan pesan **“Belum ada transaksi hari ini.”**
+- Jika tidak ada transaksi pada tanggal yang dipilih, antarmuka menampilkan pesan **“Belum ada transaksi pada tanggal ini.”**
+
+### Skenario pengujian Postman
+
+| ID         | Skenario                                           | Hasil yang diharapkan                                           | Hasil aktual                            |
+| ---------- | -------------------------------------------------- | --------------------------------------------------------------- | --------------------------------------- |
+| API-RWY-01 | GET riwayat dengan tanggal hari ini sebagai barber | HTTP 200; data hanya milik barber yang login dan sesuai tanggal | Isi setelah tes                         |
+| API-RWY-02 | GET riwayat dengan tanggal sebelumnya              | HTTP 200; data sesuai tanggal yang diminta                      | Isi setelah tes                         |
+| API-RWY-03 | GET riwayat dengan tanggal tidak valid             | HTTP 400; pesan validasi tanggal                                | Isi setelah tes                         |
+| API-RWY-04 | GET riwayat tanpa sesi login                       | Akses ditolak oleh autentikasi API                              | Isi setelah tes                         |
+| API-RWY-05 | GET detail transaksi yang dapat diakses            | HTTP 200 dan detail transaksi ditampilkan                       | Isi setelah tes                         |
+| API-RWY-06 | GET detail transaksi milik barber lain             | Akses ditolak sesuai aturan otorisasi                           | Isi setelah tes                         |
+| UI-RWY-01  | Hari ini memiliki beberapa transaksi               | Semua transaksi hari ini ditampilkan dari terbaru ke terlama    | Sudah diuji di browser; lampirkan bukti |
+| UI-RWY-02  | Memilih tanggal sebelumnya                         | Hanya transaksi tanggal yang dipilih ditampilkan                | Sudah diuji di browser; lampirkan bukti |
+| UI-RWY-03  | Tidak ada transaksi pada tanggal terpilih          | Pesan kosong ditampilkan                                        | Isi setelah verifikasi                  |
+
+### Bukti pengujian
+
+Lampirkan screenshot Postman yang memperlihatkan method, URL, status HTTP, dan body respons. Jangan tampilkan cookie sesi, token, atau kredensial pada screenshot yang dibagikan.
+
+Catat hasil aktual berdasarkan request yang benar-benar dijalankan. Jangan menandai skenario sebagai berhasil jika belum diuji.

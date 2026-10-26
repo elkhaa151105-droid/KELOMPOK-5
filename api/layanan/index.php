@@ -18,7 +18,7 @@ function bacaJson(): array
     if (!is_array($data)) {
         kirimJson(400, [
             'success' => false,
-            'message' => 'Body harus berupa JSON yang valid.',
+            'message' => 'harus berupa json yang valid .',
             'error_code' => 'INVALID_JSON'
         ]);
     }

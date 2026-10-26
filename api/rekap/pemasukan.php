@@ -69,27 +69,30 @@ try {
 
     // Total pemasukan seluruh transaksi pada tanggal pilihan.
     $stmtTotal = $pdo->prepare(
-        'SELECT COALESCE(SUM(total_harga), 0)
-         FROM transaksi
-         WHERE tanggal = :tanggal'
-    );
+    'SELECT COALESCE(SUM(total_harga), 0)
+     FROM transaksi
+     WHERE tanggal = :tanggal
+       AND dihapus_pada IS NULL'
+);
 
     $stmtTotal->execute([':tanggal' => $tanggal]);
     $totalPemasukan = (int) $stmtTotal->fetchColumn();
 
     // Rincian pemasukan per barber pada tanggal yang sama.
     $stmtBarber = $pdo->prepare(
-        'SELECT
-            t.id_barber,
-            u.nama AS nama_barber,
-            COUNT(t.id_transaksi) AS jumlah_transaksi,
-            COALESCE(SUM(t.total_harga), 0) AS total_pemasukan
-         FROM transaksi t
-         INNER JOIN users u ON u.id_user = t.id_barber
-         WHERE t.tanggal = :tanggal
-         GROUP BY t.id_barber, u.nama
-         ORDER BY u.nama ASC'
-    );
+    'SELECT
+        t.id_barber,
+        u.nama AS nama_barber,
+        COUNT(t.id_transaksi) AS jumlah_transaksi,
+        COALESCE(SUM(t.total_harga), 0) AS total_pemasukan
+     FROM transaksi t
+     INNER JOIN users u ON u.id_user = t.id_barber
+     WHERE t.tanggal = :tanggal
+       AND t.dihapus_pada IS NULL
+     GROUP BY t.id_barber, u.nama
+     ORDER BY u.nama ASC'
+);
+
 
     $stmtBarber->execute([':tanggal' => $tanggal]);
     $rincianBarber = $stmtBarber->fetchAll(PDO::FETCH_ASSOC);
