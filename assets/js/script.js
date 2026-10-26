@@ -149,9 +149,12 @@ document.addEventListener('DOMContentLoaded', function () {
                         'Accept': 'application/json'
                     },
                     body: JSON.stringify({
-                        username: username,
-                        password: password
-                    })
+                    nama_pelanggan: namaPelanggan.value.trim(),
+                    id_pelanggan: selectedPelangganId,
+                    id_barber: Number(namaBarber.value),
+                    layanan: layanan,
+                    metode_pembayaran: metodePembayaran.value
+                })
                 });
 
                 const result = await response.json();
@@ -270,8 +273,8 @@ document.addEventListener('DOMContentLoaded', function () {
     // ======================================================
 
     const formPelanggan = document.getElementById('formPelanggan');
-
-    if (formPelanggan) {
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      if (formPelanggan) {
         formPelanggan.addEventListener('submit', function (e) {
             const namaInput = document.getElementById('namaPelanggan');
             const hpInput = document.getElementById('noHpPelanggan');
@@ -281,22 +284,31 @@ document.addEventListener('DOMContentLoaded', function () {
             if (namaInput && namaInput.value.trim() === '') {
                 e.preventDefault();
                 showFieldError('errorNamaPelanggan', 'Nama pelanggan wajib diisi');
-                namaInput.classList.add('is-invalid');
-                isValid = false;
             }
-
+///////////////////////////////////////////////////////////////////////////////////
+            // B. Validasi nomor HP.
             if (hpInput) {
                 const hpVal = hpInput.value.trim();
 
                 if (hpVal === '') {
                     e.preventDefault();
-                    showFieldError('errorHpPelanggan', 'Nomor HP wajib diisi');
                     hpInput.classList.add('is-invalid');
+
+                    showFieldError(
+                        'errorHpPelanggan',
+                        'Nomor HP wajib diisi'
+                    );
+
                     isValid = false;
                 } else if (!/^[0-9+\-\s]{8,18}$/.test(hpVal)) {
                     e.preventDefault();
-                    showFieldError('errorHpPelanggan', 'Nomor HP tidak valid');
                     hpInput.classList.add('is-invalid');
+
+                    showFieldError(
+                        'errorHpPelanggan',
+                        'Nomor HP tidak valid'
+                    );
+
                     isValid = false;
                 }
             }
@@ -304,7 +316,6 @@ document.addEventListener('DOMContentLoaded', function () {
             return isValid;
         });
     }
-
     // ======================================================
     // 4. VALIDASI FORM LAYANAN
     // ======================================================
@@ -417,6 +428,18 @@ document.addEventListener('DOMContentLoaded', function () {
             alert(message);
         }
     }
+
+    
+    // Menghapus pesan error pada input.
+    function clearFieldError(targetId) {
+        const errEl = document.getElementById(targetId);
+
+        if (errEl) {
+            errEl.textContent = '';
+            errEl.style.display = 'none';
+        }
+    }
+
 
     // ======================================================
     // MODAL KONFIRMASI HARGA BERBEDA
@@ -769,7 +792,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // 7. SIMPAN TRANSAKSI KE API BACKEND
     // ======================================================
 
-    const btnSimpanTransaksi = document.getElementById('btnSimpanTransaksi');
+    const btnSimpanTransaksi = document.getElementById('btnSimpanTransaksi');  // Tombol simpan transaksi di halaman kasir.
     
     // Validasi nama pelanggan di halaman kasir.
     const errorNamaKasir = document.getElementById('errorNamaKasir');
@@ -809,13 +832,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 id_layanan: item.id_layanan,
                 jumlah: item.qty
             }));
+            
+/////////////////////////// Validasi nama pelanggan sebelum transaksi dikirim ke API.
+if (!namaPelanggan || !namaPelanggan.value.trim()) {
+    tampilkanErrorNamaKasir();
+    return;
+}
 
-            if (!namaPelanggan || !namaPelanggan.value.trim()) {
-                tampilkanErrorNamaKasir();
-                return;
-            }
-
-            bersihkanErrorNamaKasir();
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            bersihkanErrorNamaKasir(); // Hapus pesan error jika nama pelanggan sudah diisi.
             if (!namaBarber || !namaBarber.value) {
                 alert('Nama barber wajib dipilih!');
                 namaBarber?.focus();
@@ -833,8 +858,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-            btnSimpanTransaksi.disabled = true;
-
+            btnSimpanTransaksi.disabled = true;// Disable tombol untuk mencegah klik ganda.
+////////////////////////////////////4.2
             try {
                 const response = await fetch(
                     '/KELOMPOK-5/api/transaksi/index.php',
@@ -869,6 +894,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
 
                 namaPelanggan.value = '';
+                selectedPelangganId = null;
                 namaBarber.value = '';
                 metodePembayaran.value = '';
 
@@ -886,8 +912,11 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     
-    // Autocomplete saran nama pelanggan.
+   // Autocomplete saran nama pelanggan.
     const inputPelanggan = document.getElementById('namaPelanggan');
+
+    // Menyimpan ID pelanggan yang dipilih dari saran API.
+    let selectedPelangganId = null;
 
     if (inputPelanggan) {
         const saranPelanggan = document.createElement('div');
@@ -906,7 +935,10 @@ if (errorNamaKasir) {
 
         // Cari pelanggan setelah pengguna mengetik minimal 2 karakter.
         inputPelanggan.addEventListener('input', function () {
-            clearTimeout(timerSaran);
+        // Nama berubah, jadi pilihan pelanggan sebelumnya tidak berlaku.
+        selectedPelangganId = null;
+
+        clearTimeout(timerSaran);
 
             if (permintaanSaran) {
                 permintaanSaran.abort();
@@ -956,11 +988,15 @@ if (errorNamaKasir) {
                             tombol.className = 'pelanggan-suggestion-item';
                             tombol.textContent = pelanggan.nama;
 
-                            // Pilih saran dengan mengisi input nama pelanggan.
+                            // Simpan nama dan ID pelanggan yang dipilih.
                             tombol.addEventListener('click', function () {
                                 inputPelanggan.value = pelanggan.nama;
+                                selectedPelangganId = Number(pelanggan.id_pelanggan);
+
                                 saranPelanggan.hidden = true;
                                 saranPelanggan.replaceChildren();
+
+                                bersihkanErrorNamaKasir();
                             });
 
                             saranPelanggan.appendChild(tombol);

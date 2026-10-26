@@ -3,21 +3,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const API_URL = '/KELOMPOK-5/api/pengeluaran/index.php';
 
     // Mengambil elemen form dan input.
-    const form = document.getElementById('formPengeluaranHarian');
-    const kategoriInput = document.getElementById('kategoriPengeluaranHarian');
+    const form = document.getElementById('formPengeluaranHarian'); // Formulir pengeluaran harian
+    const kategoriInput = document.getElementById('kategoriPengeluaranHarian'); // Input kategori pengeluaran harian
     const nominalInput = document.getElementById('nominalPengeluaranHarian');
-    const tanggalInput = document.getElementById('tanggalPengeluaranHarian');
+    const tanggalInput = document.getElementById('tanggalPengeluaranHarian'); // Input tanggal pengeluaran harian
 
     // Mengambil elemen pesan error dan tombol simpan.
-    const errorKategori = document.getElementById('errorKategoriPengeluaranHarian');
-    const errorNominal = document.getElementById('errorNominalPengeluaranHarian');
-    const tombolSimpan = document.getElementById('btnSimpanPengeluaran');
+    const errorKategori = document.getElementById('errorKategoriPengeluaranHarian'); // Elemen untuk menampilkan pesan error kategori
+    const errorNominal = document.getElementById('errorNominalPengeluaranHarian');// Elemen untuk menampilkan pesan error nominal
+    const tombolSimpan = document.getElementById('btnSimpanPengeluaran');// Tombol untuk menyimpan pengeluaran harian
 
     // Mengambil elemen daftar, total, dan status.
-    const totalElement = document.getElementById('totalPengeluaranHarian');
-    const ringkasanElement = document.getElementById('totalRingkasanPengeluaran');
-    const daftarElement = document.getElementById('daftarPengeluaranHarian');
-    const statusElement = document.getElementById('statusPengeluaranHarian');
+    const totalElement = document.getElementById('totalPengeluaranHarian');// Elemen untuk menampilkan total pengeluaran harian
+    const ringkasanElement = document.getElementById('totalRingkasanPengeluaran');// Elemen untuk menampilkan total ringkasan pengeluaran
+    const daftarElement = document.getElementById('daftarPengeluaranHarian'); // Elemen untuk menampilkan daftar pengeluaran harian
+    const statusElement = document.getElementById('statusPengeluaranHarian');// Elemen untuk menampilkan status pemuatan data pengeluaran harian
 
     // Memastikan semua elemen wajib tersedia sebelum kode dijalankan.
     if (
@@ -32,24 +32,24 @@ document.addEventListener('DOMContentLoaded', () => {
         !daftarElement ||
         !statusElement
     ) {
-        console.error('Elemen halaman pengeluaran belum lengkap.');
+        console.error('Elemen halaman pengeluaran belum lengkap.');// Menampilkan pesan error di konsol jika elemen tidak lengkap.
         return;
     }
 
     // Menggunakan validasi sendiri, bukan popup bawaan browser.
-    form.noValidate = true;
+    form.noValidate = true;// Menonaktifkan validasi bawaan browser pada form.
 
     // Membuat elemen notifikasi jika belum tersedia di HTML.
-    let toast = document.getElementById('pengeluaranToast');
+    let toast = document.getElementById('pengeluaranToast');// Mencari elemen notifikasi dengan ID 'pengeluaranToast' di halaman.
 
-    if (!toast) {
-        toast = document.createElement('div');
-        toast.id = 'pengeluaranToast';
-        toast.className = 'pengeluaran-toast';
-        toast.hidden = true;
-        toast.setAttribute('role', 'status');
-        toast.setAttribute('aria-live', 'polite');
-        document.body.appendChild(toast);
+    if (!toast) {// Jika elemen notifikasi belum ada, buat elemen baru.
+        toast = document.createElement('div');// Membuat elemen div untuk notifikasi.
+        toast.id = 'pengeluaranToast';// Memberikan ID 'pengeluaranToast' pada elemen notifikasi.
+        toast.className = 'pengeluaran-toast';// Memberikan kelas CSS 'pengeluaran-toast' pada elemen notifikasi.
+        toast.hidden = true;// Menyembunyikan elemen notifikasi secara default.
+        toast.setAttribute('role', 'status');// Memberikan atribut role 'status' untuk aksesibilitas.
+        toast.setAttribute('aria-live', 'polite');// Memberikan atribut aria-live 'polite' agar pembaca layar membaca notifikasi dengan sopan.
+        document.body.appendChild(toast);// Menambahkan elemen notifikasi ke dalam body halaman.
     }
 
     let toastTimer;
@@ -61,17 +61,17 @@ document.addEventListener('DOMContentLoaded', () => {
         toast.textContent = pesan;
         toast.className = 'pengeluaran-toast';
 
-        if (jenis === 'gagal') {
-            toast.classList.add('gagal');
-        } else {
-            toast.classList.add('berhasil');
+        if (jenis === 'gagal') {    // Notifikasi gagal menggunakan warna merah.
+            toast.classList.add('gagal');  // Default untuk notifikasi gagal.
+         } else { // Notifikasi berhasil menggunakan warna hijau.
+            toast.classList.add('berhasil'); // Default untuk notifikasi berhasil.
         }
 
         toast.hidden = false;
 
-        toastTimer = setTimeout(() => {
+        toastTimer = setTimeout(() => { 
             toast.hidden = true;
-        }, 3000);
+        }, 3000);   // satuan waktu dalam milidetik (3000 ms = 3 detik)
     }
 
     // Mengubah angka menjadi format rupiah.

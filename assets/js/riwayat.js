@@ -15,22 +15,22 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Format tanggal menjadi DD-MM-YYYY.
-    function formatTanggal(tanggal) {
-        if (!tanggal) return '-';
+    function formatTanggal(tanggal) {// Fungsi untuk memformat tanggal dari format YYYY-MM-DD menjadi DD-MM-YYYY.
+        if (!tanggal) return '-';// Jika tanggal tidak tersedia, kembalikan tanda '-'.
 
-        const bagian = tanggal.split('-');
+        const bagian = tanggal.split('-');// Memisahkan tanggal menjadi array [YYYY, MM, DD].
 
-        if (bagian.length !== 3) return tanggal;
+        if (bagian.length !== 3) return tanggal;// Jika format tanggal tidak sesuai, kembalikan tanggal asli.
 
-        return `${bagian[2]}-${bagian[1]}-${bagian[0]}`;
+        return `${bagian[2]}-${bagian[1]}-${bagian[0]}`;// Mengembalikan tanggal dalam format DD-MM-YYYY.
     }
 
     // Ubah kode pembayaran menjadi label.
-    function formatMetodePembayaran(metode) {
-        const metodePembayaran = {
-            cash: 'Cash',
-            qris: 'QRIS',
-            transfer: 'Transfer'
+    function formatMetodePembayaran(metode) {// Fungsi untuk mengubah kode metode pembayaran menjadi label yang lebih mudah dibaca.
+        const metodePembayaran = {// Objek yang memetakan kode metode pembayaran ke label.
+            cash: 'Cash',// Label untuk metode pembayaran 'cash'.
+            qris: 'QRIS',// Label untuk metode pembayaran 'qris'.
+            transfer: 'Transfer'// Label untuk metode pembayaran 'transfer'.
         };
 
         return metodePembayaran[metode] || '-';

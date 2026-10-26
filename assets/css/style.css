@@ -453,19 +453,19 @@ body:has(.login-page) main.container {
 }
 
 .sidebar-brand-text {
-    display: block;
-    margin-top: 6px;
-    color: #fdfdfd;
-    font-size: 14px;
-    font-weight: 400;
-    letter-spacing: 0.8px;
-    font-family: 'New Amsterdam', sans-serif;
+  display: block;
+  margin-top: 6px;
+  font-size: 20px;             /* 💡 Sesuaikan ukuran agar pas dengan logo di sampingnya */
+  font-weight: 900;            /* Buat ketebalan maksimal agar efek garis terlihat tegas */
+  letter-spacing: 0.5px;
+  font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
 
-    /* background font 
-    background-color: #fdfdfd;
-    padding: 4px 8px;
-    border-radius: 4px;*/
+  /* ─── EFEK TEXT STROKE (GARIS TEPI) SEPERTI FIGMA ─── */
+  color: transparent;                   
+  -webkit-text-stroke: 1px #FFFFFF;     
+  
 }
+
 
 /* Menu Navigasi */
 .sidebar-menu {
@@ -2227,9 +2227,10 @@ body.layanan-modal-open {
 }
 
 .pemasukan-heading h1 {
-    margin: 0 0 4px;
-    color: #202020;
-    font-size: 26px;
+   margin: 0;
+  color: var(--text-main);
+  font-size: 28px;
+  font-weight: 800;
 }
 
 .pemasukan-heading p {
@@ -2687,7 +2688,7 @@ body.layanan-modal-open {
 .pengeluaran-daily-total strong {
     color: #202020;
     font-size: 30px;
-    font-weight: 700;
+    font-weight: 700;   /*  Teks tebal untuk total pengeluaran harian */
     line-height: 1.2;
 }
 
