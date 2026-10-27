@@ -1,3 +1,4 @@
+
 /**
  * Kataji Barber - Frontend Validation & Interactivity
  * Role: Faqih Huddin SM (Frontend Developer)
@@ -7,10 +8,9 @@ document.addEventListener('DOMContentLoaded', function () {
     console.log('SCRIPT KATAJI TERLOAD');
     console.log('DOM SIAP');
 
-    console.log(
-        'Tombol simpan:',
-        document.getElementById('btnSimpanTransaksi')
-    );
+    // ======================================================
+    // 1. NOTIFIKASI LOGIN
+    // ======================================================
 
     const pesanLogin = sessionStorage.getItem('loginNotification');
 
@@ -41,7 +41,88 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // ======================================================
-    // 1. LOGIN MENGGUNAKAN API BACKEND
+    // 2. HELPER VALIDASI
+    // ======================================================
+
+    function getInputUntukError(targetId) {
+        const pasangan = {
+            errorLayanan: 'selectLayanan',
+            errorHarga: 'inputHarga',
+            errorNamaPelanggan: 'namaPelanggan',
+            errorHpPelanggan: 'noHpPelanggan',
+            errorNamaLayanan: 'namaLayanan',
+            errorHargaLayanan: 'hargaLayanan',
+            errorKategori: 'kategoriPengeluaran',
+            errorNominal: 'nominalPengeluaran',
+            errorNamaKasir: 'namaPelanggan',
+            errorBarberKasir: 'namaBarber',
+            errorMetodePembayaranKasir: 'metodePembayaran'
+        };
+
+        return document.getElementById(pasangan[targetId] || '');
+    }
+
+    function getErrorElement(targetId, inputOverride = null) {
+        // Gunakan elemen error yang sudah tersedia di HTML.
+        const errorElement = document.getElementById(targetId);
+
+        if (errorElement) {
+            return errorElement;
+        }
+
+        // Jika elemen belum ada, buat di dekat input terkait.
+        const input = inputOverride || getInputUntukError(targetId);
+
+        if (!input) {
+            return null;
+        }
+
+        const newErrorElement = document.createElement('small');
+        newErrorElement.id = targetId;
+        newErrorElement.className = 'kasir-field-error';
+        newErrorElement.hidden = true;
+
+        input.insertAdjacentElement('afterend', newErrorElement);
+
+        return newErrorElement;
+    }
+
+
+    function showFieldError(targetId, message, inputOverride = null) {
+        const errorElement = getErrorElement(targetId, inputOverride);
+
+        if (errorElement) {
+            errorElement.textContent = '*' + message;
+            errorElement.hidden = false;
+            errorElement.style.display = 'block';
+        }
+
+        const input = inputOverride || getInputUntukError(targetId);
+        input?.classList.add('is-invalid');
+    }
+
+    function clearFieldError(targetId, inputOverride = null) {
+        const errorElement = document.getElementById(targetId);
+
+        if (errorElement) {
+            errorElement.textContent = '';
+            errorElement.hidden = true;
+            errorElement.style.display = '';
+        }
+
+        const input = inputOverride || getInputUntukError(targetId);
+        input?.classList.remove('is-invalid');
+    }
+
+    function bersihkanSemuaErrorKasir() {
+        clearFieldError('errorNamaKasir');
+        clearFieldError('errorBarberKasir');
+        clearFieldError('errorLayananKasir');
+        clearFieldError('errorMetodePembayaranKasir');
+    }
+
+    // ======================================================
+    // 3. LOGIN MENGGUNAKAN API BACKEND
     // ======================================================
 
     const loginForm = document.getElementById('loginForm');
@@ -75,24 +156,19 @@ document.addEventListener('DOMContentLoaded', function () {
             loginErrorMessage.style.display = 'none';
         }
 
-        if (usernameWrapper) usernameWrapper.classList.remove('has-error');
-        if (passwordWrapper) passwordWrapper.classList.remove('has-error');
+        usernameWrapper?.classList.remove('has-error');
+        passwordWrapper?.classList.remove('has-error');
     }
 
-    if (passwordToggle && passwordInput) {
-        passwordToggle.addEventListener('click', function () {
-            const showPassword = passwordInput.type === 'password';
-            passwordInput.type = showPassword ? 'text' : 'password';
-        });
-    }
+    passwordToggle?.addEventListener('click', function () {
+        if (!passwordInput) return;
 
-    if (usernameInput) {
-        usernameInput.addEventListener('input', clearLoginError);
-    }
+        passwordInput.type =
+            passwordInput.type === 'password' ? 'text' : 'password';
+    });
 
-    if (passwordInput) {
-        passwordInput.addEventListener('input', clearLoginError);
-    }
+    usernameInput?.addEventListener('input', clearLoginError);
+    passwordInput?.addEventListener('input', clearLoginError);
 
     if (loginForm && usernameInput && passwordInput) {
         loginForm.addEventListener('submit', async function (e) {
@@ -121,9 +197,9 @@ document.addEventListener('DOMContentLoaded', function () {
             );
 
             const originalText = loginButton
-                ? (loginButton.tagName === 'INPUT'
+                ? loginButton.tagName === 'INPUT'
                     ? loginButton.value
-                    : loginButton.textContent)
+                    : loginButton.textContent
                 : '';
 
             try {
@@ -139,23 +215,21 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 }
 
-                const endpoint = '/KELOMPOK-5/api/auth/login.php';
-
-                const response = await fetch(endpoint, {
-                    method: 'POST',
-                    credentials: 'same-origin',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({
-                    nama_pelanggan: namaPelanggan.value.trim(),
-                    id_pelanggan: selectedPelangganId,
-                    id_barber: Number(namaBarber.value),
-                    layanan: layanan,
-                    metode_pembayaran: metodePembayaran.value
-                })
-                });
+                const response = await fetch(
+                    '/KELOMPOK-5/api/auth/login.php',
+                    {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            username: username,
+                            password: password
+                        })
+                    }
+                );
 
                 const result = await response.json();
 
@@ -197,7 +271,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // ======================================================
-    // 2. VALIDASI FORM CATAT TRANSAKSI
+    // 4. VALIDASI FORM CATAT TRANSAKSI
     // ======================================================
 
     const transaksiForm = document.getElementById('formTransaksi');
@@ -209,15 +283,18 @@ document.addEventListener('DOMContentLoaded', function () {
             );
 
             const layananSelect = document.getElementById('selectLayanan');
+
             const hasLayanan =
-                (layananDipilih && layananDipilih.length > 0) ||
-                (layananSelect && layananSelect.value !== '');
+                layananDipilih.length > 0 ||
+                Boolean(layananSelect && layananSelect.value !== '');
 
             if (!hasLayanan) {
                 e.preventDefault();
                 showFieldError('errorLayanan', 'Pilih minimal satu layanan');
                 return;
             }
+
+            clearFieldError('errorLayanan');
 
             const hargaInput = document.getElementById('inputHarga');
 
@@ -227,23 +304,25 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (hargaVal === '') {
                     e.preventDefault();
                     showFieldError('errorHarga', 'Harga wajib diisi');
-                    hargaInput.classList.add('is-invalid');
                     return;
                 }
 
-                const numericHarga = Number(
-                    hargaVal.replace(/[^0-9.-]+/g, '')
-                );
+                const numericHarga = Number(hargaVal.replace(/\./g, ''));
 
-                if (
-                    isNaN(numericHarga) ||
-                    !/^\d+$/.test(hargaVal.replace(/\./g, ''))
-                ) {
+                if (!/^\d+$/.test(hargaVal.replace(/\./g, '')) ||
+                    !Number.isFinite(numericHarga)) {
                     e.preventDefault();
                     showFieldError('errorHarga', 'Harga harus berupa angka');
-                    hargaInput.classList.add('is-invalid');
                     return;
                 }
+
+                if (numericHarga <= 0) {
+                    e.preventDefault();
+                    showFieldError('errorHarga', 'Harga harus lebih dari 0');
+                    return;
+                }
+
+                clearFieldError('errorHarga');
 
                 const baseHarga = Number(
                     hargaInput.getAttribute('data-base-price') || 0
@@ -252,197 +331,222 @@ document.addEventListener('DOMContentLoaded', function () {
                 const isConfirmed =
                     transaksiForm.getAttribute('data-price-confirmed') === 'true';
 
-                if (
-                    baseHarga > 0 &&
-                    numericHarga !== baseHarga &&
-                    !isConfirmed
-                ) {
+                if (baseHarga > 0 && numericHarga !== baseHarga && !isConfirmed) {
                     e.preventDefault();
 
-                    openPriceConfirmModal(function onConfirm() {
+                    openPriceConfirmModal(function () {
                         transaksiForm.setAttribute('data-price-confirmed', 'true');
-                        transaksiForm.submit();
+                        transaksiForm.requestSubmit();
                     });
+                } else {
+                    transaksiForm.removeAttribute('data-price-confirmed');
                 }
             }
         });
     }
 
     // ======================================================
-    // 3. VALIDASI FORM PELANGGAN
+    // 5. VALIDASI FORM PELANGGAN
     // ======================================================
 
     const formPelanggan = document.getElementById('formPelanggan');
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-      if (formPelanggan) {
-        formPelanggan.addEventListener('submit', function (e) {
-            const namaInput = document.getElementById('namaPelanggan');
-            const hpInput = document.getElementById('noHpPelanggan');
 
+    if (formPelanggan) {
+        const namaInput = document.getElementById('namaPelanggan');
+        const hpInput = document.getElementById('noHpPelanggan');
+
+        namaInput?.addEventListener('input', () => {
+            clearFieldError('errorNamaPelanggan', namaInput);
+        });
+
+        hpInput?.addEventListener('input', () => {
+            clearFieldError('errorHpPelanggan', hpInput);
+        });
+
+        formPelanggan.addEventListener('submit', function (e) {
             let isValid = true;
 
             if (namaInput && namaInput.value.trim() === '') {
-                e.preventDefault();
-                showFieldError('errorNamaPelanggan', 'Nama pelanggan wajib diisi');
+                showFieldError(
+                    'errorNamaPelanggan',
+                    'Nama pelanggan wajib diisi',
+                    namaInput
+                );
+                isValid = false;
+            } else {
+                clearFieldError('errorNamaPelanggan', namaInput);
             }
-///////////////////////////////////////////////////////////////////////////////////
-            // B. Validasi nomor HP.
+
             if (hpInput) {
                 const hpVal = hpInput.value.trim();
 
                 if (hpVal === '') {
-                    e.preventDefault();
-                    hpInput.classList.add('is-invalid');
-
                     showFieldError(
                         'errorHpPelanggan',
-                        'Nomor HP wajib diisi'
+                        'Nomor HP wajib diisi',
+                        hpInput
                     );
-
                     isValid = false;
                 } else if (!/^[0-9+\-\s]{8,18}$/.test(hpVal)) {
-                    e.preventDefault();
-                    hpInput.classList.add('is-invalid');
-
                     showFieldError(
                         'errorHpPelanggan',
-                        'Nomor HP tidak valid'
+                        'Nomor HP tidak valid',
+                        hpInput
                     );
-
                     isValid = false;
+                } else {
+                    clearFieldError('errorHpPelanggan', hpInput);
                 }
             }
 
-            return isValid;
+            if (!isValid) e.preventDefault();
         });
     }
+
     // ======================================================
-    // 4. VALIDASI FORM LAYANAN
+    // 6. VALIDASI FORM LAYANAN
     // ======================================================
 
     const formLayanan = document.getElementById('formLayanan');
 
     if (formLayanan) {
-        formLayanan.addEventListener('submit', function (e) {
-            const namaLayanan = document.getElementById('namaLayanan');
-            const hargaLayanan = document.getElementById('hargaLayanan');
+        const namaLayanan = document.getElementById('namaLayanan');
+        const hargaLayanan = document.getElementById('hargaLayanan');
 
+        namaLayanan?.addEventListener('input', () => {
+            clearFieldError('errorNamaLayanan', namaLayanan);
+        });
+
+        hargaLayanan?.addEventListener('input', () => {
+            clearFieldError('errorHargaLayanan', hargaLayanan);
+        });
+
+        formLayanan.addEventListener('submit', function (e) {
             if (namaLayanan && namaLayanan.value.trim() === '') {
                 e.preventDefault();
-                showFieldError('errorNamaLayanan', 'Nama layanan wajib diisi');
-                namaLayanan.classList.add('is-invalid');
+                showFieldError(
+                    'errorNamaLayanan',
+                    'Nama layanan wajib diisi',
+                    namaLayanan
+                );
                 return;
             }
 
+            clearFieldError('errorNamaLayanan', namaLayanan);
+
             if (hargaLayanan) {
                 const hVal = hargaLayanan.value.trim();
+                const numH = Number(hVal.replace(/\./g, ''));
 
                 if (hVal === '') {
                     e.preventDefault();
-                    showFieldError('errorHargaLayanan', 'Harga wajib diisi');
-                    hargaLayanan.classList.add('is-invalid');
+                    showFieldError(
+                        'errorHargaLayanan',
+                        'Harga wajib diisi',
+                        hargaLayanan
+                    );
                     return;
                 }
 
-                const numH = Number(hVal.replace(/[^0-9.-]+/g, ''));
-
-                if (
-                    isNaN(numH) ||
-                    !/^\d+$/.test(hVal.replace(/\./g, ''))
-                ) {
+                if (!/^\d+$/.test(hVal.replace(/\./g, '')) ||
+                    !Number.isFinite(numH)) {
                     e.preventDefault();
-                    showFieldError('errorHargaLayanan', 'Harga harus berupa angka');
-                    hargaLayanan.classList.add('is-invalid');
+                    showFieldError(
+                        'errorHargaLayanan',
+                        'Harga harus berupa angka',
+                        hargaLayanan
+                    );
                     return;
                 }
 
                 if (numH <= 0) {
                     e.preventDefault();
-                    showFieldError('errorHargaLayanan', 'Harga harus lebih dari 0');
-                    hargaLayanan.classList.add('is-invalid');
+                    showFieldError(
+                        'errorHargaLayanan',
+                        'Harga harus lebih dari 0',
+                        hargaLayanan
+                    );
+                    return;
                 }
+
+                clearFieldError('errorHargaLayanan', hargaLayanan);
             }
         });
     }
 
     // ======================================================
-    // 5. VALIDASI FORM PENGELUARAN / HPP
+    // 7. VALIDASI FORM PENGELUARAN / HPP
     // ======================================================
 
     const formPengeluaran = document.getElementById('formPengeluaran');
 
     if (formPengeluaran) {
-        formPengeluaran.addEventListener('submit', function (e) {
-            const kategori = document.getElementById('kategoriPengeluaran');
-            const nominal = document.getElementById('nominalPengeluaran');
+        const kategori = document.getElementById('kategoriPengeluaran');
+        const nominal = document.getElementById('nominalPengeluaran');
 
+        kategori?.addEventListener('change', () => {
+            clearFieldError('errorKategori', kategori);
+        });
+
+        nominal?.addEventListener('input', () => {
+            clearFieldError('errorNominal', nominal);
+        });
+
+        formPengeluaran.addEventListener('submit', function (e) {
             if (kategori && (kategori.value === '' || kategori.value === 'pilih')) {
                 e.preventDefault();
-                showFieldError('errorKategori', 'Kategori wajib dipilih');
-                kategori.classList.add('is-invalid');
+                showFieldError(
+                    'errorKategori',
+                    'Kategori wajib dipilih',
+                    kategori
+                );
                 return;
             }
 
+            clearFieldError('errorKategori', kategori);
+
             if (nominal) {
                 const nVal = nominal.value.trim();
+                const numN = Number(nVal.replace(/\./g, ''));
 
                 if (nVal === '') {
                     e.preventDefault();
-                    showFieldError('errorNominal', 'Nominal wajib diisi');
-                    nominal.classList.add('is-invalid');
+                    showFieldError(
+                        'errorNominal',
+                        'Nominal wajib diisi',
+                        nominal
+                    );
                     return;
                 }
 
-                const numN = Number(nVal.replace(/[^0-9.-]+/g, ''));
-
-                if (
-                    isNaN(numN) ||
-                    !/^\d+$/.test(nVal.replace(/\./g, ''))
-                ) {
+                if (!/^\d+$/.test(nVal.replace(/\./g, '')) ||
+                    !Number.isFinite(numN)) {
                     e.preventDefault();
-                    showFieldError('errorNominal', 'Nominal harus berupa angka');
-                    nominal.classList.add('is-invalid');
+                    showFieldError(
+                        'errorNominal',
+                        'Nominal harus berupa angka',
+                        nominal
+                    );
                     return;
                 }
 
                 if (numN <= 0) {
                     e.preventDefault();
-                    showFieldError('errorNominal', 'Nominal harus lebih dari 0');
-                    nominal.classList.add('is-invalid');
+                    showFieldError(
+                        'errorNominal',
+                        'Nominal harus lebih dari 0',
+                        nominal
+                    );
+                    return;
                 }
+
+                clearFieldError('errorNominal', nominal);
             }
         });
     }
 
     // ======================================================
-    // UTILITY: SHOW ERROR HELPER
-    // ======================================================
-
-    function showFieldError(targetId, message) {
-        const errEl = document.getElementById(targetId);
-
-        if (errEl) {
-            errEl.textContent = '*' + message;
-            errEl.style.display = 'block';
-        } else {
-            alert(message);
-        }
-    }
-
-    
-    // Menghapus pesan error pada input.
-    function clearFieldError(targetId) {
-        const errEl = document.getElementById(targetId);
-
-        if (errEl) {
-            errEl.textContent = '';
-            errEl.style.display = 'none';
-        }
-    }
-
-
-    // ======================================================
-    // MODAL KONFIRMASI HARGA BERBEDA
+    // 8. MODAL KONFIRMASI HARGA BERBEDA
     // ======================================================
 
     function openPriceConfirmModal(onConfirmCallback) {
@@ -492,30 +596,19 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // ======================================================
-    // AMBIL DAFTAR LAYANAN DARI API BACKEND
+    // 9. MEMUAT LAYANAN DARI API
     // ======================================================
 
-    // Mengubah path ikon API menjadi URL gambar yang benar.
     function getIconLayanan(layanan, gambarLayanan) {
         const icon = String(layanan.icon_layanan || '').trim();
 
-        // Gunakan ikon yang diunggah jika tersedia.
         if (icon) {
-            // Mendukung URL lengkap.
-            if (/^https?:\/\//i.test(icon)) {
-                return icon;
-            }
+            if (/^https?:\/\//i.test(icon)) return icon;
+            if (icon.startsWith('/')) return icon;
 
-            // Path absolut dari root situs.
-            if (icon.startsWith('/')) {
-                return icon;
-            }
-
-            // Path relatif dari folder proyek.
             return '/KELOMPOK-5/' + icon.replace(/^\.?\//, '');
         }
 
-        // Jika ikon belum tersedia, gunakan gambar bawaan.
         return gambarLayanan[layanan.nama_layanan] || '';
     }
 
@@ -529,9 +622,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 {
                     method: 'GET',
                     credentials: 'same-origin',
-                    headers: {
-                        'Accept': 'application/json'
-                    }
+                    headers: { 'Accept': 'application/json' }
                 }
             );
 
@@ -541,12 +632,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 throw new Error(result.message || 'Gagal memuat layanan.');
             }
 
-            // Kasir hanya menampilkan layanan aktif.
             const daftarLayananAktif = Array.isArray(result.data)
                 ? result.data.filter(layanan => Number(layanan.aktif) === 1)
                 : [];
 
-            // Simpan gambar bawaan sebelum kartu lama dihapus.
             const gambarLayanan = {};
 
             container.querySelectorAll('.service-card').forEach(kartu => {
@@ -569,12 +658,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 const kartu = document.createElement('button');
                 kartu.type = 'button';
                 kartu.className = 'service-card';
-
                 kartu.dataset.idLayanan = String(layanan.id_layanan);
                 kartu.dataset.service = String(layanan.nama_layanan);
                 kartu.dataset.price = String(layanan.harga);
 
-                // Membuat ikon layanan.
                 const ikon = document.createElement('span');
                 ikon.className = 'service-icon';
 
@@ -586,23 +673,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 if (sumberGambar) {
                     gambar.src = sumberGambar;
-                } else {
-                    // Jangan tampilkan ikon rusak jika tidak ada gambar.
-                    ikon.textContent = '✂';
-                }
 
-                // Jika gambar gagal dimuat, tampilkan ikon pengganti.
-                gambar.addEventListener('error', function () {
-                    gambar.remove();
-                    ikon.textContent = '✂';
-                    console.error(
-                        'Gambar layanan gagal dimuat:',
-                        sumberGambar
-                    );
-                });
+                    gambar.addEventListener('error', function () {
+                        gambar.remove();
+                        ikon.textContent = '✂';
+                        console.error(
+                            'Gambar layanan gagal dimuat:',
+                            sumberGambar
+                        );
+                    });
 
-                if (sumberGambar) {
                     ikon.appendChild(gambar);
+                } else {
+                    ikon.textContent = '✂';
                 }
 
                 const info = document.createElement('span');
@@ -631,7 +714,7 @@ document.addEventListener('DOMContentLoaded', function () {
     muatLayananDariAPI();
 
     // ======================================================
-    // MEMUAT DAFTAR BARBER DARI API
+    // 10. MEMUAT DAFTAR BARBER DARI API
     // ======================================================
 
     async function muatBarberDariAPI() {
@@ -644,9 +727,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 {
                     method: 'GET',
                     credentials: 'same-origin',
-                    headers: {
-                        'Accept': 'application/json'
-                    }
+                    headers: { 'Accept': 'application/json' }
                 }
             );
 
@@ -661,7 +742,7 @@ document.addEventListener('DOMContentLoaded', function () {
             selectBarber.innerHTML =
                 '<option value="">Ketik disini...</option>';
 
-            result.data.forEach(barber => {
+            (Array.isArray(result.data) ? result.data : []).forEach(barber => {
                 const option = document.createElement('option');
                 option.value = barber.id_user;
                 option.textContent = barber.nama;
@@ -675,7 +756,7 @@ document.addEventListener('DOMContentLoaded', function () {
     muatBarberDariAPI();
 
     // ======================================================
-    // 6. INTERAKSI KASIR - PILIH LAYANAN
+    // 11. INTERAKSI KASIR - PILIH LAYANAN
     // ======================================================
 
     const servicesContainer = document.querySelector('.kasir-services');
@@ -715,58 +796,56 @@ document.addEventListener('DOMContentLoaded', function () {
 
         kasirTotal.textContent = formatRupiah(total);
 
-        if (servicesContainer) {
-            servicesContainer.querySelectorAll('.service-card').forEach(card => {
-                card.classList.toggle(
-                    'selected',
-                    Boolean(selectedServices[String(card.dataset.idLayanan)])
-                );
-            });
+        servicesContainer?.querySelectorAll('.service-card').forEach(card => {
+            card.classList.toggle(
+                'selected',
+                Boolean(selectedServices[String(card.dataset.idLayanan)])
+            );
+        });
+    }
+
+    servicesContainer?.addEventListener('click', function (e) {
+        const card = e.target.closest('.service-card');
+        if (!card) return;
+
+        const id = String(card.dataset.idLayanan || '');
+        const name = card.dataset.service;
+        const price = Number(card.dataset.price);
+
+        if (!id || !name || !Number.isFinite(price)) {
+            console.error('Data layanan tidak valid.', { id, name, price });
+            return;
         }
-    }
 
-    if (servicesContainer) {
-        servicesContainer.addEventListener('click', function (e) {
-            const card = e.target.closest('.service-card');
-            if (!card) return;
+        if (selectedServices[id]) {
+            delete selectedServices[id];
+        } else {
+            selectedServices[id] = {
+                id_layanan: Number(id),
+                name: name,
+                price: price,
+                qty: 1
+            };
+        }
 
-            const id = String(card.dataset.idLayanan || '');
-            const name = card.dataset.service;
-            const price = Number(card.dataset.price);
+        clearFieldError('errorLayananKasir');
+        renderSelectedServices();
+    });
 
-            if (!id || !name || !Number.isFinite(price)) {
-                alert('Data layanan tidak valid.');
-                return;
-            }
+    selectedServicesContainer?.addEventListener('click', function (e) {
+        const button = e.target.closest('[data-action="remove"]');
+        if (!button) return;
 
-            if (selectedServices[id]) {
-                delete selectedServices[id];
-            } else {
-                selectedServices[id] = {
-                    id_layanan: Number(id),
-                    name: name,
-                    price: price,
-                    qty: 1
-                };
-            }
-
-            renderSelectedServices();
-        });
-    }
-
-    if (selectedServicesContainer) {
-        selectedServicesContainer.addEventListener('click', function (e) {
-            const button = e.target.closest('[data-action="remove"]');
-            if (!button) return;
-
-            delete selectedServices[String(button.dataset.idLayanan)];
-            renderSelectedServices();
-        });
-    }
+        delete selectedServices[String(button.dataset.idLayanan)];
+        renderSelectedServices();
+    });
 
     renderSelectedServices();
 
-    // Notifikasi transaksi berhasil.
+    // ======================================================
+    // 12. NOTIFIKASI TRANSAKSI
+    // ======================================================
+
     function showSuccessNotification(pesan) {
         const notifikasi = document.createElement('div');
 
@@ -789,77 +868,89 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // ======================================================
-    // 7. SIMPAN TRANSAKSI KE API BACKEND
+    // 13. SIMPAN TRANSAKSI KE API
     // ======================================================
 
-    const btnSimpanTransaksi = document.getElementById('btnSimpanTransaksi');  // Tombol simpan transaksi di halaman kasir.
-    
-    // Validasi nama pelanggan di halaman kasir.
-    const errorNamaKasir = document.getElementById('errorNamaKasir');
-
-    function tampilkanErrorNamaKasir() {
-        if (errorNamaKasir) {
-            errorNamaKasir.textContent = '*Nama Wajib Diisi';
-            errorNamaKasir.hidden = false;
-        }
-
-        if (namaPelangganKasir) {
-            namaPelangganKasir.classList.add('is-invalid');
-            namaPelangganKasir.focus();
-        }
-    }
-
+    const btnSimpanTransaksi = document.getElementById('btnSimpanTransaksi');
     const namaPelangganKasir = document.getElementById('namaPelanggan');
+    const namaBarberKasir = document.getElementById('namaBarber');
+    const metodePembayaranKasir = document.getElementById('metodePembayaran');
 
-    function bersihkanErrorNamaKasir() {
-        if (errorNamaKasir) {
-            errorNamaKasir.textContent = '';
-            errorNamaKasir.hidden = true;
-        }
+    let selectedPelangganId = null;
 
-        namaPelangganKasir?.classList.remove('is-invalid');
-    }
+    namaPelangganKasir?.addEventListener('input', function () {
+        selectedPelangganId = null;
+        clearFieldError('errorNamaKasir', namaPelangganKasir);
+    });
 
-    namaPelangganKasir?.addEventListener('input', bersihkanErrorNamaKasir);
+    namaBarberKasir?.addEventListener('change', function () {
+        clearFieldError('errorBarberKasir', namaBarberKasir);
+    });
+
+    metodePembayaranKasir?.addEventListener('change', function () {
+        clearFieldError('errorMetodePembayaranKasir', metodePembayaranKasir);
+    });
 
     if (btnSimpanTransaksi) {
-        btnSimpanTransaksi.addEventListener('click', async function () {
-            const namaPelanggan = document.getElementById('namaPelanggan');
-            const namaBarber = document.getElementById('namaBarber');
-            const metodePembayaran = document.getElementById('metodePembayaran');
+        btnSimpanTransaksi.addEventListener('click', async function (e) {
+            e.preventDefault();
+
+            const namaPelanggan = namaPelangganKasir;
+            const namaBarber = namaBarberKasir;
+            const metodePembayaran = metodePembayaranKasir;
 
             const layanan = Object.values(selectedServices).map(item => ({
                 id_layanan: item.id_layanan,
                 jumlah: item.qty
             }));
-            
-/////////////////////////// Validasi nama pelanggan sebelum transaksi dikirim ke API.
-if (!namaPelanggan || !namaPelanggan.value.trim()) {
-    tampilkanErrorNamaKasir();
-    return;
-}
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            bersihkanErrorNamaKasir(); // Hapus pesan error jika nama pelanggan sudah diisi.
+            bersihkanSemuaErrorKasir();
+
+            // Validasi nama pelanggan.
+            if (!namaPelanggan || !namaPelanggan.value.trim()) {
+                showFieldError(
+                    'errorNamaKasir',
+                    'Nama wajib diisi',
+                    namaPelanggan
+                );
+                namaPelanggan?.focus();
+                return;
+            }
+
+            // Validasi barber.
             if (!namaBarber || !namaBarber.value) {
-                alert('Nama barber wajib dipilih!');
+                showFieldError(
+                    'errorBarberKasir',
+                    'Nama barber wajib dipilih!',
+                    namaBarber
+                );
                 namaBarber?.focus();
                 return;
             }
 
+            // Validasi layanan.
             if (layanan.length === 0) {
-                alert('Pilih minimal satu layanan!');
+                showFieldError(
+                    'errorLayananKasir',
+                    'Pilih minimal satu layanan!',
+                    null
+                );
                 return;
             }
 
+            // Validasi metode pembayaran.
             if (!metodePembayaran || !metodePembayaran.value) {
-                alert('Metode pembayaran wajib dipilih!');
+                showFieldError(
+                    'errorMetodePembayaranKasir',
+                    'Metode pembayaran wajib dipilih!',
+                    metodePembayaran
+                );
                 metodePembayaran?.focus();
                 return;
             }
 
-            btnSimpanTransaksi.disabled = true;// Disable tombol untuk mencegah klik ganda.
-////////////////////////////////////4.2
+            btnSimpanTransaksi.disabled = true;
+
             try {
                 const response = await fetch(
                     '/KELOMPOK-5/api/transaksi/index.php',
@@ -898,6 +989,7 @@ if (!namaPelanggan || !namaPelanggan.value.trim()) {
                 namaBarber.value = '';
                 metodePembayaran.value = '';
 
+                bersihkanSemuaErrorKasir();
                 renderSelectedServices();
             } catch (error) {
                 console.error('Gagal menyimpan transaksi:', error);
@@ -911,40 +1003,39 @@ if (!namaPelanggan || !namaPelanggan.value.trim()) {
         });
     }
 
-    
-   // Autocomplete saran nama pelanggan.
-    const inputPelanggan = document.getElementById('namaPelanggan');
+    // ======================================================
+    // 14. AUTOCOMPLETE NAMA PELANGGAN
+    // ======================================================
 
-    // Menyimpan ID pelanggan yang dipilih dari saran API.
-    let selectedPelangganId = null;
+    const inputPelanggan = document.getElementById('namaPelanggan');
 
     if (inputPelanggan) {
         const saranPelanggan = document.createElement('div');
         saranPelanggan.className = 'pelanggan-suggestions';
         saranPelanggan.hidden = true;
 
-       const errorNamaKasir = document.getElementById('errorNamaKasir');
+        const errorNamaKasir = document.getElementById('errorNamaKasir');
 
-if (errorNamaKasir) {
-    errorNamaKasir.insertAdjacentElement('afterend', saranPelanggan);
-} else {
-    inputPelanggan.insertAdjacentElement('afterend', saranPelanggan);
-}
+        if (errorNamaKasir) {
+            errorNamaKasir.insertAdjacentElement('afterend', saranPelanggan);
+        } else {
+            inputPelanggan.insertAdjacentElement('afterend', saranPelanggan);
+        }
+
         let timerSaran;
         let permintaanSaran;
 
-        // Cari pelanggan setelah pengguna mengetik minimal 2 karakter.
         inputPelanggan.addEventListener('input', function () {
-        // Nama berubah, jadi pilihan pelanggan sebelumnya tidak berlaku.
-        selectedPelangganId = null;
+            selectedPelangganId = null;
 
-        clearTimeout(timerSaran);
+            clearTimeout(timerSaran);
 
             if (permintaanSaran) {
                 permintaanSaran.abort();
             }
 
             const kataKunci = inputPelanggan.value.trim();
+
             saranPelanggan.replaceChildren();
             saranPelanggan.hidden = true;
 
@@ -957,7 +1048,8 @@ if (errorNamaKasir) {
                     const response = await fetch(
                         `/KELOMPOK-5/api/pelanggan/index.php?q=${encodeURIComponent(kataKunci)}`,
                         {
-                            headers: { Accept: 'application/json' },
+                            method: 'GET',
+                            headers: { 'Accept': 'application/json' },
                             credentials: 'same-origin',
                             signal: permintaanSaran.signal
                         }
@@ -971,7 +1063,6 @@ if (errorNamaKasir) {
                         );
                     }
 
-                    // Abaikan hasil jika teks input sudah berubah.
                     if (inputPelanggan.value.trim() !== kataKunci) return;
 
                     saranPelanggan.replaceChildren();
@@ -984,11 +1075,11 @@ if (errorNamaKasir) {
                     } else {
                         result.data.forEach(function (pelanggan) {
                             const tombol = document.createElement('button');
+
                             tombol.type = 'button';
                             tombol.className = 'pelanggan-suggestion-item';
                             tombol.textContent = pelanggan.nama;
 
-                            // Simpan nama dan ID pelanggan yang dipilih.
                             tombol.addEventListener('click', function () {
                                 inputPelanggan.value = pelanggan.nama;
                                 selectedPelangganId = Number(pelanggan.id_pelanggan);
@@ -996,7 +1087,7 @@ if (errorNamaKasir) {
                                 saranPelanggan.hidden = true;
                                 saranPelanggan.replaceChildren();
 
-                                bersihkanErrorNamaKasir();
+                                clearFieldError('errorNamaKasir', inputPelanggan);
                             });
 
                             saranPelanggan.appendChild(tombol);
@@ -1012,7 +1103,6 @@ if (errorNamaKasir) {
             }, 250);
         });
 
-        // Tutup saran jika pengguna mengeklik area lain.
         document.addEventListener('click', function (event) {
             if (
                 event.target !== inputPelanggan &&
@@ -1022,5 +1112,4 @@ if (errorNamaKasir) {
             }
         });
     }
-
 });

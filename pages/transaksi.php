@@ -114,6 +114,12 @@ require_login();
                 </span>
             </button>
 
+    <small
+    id="errorLayananKasir"
+    class="kasir-field-error"
+    hidden
+></small>
+
         </section>
 
 
@@ -153,8 +159,7 @@ require_login();
                     <option value="">Ketik disini...</option>
                 </select>
             </div>
-
-            <!-- SERVICE TERPILIH -->
+             
             <div class="kasir-selected-service">
 
                 <div class="selected-service-heading">

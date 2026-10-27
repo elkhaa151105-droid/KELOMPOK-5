@@ -113,7 +113,7 @@ unset($_SESSION['login_notification']);
         <span>Layanan</span>
     </a>
 
-    <!-- KONTEN WEB -->
+    <!-- PEMASUKAN -->
     <a
         href="/KELOMPOK-5/pages/pemasukan.php"
         class="sidebar-link <?= $current_page === 'pemasukan.php' ? 'active' : '' ?>"

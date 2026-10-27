@@ -1171,6 +1171,8 @@ body:has(.login-page) main.container {
     border-radius: 14px;
 
     box-shadow: 0 2px 8px rgba(23, 24, 107, 0.08);
+    min-width: 0;
+    align-self: start;
 }
 
 .kasir-order-card h2 {
@@ -1353,8 +1355,7 @@ body:has(.login-page) main.container {
    RESPONSIVE
 ========================= */
 
-@media (max-width: 900px) {
-
+@media (max-width: 768px) {
     .kasir-layout {
         grid-template-columns: 1fr;
     }
@@ -3122,7 +3123,7 @@ body .pengeluaran-toast[hidden] {
 }
 
 .pelanggan-suggestion-empty {
-    padding: 10px 12px;
+    padding: 4px 9px;
     color: #777;
-    font-size: 14px;
+    font-size: 13px;
 }
