@@ -115,10 +115,10 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function bersihkanSemuaErrorKasir() {
-        clearFieldError('errorNamaKasir');
-        clearFieldError('errorBarberKasir');
-        clearFieldError('errorLayananKasir');
-        clearFieldError('errorMetodePembayaranKasir');
+    clearFieldError('errorNamaKasir');
+    clearFieldError('errorBarberKasir');
+    clearFieldError('errorLayananKasir');
+    clearFieldError('errorMetodePembayaranKasir');
     }
 
     // ======================================================
@@ -238,12 +238,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
 
                 const role = result.data?.role;
+                const namaUser = result.data?.nama || '';
 
                 if (role === 'owner') {
-                    simpanNotifikasiLogin('Login berhasil. Selamat datang erik');
+                    simpanNotifikasiLogin('Login berhasil. Selamat datang ' + (namaUser || 'Owner'));
                     window.location.href = '/KELOMPOK-5/pages/dashboard.php';
                 } else if (role === 'barber') {
-                    simpanNotifikasiLogin('Login berhasil. Selamat bekerja!');
+                    simpanNotifikasiLogin('Login berhasil. Selamat bekerja ' + (namaUser || 'Barber') + '!');
                     window.location.href = '/KELOMPOK-5/pages/transaksi.php';
                 } else {
                     throw new Error('Role akun tidak dikenali.');
@@ -546,7 +547,111 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // ======================================================
-    // 8. MODAL KONFIRMASI HARGA BERBEDA
+    // 8. DIALOG KONFIRMASI (SESUAI DESAIN FIGMA KATAJI)
+    // ======================================================
+
+    function konfirmasiTindakan({
+        judul = 'Konfirmasi Tindakan',
+        pesan = 'Apakah Anda yakin ingin melanjutkan tindakan ini?',
+        teksBatal = 'Batal',
+        teksKonfirmasi = 'Ya, Lanjutkan',
+        tipe = 'danger'
+    }) {
+        return new Promise(function (resolve) {
+            let overlay = document.getElementById('katajiModalKonfirmasi');
+
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.id = 'katajiModalKonfirmasi';
+                overlay.className = 'kataji-confirm-overlay';
+                overlay.setAttribute('role', 'dialog');
+                overlay.setAttribute('aria-modal', 'true');
+                overlay.innerHTML = `
+                    <div class="kataji-confirm-box">
+                        <h3 class="kataji-confirm-title" id="katajiConfirmTitle"></h3>
+                        <p class="kataji-confirm-desc" id="katajiConfirmDesc"></p>
+                        <div class="kataji-confirm-actions">
+                            <button type="button" class="btn-confirm-cancel" id="btnConfirmBatal">Batal</button>
+                            <button type="button" class="btn-confirm-danger" id="btnConfirmAksi">Ya</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(overlay);
+            }
+
+            const titleEl = overlay.querySelector('#katajiConfirmTitle');
+            const descEl = overlay.querySelector('#katajiConfirmDesc');
+            const btnBatal = overlay.querySelector('#btnConfirmBatal');
+            const btnAksi = overlay.querySelector('#btnConfirmAksi');
+
+            titleEl.textContent = judul;
+            descEl.textContent = pesan;
+            btnAksi.textContent = teksKonfirmasi;
+
+            if (!teksBatal) {
+                btnBatal.style.display = 'none';
+                btnAksi.classList.add('btn-single-alert');
+            } else {
+                btnBatal.style.display = '';
+                btnBatal.textContent = teksBatal;
+                btnAksi.classList.remove('btn-single-alert');
+            }
+
+            if (tipe === 'primary') {
+                btnAksi.className = 'btn-confirm-primary' + (!teksBatal ? ' btn-single-alert' : '');
+            } else {
+                btnAksi.className = 'btn-confirm-danger' + (!teksBatal ? ' btn-single-alert' : '');
+            }
+
+            function tutup(hasil) {
+                overlay.style.display = 'none';
+                document.body.classList.remove('kataji-confirm-open');
+                btnBatal.onclick = null;
+                btnAksi.onclick = null;
+                overlay.onclick = null;
+                document.removeEventListener('keydown', onKeyDown);
+                resolve(hasil);
+            }
+
+            function onKeyDown(e) {
+                if (e.key === 'Escape') {
+                    tutup(false);
+                }
+            }
+
+            btnBatal.onclick = function () { tutup(false); };
+            btnAksi.onclick = function () { tutup(true); };
+            overlay.onclick = function (e) {
+                if (e.target === overlay) tutup(false);
+            };
+            document.addEventListener('keydown', onKeyDown);
+
+            document.body.classList.add('kataji-confirm-open');
+            overlay.style.display = 'flex';
+            btnAksi.focus();
+        });
+    }
+
+    function tampilkanAlertKataji({
+        judul = 'Perhatian',
+        pesan = '',
+        teksTombol = 'Mengerti',
+        tipe = 'primary'
+    }) {
+        return konfirmasiTindakan({
+            judul,
+            pesan,
+            teksBatal: null,
+            teksKonfirmasi: teksTombol,
+            tipe
+        });
+    }
+
+    window.katajiKonfirmasi = konfirmasiTindakan;
+    window.katajiAlert = tampilkanAlertKataji;
+
+    // ======================================================
+    // 8B. MODAL KONFIRMASI HARGA BERBEDA
     // ======================================================
 
     function openPriceConfirmModal(onConfirmCallback) {
@@ -647,7 +752,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             });
 
-            container.innerHTML = '';
+            // Hapus kartu layanan saja, jangan hapus elemen pesan error.
+            container.querySelectorAll('.service-card').forEach(kartu => kartu.remove());
 
             if (daftarLayananAktif.length === 0) {
                 container.textContent = 'Belum ada layanan aktif.';
@@ -702,6 +808,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 kartu.append(ikon, info);
                 container.appendChild(kartu);
             });
+
+            
 
             console.log('Layanan berhasil dimuat:', daftarLayananAktif);
         } catch (error) {
@@ -846,10 +954,10 @@ document.addEventListener('DOMContentLoaded', function () {
     // 12. NOTIFIKASI TRANSAKSI
     // ======================================================
 
-    function showSuccessNotification(pesan) {
+    function showSuccessNotification(pesan, berhasil = true) {
         const notifikasi = document.createElement('div');
 
-        notifikasi.className = 'transaction-success';
+        notifikasi.className = 'transaction-success' + (berhasil ? '' : ' transaction-error');
         notifikasi.textContent = pesan;
 
         document.body.appendChild(notifikasi);
@@ -864,7 +972,7 @@ document.addEventListener('DOMContentLoaded', function () {
             setTimeout(() => {
                 notifikasi.remove();
             }, 300);
-        }, 2500);
+        }, 3000);
     }
 
     // ======================================================
@@ -932,8 +1040,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (layanan.length === 0) {
                 showFieldError(
                     'errorLayananKasir',
-                    'Pilih minimal satu layanan!',
-                    null
+                    'Pilih minimal satu layanan!'
                 );
                 return;
             }
@@ -952,6 +1059,17 @@ document.addEventListener('DOMContentLoaded', function () {
             btnSimpanTransaksi.disabled = true;
 
             try {
+                const payload = {
+                    nama_pelanggan: namaPelanggan.value.trim(),
+                    id_barber: Number(namaBarber.value),
+                    layanan: layanan,
+                    metode_pembayaran: metodePembayaran.value
+                };
+
+                if (selectedPelangganId) {
+                    payload.id_pelanggan = selectedPelangganId;
+                }
+
                 const response = await fetch(
                     '/KELOMPOK-5/api/transaksi/index.php',
                     {
@@ -961,12 +1079,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             'Content-Type': 'application/json',
                             'Accept': 'application/json'
                         },
-                        body: JSON.stringify({
-                            nama_pelanggan: namaPelanggan.value.trim(),
-                            id_barber: Number(namaBarber.value),
-                            layanan: layanan,
-                            metode_pembayaran: metodePembayaran.value
-                        })
+                        body: JSON.stringify(payload)
                     }
                 );
 
@@ -978,7 +1091,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     );
                 }
 
-                showSuccessNotification('Transaksi Berhasil Ditambahkan');
+                showSuccessNotification('Transaksi berhasil dicatat.', true);
 
                 Object.keys(selectedServices).forEach(id => {
                     delete selectedServices[id];
@@ -993,9 +1106,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 renderSelectedServices();
             } catch (error) {
                 console.error('Gagal menyimpan transaksi:', error);
-                alert(
+                showSuccessNotification(
                     error.message ||
-                    'Terjadi kesalahan saat menyimpan transaksi.'
+                    'Terjadi kesalahan saat menyimpan transaksi.',
+                    false
                 );
             } finally {
                 btnSimpanTransaksi.disabled = false;

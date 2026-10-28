@@ -1,7 +1,12 @@
+/**
+ * Kataji Barber - Manajemen Layanan (Frontend)
+ * Penyesuaian dengan API backend terbaru & desain modal konfirmasi Figma
+ */
+
 document.addEventListener('DOMContentLoaded', function () {
     const API_LAYANAN = '/KELOMPOK-5/api/layanan/index.php';
 
-    // Elemen form tambah dan tabel.
+    // Elemen form tambah dan tabel
     const form = document.getElementById('formTambahLayanan');
     const namaInput = document.getElementById('namaLayanan');
     const hargaInput = document.getElementById('hargaLayanan');
@@ -9,7 +14,12 @@ document.addEventListener('DOMContentLoaded', function () {
     const iconInput = document.getElementById('iconLayanan');
     const tableBody = document.getElementById('layananTableBody');
 
-    // Elemen modal edit.
+    // Elemen pesan error form tambah
+    const errorNamaTambah = document.getElementById('errorNamaLayanan');
+    const errorHargaTambah = document.getElementById('errorHargaLayanan');
+    const errorHppTambah = document.getElementById('errorHppLayanan');
+
+    // Elemen modal edit
     const modal = document.getElementById('modalEditLayanan');
     const formEdit = document.getElementById('formEditLayanan');
     const editId = document.getElementById('editIdLayanan');
@@ -20,11 +30,103 @@ document.addEventListener('DOMContentLoaded', function () {
     const tombolTutupModal = document.getElementById('tutupModalEditLayanan');
     const tombolSimpanEdit = document.getElementById('simpanEditLayanan');
 
+    // Elemen pesan error modal edit
+    const errorEditNama = document.getElementById('errorEditNamaLayanan');
+    const errorEditHarga = document.getElementById('errorEditHargaLayanan');
+    const errorEditHpp = document.getElementById('errorEditHppLayanan');
+
+    if (form) form.noValidate = true;
+    if (formEdit) formEdit.noValidate = true;
+
     let notificationTimer;
     let layananSedangDiedit = null;
 
-    // Menampilkan notifikasi.
-    function tampilkanNotifikasi(pesan, jenis) {
+    // ======================================================
+    // 1. DIALOG KONFIRMASI (SESUAI DESAIN FIGMA KATAJI)
+    // ======================================================
+
+    function konfirmasiTindakan({
+        judul = 'Konfirmasi Tindakan',
+        pesan = 'Apakah Anda yakin ingin melanjutkan tindakan ini?',
+        teksBatal = 'Batal',
+        teksKonfirmasi = 'Ya, Lanjutkan',
+        tipe = 'danger'
+    }) {
+        return new Promise(function (resolve) {
+            let overlay = document.getElementById('katajiModalKonfirmasi');
+
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.id = 'katajiModalKonfirmasi';
+                overlay.className = 'kataji-confirm-overlay';
+                overlay.setAttribute('role', 'dialog');
+                overlay.setAttribute('aria-modal', 'true');
+                overlay.innerHTML = `
+                    <div class="kataji-confirm-box">
+                        <h3 class="kataji-confirm-title" id="katajiConfirmTitle"></h3>
+                        <p class="kataji-confirm-desc" id="katajiConfirmDesc"></p>
+                        <div class="kataji-confirm-actions">
+                            <button type="button" class="btn-confirm-cancel" id="btnConfirmBatal">Batal</button>
+                            <button type="button" class="btn-confirm-danger" id="btnConfirmAksi">Ya</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(overlay);
+            }
+
+            const titleEl = overlay.querySelector('#katajiConfirmTitle');
+            const descEl = overlay.querySelector('#katajiConfirmDesc');
+            const btnBatal = overlay.querySelector('#btnConfirmBatal');
+            const btnAksi = overlay.querySelector('#btnConfirmAksi');
+
+            titleEl.textContent = judul;
+            descEl.textContent = pesan;
+            btnBatal.textContent = teksBatal;
+            btnAksi.textContent = teksKonfirmasi;
+
+            if (tipe === 'primary') {
+                btnAksi.className = 'btn-confirm-primary';
+            } else {
+                btnAksi.className = 'btn-confirm-danger';
+            }
+
+            function tutup(hasil) {
+                overlay.style.display = 'none';
+                document.body.classList.remove('kataji-confirm-open');
+                btnBatal.onclick = null;
+                btnAksi.onclick = null;
+                overlay.onclick = null;
+                document.removeEventListener('keydown', onKeyDown);
+                resolve(hasil);
+            }
+
+            function onKeyDown(e) {
+                if (e.key === 'Escape') {
+                    tutup(false);
+                }
+            }
+
+            btnBatal.onclick = function () { tutup(false); };
+            btnAksi.onclick = function () { tutup(true); };
+            overlay.onclick = function (e) {
+                if (e.target === overlay) tutup(false);
+            };
+            document.addEventListener('keydown', onKeyDown);
+
+            document.body.classList.add('kataji-confirm-open');
+            overlay.style.display = 'flex';
+            btnAksi.focus();
+        });
+    }
+
+    // Ekspor ke window agar bisa dipakai jika diperlukan
+    window.katajiKonfirmasi = window.katajiKonfirmasi || konfirmasiTindakan;
+
+    // ======================================================
+    // 2. SISTEM NOTIFIKASI
+    // ======================================================
+
+    function tampilkanNotifikasi(pesan, jenis = 'berhasil') {
         let notification = document.getElementById('layananNotifikasi');
 
         if (!notification) {
@@ -35,10 +137,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         clearTimeout(notificationTimer);
 
-        // Hijau untuk tindakan berhasil/layanan aktif.
-        // Merah untuk hapus, nonaktif, dan kegagalan.
         notification.className = 'transaction-success';
-        if (['error', 'hapus', 'nonaktif'].includes(jenis)) {
+        if (['error', 'hapus', 'nonaktif', 'gagal'].includes(jenis)) {
             notification.classList.add('transaction-error');
         }
         notification.textContent = pesan;
@@ -49,10 +149,76 @@ document.addEventListener('DOMContentLoaded', function () {
 
         notificationTimer = setTimeout(function () {
             notification.classList.remove('show');
-        }, 2500);
+        }, 3000);
     }
 
-    // Mengirim request JSON atau FormData ke API.
+    // ======================================================
+    // 3. HELPER VALIDASI FIELD FORM
+    // ======================================================
+
+    function showFieldError(input, errorElement, pesan) {
+        if (errorElement) {
+            errorElement.textContent = '*' + pesan;
+            errorElement.style.display = 'block';
+        }
+        if (input) {
+            input.classList.add('is-invalid');
+            input.setAttribute('aria-invalid', 'true');
+        }
+    }
+
+    function clearFieldError(input, errorElement) {
+        if (errorElement) {
+            errorElement.textContent = '';
+            errorElement.style.display = '';
+        }
+        if (input) {
+            input.classList.remove('is-invalid');
+            input.removeAttribute('aria-invalid');
+        }
+    }
+
+    function hapusSemuaErrorTambah() {
+        clearFieldError(namaInput, errorNamaTambah);
+        clearFieldError(hargaInput, errorHargaTambah);
+        clearFieldError(hppInput, errorHppTambah);
+    }
+
+    function bersihkanSemuaErrorEdit() {
+        clearFieldError(editNama, errorEditNama);
+        clearFieldError(editHarga, errorEditHarga);
+        clearFieldError(editHpp, errorEditHpp);
+    }
+
+    // Event input untuk menghapus error saat pengguna mulai mengetik
+    namaInput?.addEventListener('input', function () {
+        clearFieldError(namaInput, errorNamaTambah);
+    });
+
+    hargaInput?.addEventListener('input', function () {
+        clearFieldError(hargaInput, errorHargaTambah);
+    });
+
+    hppInput?.addEventListener('input', function () {
+        clearFieldError(hppInput, errorHppTambah);
+    });
+
+    editNama?.addEventListener('input', function () {
+        clearFieldError(editNama, errorEditNama);
+    });
+
+    editHarga?.addEventListener('input', function () {
+        clearFieldError(editHarga, errorEditHarga);
+    });
+
+    editHpp?.addEventListener('input', function () {
+        clearFieldError(editHpp, errorEditHpp);
+    });
+
+    // ======================================================
+    // 4. REQUEST API
+    // ======================================================
+
     async function requestAPI(method, data) {
         const options = {
             method: method,
@@ -69,29 +235,33 @@ document.addEventListener('DOMContentLoaded', function () {
             options.body = JSON.stringify(data);
         }
 
-        const response = await fetch(API_LAYANAN, options);
-        let result;
+        let response;
+        try {
+            response = await fetch(API_LAYANAN, options);
+        } catch (netErr) {
+            throw new Error('Gagal terhubung ke server. Periksa koneksi Anda.');
+        }
 
+        let result;
         try {
             result = await response.json();
         } catch (error) {
-            throw new Error('Respons API bukan JSON yang valid.');
+            throw new Error('Format respons server tidak valid.');
         }
 
         if (!response.ok || result.success === false) {
             throw new Error(
                 result.message ||
-                'Gagal memproses layanan. Status HTTP: ' + response.status
+                'Gagal memproses layanan (Status ' + response.status + ').'
             );
         }
 
         return result;
     }
 
-    // Membuat FormData untuk tambah layanan.
+    // Membuat FormData untuk request multipart
     function buatDataLayanan(nama, harga, hpp, fileIcon) {
         const data = new FormData();
-
         data.append('nama_layanan', nama);
         data.append('harga', String(harga));
         data.append('hpp', String(hpp));
@@ -103,7 +273,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return data;
     }
 
-    // Memeriksa file ikon.
+    // Validasi file ikon
     function validasiIkon(file) {
         if (!file) return '';
 
@@ -114,7 +284,7 @@ document.addEventListener('DOMContentLoaded', function () {
         ];
 
         if (!tipeDiizinkan.includes(file.type)) {
-            return 'Ikon harus berupa JPG, PNG, atau WebP.';
+            return 'Ikon harus berformat JPG, PNG, atau WebP.';
         }
 
         if (file.size > 2 * 1024 * 1024) {
@@ -124,34 +294,8 @@ document.addEventListener('DOMContentLoaded', function () {
         return '';
     }
 
-    // Membersihkan pesan error form tambah.
-    function hapusErrorTambah() {
-        [
-            'errorNamaLayanan',
-            'errorHargaLayanan',
-            'errorHppLayanan'
-        ].forEach(function (id) {
-            const elemen = document.getElementById(id);
-            if (elemen) elemen.textContent = '';
-        });
-    }
-
-    // Membersihkan pesan error modal edit.
-    function bersihkanErrorEdit() {
-        [
-            'errorEditNamaLayanan',
-            'errorEditHargaLayanan',
-            'errorEditHppLayanan'
-        ].forEach(function (id) {
-            const elemen = document.getElementById(id);
-            if (elemen) elemen.textContent = '';
-        });
-    }
-
-    // Membuat input angka.
     function buatInputAngka(className, value, min) {
         const input = document.createElement('input');
-
         input.type = 'number';
         input.className = className;
         input.min = String(min);
@@ -168,19 +312,19 @@ document.addEventListener('DOMContentLoaded', function () {
         return input;
     }
 
-    // Membuat tombol aksi.
     function buatTombol(teks, className, aksi) {
         const tombol = document.createElement('button');
-
         tombol.type = 'button';
         tombol.className = className;
         tombol.textContent = teks;
         tombol.addEventListener('click', aksi);
-
         return tombol;
     }
 
-    // Membuka modal edit dan mengisi data.
+    // ======================================================
+    // 5. MODAL EDIT LAYANAN
+    // ======================================================
+
     function bukaModalEdit(layanan) {
         if (!modal || !formEdit) return;
 
@@ -188,14 +332,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
         editId.value = layanan.id_layanan;
         editNama.value = layanan.nama_layanan || '';
-        editHarga.value = Number(layanan.harga) || 0;
+        editHarga.value = Number(layanan.harga) || '';
         editHpp.value = layanan.hpp === null || layanan.hpp === undefined
             ? ''
             : String(layanan.hpp);
 
         if (editIcon) editIcon.value = '';
 
-        bersihkanErrorEdit();
+        bersihkanSemuaErrorEdit();
 
         modal.classList.add('is-open');
         modal.setAttribute('aria-hidden', 'false');
@@ -204,7 +348,6 @@ document.addEventListener('DOMContentLoaded', function () {
         editNama.focus();
     }
 
-    // Menutup modal edit.
     function tutupModalEdit() {
         if (!modal || !formEdit) return;
 
@@ -213,7 +356,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.body.classList.remove('layanan-modal-open');
 
         formEdit.reset();
-        bersihkanErrorEdit();
+        bersihkanSemuaErrorEdit();
         layananSedangDiedit = null;
     }
 
@@ -239,75 +382,84 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Menyimpan perubahan layanan melalui API PUT.
+    // Submit Edit Layanan
     if (formEdit) {
         formEdit.addEventListener('submit', async function (event) {
             event.preventDefault();
-            bersihkanErrorEdit();
+            bersihkanSemuaErrorEdit();
 
             const nama = editNama.value.trim();
-            const harga = Number(editHarga.value);
+            const hargaRaw = editHarga.value.trim();
             const hppRaw = editHpp.value.trim();
-            const hpp = Number(hppRaw);
-
-            const errorNama = document.getElementById('errorEditNamaLayanan');
-            const errorHarga = document.getElementById('errorEditHargaLayanan');
-            const errorHpp = document.getElementById('errorEditHppLayanan');
 
             let valid = true;
 
-            if (!nama || nama.length > 100) {
-                if (errorNama) {
-                    errorNama.textContent =
-                        'Nama wajib diisi (maksimal 100 karakter).';
+            // Validasi Nama
+            if (nama === '') {
+                showFieldError(editNama, errorEditNama, 'Nama layanan wajib diisi.');
+                valid = false;
+            } else if (nama.length > 100) {
+                showFieldError(editNama, errorEditNama, 'Nama layanan maksimal 100 karakter.');
+                valid = false;
+            }
+
+            // Validasi Harga
+            if (hargaRaw === '') {
+                showFieldError(editHarga, errorEditHarga, 'Harga layanan wajib diisi.');
+                valid = false;
+            } else {
+                const harga = Number(hargaRaw);
+                if (!Number.isInteger(harga) || harga <= 0) {
+                    showFieldError(editHarga, errorEditHarga, 'Harga harus lebih dari 0.');
+                    valid = false;
                 }
-                valid = false;
             }
 
-            if (!Number.isInteger(harga) || harga <= 0) {
-                if (errorHarga) {
-                    errorHarga.textContent =
-                        'Harga harus berupa bilangan bulat lebih dari nol.';
+            // Validasi HPP
+            if (hppRaw === '') {
+                showFieldError(editHpp, errorEditHpp, 'HPP wajib diisi.');
+                valid = false;
+            } else {
+                const hpp = Number(hppRaw);
+                if (!Number.isInteger(hpp) || hpp <= 0) {
+                    showFieldError(editHpp, errorEditHpp, 'HPP harus lebih dari 0.');
+                    valid = false;
+                } else if (hpp > 2147483647) {
+                    showFieldError(editHpp, errorEditHpp, 'HPP terlalu besar.');
+                    valid = false;
                 }
-                valid = false;
             }
 
-            if (hppRaw === '' || !Number.isInteger(hpp) || hpp <= 0 || hpp > 2147483647) {
-                if (errorHpp) {
-                    errorHpp.textContent =
-                        'HPP wajib berupa bilangan bulat lebih dari nol.';
+            // Validasi file ikon jika diunggah
+            const fileIcon = editIcon && editIcon.files ? editIcon.files[0] : null;
+            if (fileIcon) {
+                const errorIkon = validasiIkon(fileIcon);
+                if (errorIkon) {
+                    tampilkanNotifikasi(errorIkon, 'error');
+                    valid = false;
                 }
-                valid = false;
             }
 
-            const fileIcon = editIcon && editIcon.files
-                ? editIcon.files[0]
-                : null;
-
-            const errorIkon = validasiIkon(fileIcon);
-
-            if (errorIkon) {
-                tampilkanNotifikasi(errorIkon, 'error');
-                valid = false;
+            // Jika validasi gagal: JANGAN menutup modal dan JANGAN kirim request
+            if (!valid || !layananSedangDiedit) {
+                return;
             }
-
-            if (!valid || !layananSedangDiedit) return;
 
             tombolSimpanEdit.disabled = true;
             tombolSimpanEdit.textContent = 'Menyimpan...';
 
             try {
                 let result;
+                const harga = Number(hargaRaw);
+                const hpp = Number(hppRaw);
 
                 if (fileIcon) {
-                    // BE menerima upload edit melalui POST dengan _method=PUT.
                     const data = buatDataLayanan(nama, harga, hpp, fileIcon);
                     data.append('_method', 'PUT');
                     data.append('id_layanan', String(editId.value));
 
                     result = await requestAPI('POST', data);
                 } else {
-                    // Tanpa ikon baru, gunakan request PUT JSON.
                     result = await requestAPI('PUT', {
                         id_layanan: Number(editId.value),
                         nama_layanan: nama,
@@ -333,17 +485,18 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Membuat baris tabel layanan.
+    // ======================================================
+    // 6. MEMBUAT BARIS TABEL & AKSI (NONAKTIF/HAPUS)
+    // ======================================================
+
     function buatBaris(layanan) {
         const row = document.createElement('tr');
-
         row.dataset.serviceRow = 'true';
         row.dataset.idLayanan = layanan.id_layanan;
 
-        // Kolom nama layanan.
+        // Kolom nama layanan
         const namaCell = document.createElement('td');
         const namaInputBaris = document.createElement('input');
-
         namaInputBaris.type = 'text';
         namaInputBaris.className = 'layanan-name-input';
         namaInputBaris.maxLength = 100;
@@ -351,7 +504,7 @@ document.addEventListener('DOMContentLoaded', function () {
         namaInputBaris.setAttribute('aria-label', 'Nama layanan');
         namaCell.appendChild(namaInputBaris);
 
-        // Kolom harga.
+        // Kolom harga
         const hargaCell = document.createElement('td');
         const hargaInputBaris = buatInputAngka(
             'layanan-price-input',
@@ -360,7 +513,7 @@ document.addEventListener('DOMContentLoaded', function () {
         );
         hargaCell.appendChild(hargaInputBaris);
 
-        // Kolom HPP.
+        // Kolom HPP
         const hppCell = document.createElement('td');
         const hppInputBaris = buatInputAngka(
             'layanan-hpp-input',
@@ -369,39 +522,46 @@ document.addEventListener('DOMContentLoaded', function () {
         );
         hppCell.appendChild(hppInputBaris);
 
-        // Kolom status aktif.
+        // Kolom status aktif
         const statusCell = document.createElement('td');
         const status = document.createElement('input');
-
         status.type = 'checkbox';
         status.className = 'layanan-checkbox';
         status.checked = Number(layanan.aktif) === 1;
         status.setAttribute('aria-label', 'Status layanan aktif');
         statusCell.appendChild(status);
 
-        // Kolom aksi.
+        // Kolom aksi
         const aksiCell = document.createElement('td');
         aksiCell.className = 'layanan-aksi';
 
+        // Tombol Edit
         aksiCell.appendChild(
             buatTombol('Edit', 'layanan-edit-button', function () {
                 bukaModalEdit({
                     id_layanan: layanan.id_layanan,
-                    nama_layanan: namaInputBaris.value.trim(),
-                    harga: hargaInputBaris.value,
-                    hpp: hppInputBaris.value,
+                    nama_layanan: namaInputBaris.value.trim() || layanan.nama_layanan,
+                    harga: hargaInputBaris.value || layanan.harga,
+                    hpp: hppInputBaris.value !== '' ? hppInputBaris.value : layanan.hpp,
                     icon_layanan: layanan.icon_layanan
                 });
             })
         );
 
-        // Menghapus layanan secara permanen.
+        // Tombol Hapus dengan Dialog Konfirmasi Figma
         aksiCell.appendChild(
             buatTombol('Hapus', 'layanan-hapus-button', async function () {
-                const nama =
-                    namaInputBaris.value.trim() || layanan.nama_layanan;
+                const nama = namaInputBaris.value.trim() || layanan.nama_layanan;
 
-                if (!confirm('Yakin ingin menghapus layanan "' + nama + '"?')) {
+                const yakin = await konfirmasiTindakan({
+                    judul: 'Hapus Layanan Ini?',
+                    pesan: `Apakah Anda yakin ingin menghapus layanan "${nama}"? Data layanan akan dihapus secara permanen.`,
+                    teksBatal: 'Batal',
+                    teksKonfirmasi: 'Ya, Hapus',
+                    tipe: 'danger'
+                });
+
+                if (!yakin) {
                     return;
                 }
 
@@ -422,17 +582,36 @@ document.addEventListener('DOMContentLoaded', function () {
             })
         );
 
-        // Mengaktifkan atau menonaktifkan layanan.
+        // Checkbox status: Menonaktifkan / Mengaktifkan dengan Dialog Konfirmasi Figma
         status.addEventListener('change', async function () {
             const statusSebelumnya = !status.checked;
             const aktifBaru = status.checked ? 1 : 0;
             const nama = namaInputBaris.value.trim() || layanan.nama_layanan;
 
-            const konfirmasi = aktifBaru === 1
-                ? 'Aktifkan kembali layanan "' + nama + '"?'
-                : 'Nonaktifkan layanan "' + nama + '"?';
+            let yakin = false;
 
-            if (!confirm(konfirmasi)) {
+            if (aktifBaru === 0) {
+                // Konfirmasi Menonaktifkan (sesuai Figma pada screenshot)
+                yakin = await konfirmasiTindakan({
+                    judul: 'Nonaktifkan Layanan Ini?',
+                    pesan: 'Apakah Anda yakin ingin menonaktifkan layanan ini? Layanan yang dinonaktifkan tidak akan tersedia.',
+                    teksBatal: 'Batal',
+                    teksKonfirmasi: 'Ya,Nonaktifkan',
+                    tipe: 'danger'
+                });
+            } else {
+                // Konfirmasi Mengaktifkan kembali
+                yakin = await konfirmasiTindakan({
+                    judul: 'Aktifkan Layanan Ini?',
+                    pesan: `Apakah Anda yakin ingin mengaktifkan layanan "${nama}"? Layanan akan tersedia kembali di kasir.`,
+                    teksBatal: 'Batal',
+                    teksKonfirmasi: 'Ya, Aktifkan',
+                    tipe: 'primary'
+                });
+            }
+
+            // Jika dibatalkan: batalkan perubahan checkbox dan JANGAN panggil API
+            if (!yakin) {
                 status.checked = statusSebelumnya;
                 return;
             }
@@ -464,11 +643,13 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         row.append(namaCell, hargaCell, hppCell, statusCell, aksiCell);
-
         return row;
     }
 
-    // Memuat data layanan dari API.
+    // ======================================================
+    // 7. MEMUAT DATA LAYANAN
+    // ======================================================
+
     async function muatLayanan() {
         if (!tableBody) return;
 
@@ -476,7 +657,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const loadingRow = document.createElement('tr');
         const loadingCell = document.createElement('td');
-
         loadingCell.colSpan = 5;
         loadingCell.textContent = 'Memuat data layanan...';
         loadingRow.appendChild(loadingCell);
@@ -491,7 +671,6 @@ document.addEventListener('DOMContentLoaded', function () {
             if (daftar.length === 0) {
                 const row = document.createElement('tr');
                 const cell = document.createElement('td');
-
                 cell.colSpan = 5;
                 cell.textContent = 'Belum ada layanan.';
                 row.appendChild(cell);
@@ -507,7 +686,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const row = document.createElement('tr');
             const cell = document.createElement('td');
-
             cell.colSpan = 5;
             cell.textContent = 'Data layanan gagal dimuat.';
             row.appendChild(cell);
@@ -517,59 +695,71 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // Menambah layanan menggunakan API POST.
+    // ======================================================
+    // 8. FORM TAMBAH LAYANAN
+    // ======================================================
+
     if (form) {
         form.addEventListener('submit', async function (event) {
             event.preventDefault();
-            hapusErrorTambah();
+            hapusSemuaErrorTambah();
 
             const nama = namaInput.value.trim();
-            const harga = Number(hargaInput.value);
+            const hargaRaw = hargaInput.value.trim();
             const hppRaw = hppInput.value.trim();
-            const hpp = Number(hppRaw);
-
-            const errorNama = document.getElementById('errorNamaLayanan');
-            const errorHarga = document.getElementById('errorHargaLayanan');
-            const errorHpp = document.getElementById('errorHppLayanan');
 
             let valid = true;
 
-            if (!nama || nama.length > 100) {
-                if (errorNama) {
-                    errorNama.textContent =
-                        'Nama wajib diisi (maksimal 100 karakter).';
+            // Validasi Nama
+            if (nama === '') {
+                showFieldError(namaInput, errorNamaTambah, 'Nama layanan wajib diisi.');
+                valid = false;
+            } else if (nama.length > 100) {
+                showFieldError(namaInput, errorNamaTambah, 'Nama layanan maksimal 100 karakter.');
+                valid = false;
+            }
+
+            // Validasi Harga
+            if (hargaRaw === '') {
+                showFieldError(hargaInput, errorHargaTambah, 'Harga layanan wajib diisi.');
+                valid = false;
+            } else {
+                const harga = Number(hargaRaw);
+                if (!Number.isInteger(harga) || harga <= 0) {
+                    showFieldError(hargaInput, errorHargaTambah, 'Harga harus lebih dari 0.');
+                    valid = false;
                 }
-                valid = false;
             }
 
-            if (!Number.isInteger(harga) || harga <= 0) {
-                if (errorHarga) {
-                    errorHarga.textContent =
-                        'Harga harus berupa bilangan bulat lebih dari nol.';
+            // Validasi HPP
+            if (hppRaw === '') {
+                showFieldError(hppInput, errorHppTambah, 'HPP wajib diisi.');
+                valid = false;
+            } else {
+                const hpp = Number(hppRaw);
+                if (!Number.isInteger(hpp) || hpp <= 0) {
+                    showFieldError(hppInput, errorHppTambah, 'HPP harus lebih dari 0.');
+                    valid = false;
+                } else if (hpp > 2147483647) {
+                    showFieldError(hppInput, errorHppTambah, 'HPP terlalu besar.');
+                    valid = false;
                 }
-                valid = false;
             }
 
-            if (hppRaw === '' || !Number.isInteger(hpp) || hpp <= 0 || hpp > 2147483647) {
-                if (errorHpp) {
-                    errorHpp.textContent =
-                        'HPP wajib berupa bilangan bulat lebih dari nol.';
+            // Validasi icon jika form memiliki input icon
+            const fileIcon = iconInput && iconInput.files ? iconInput.files[0] : null;
+            if (fileIcon) {
+                const errorIkon = validasiIkon(fileIcon);
+                if (errorIkon) {
+                    tampilkanNotifikasi(errorIkon, 'error');
+                    valid = false;
                 }
-                valid = false;
             }
 
-            const fileIcon = iconInput && iconInput.files
-                ? iconInput.files[0]
-                : null;
-
-            const errorIkon = validasiIkon(fileIcon);
-
-            if (errorIkon) {
-                tampilkanNotifikasi(errorIkon, 'error');
-                valid = false;
+            // Jika validasi gagal: hentikan proses
+            if (!valid) {
+                return;
             }
-
-            if (!valid) return;
 
             const submitButton = form.querySelector('[type="submit"]');
             if (submitButton) {
@@ -578,10 +768,13 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             try {
+                const harga = Number(hargaRaw);
+                const hpp = Number(hppRaw);
                 const data = buatDataLayanan(nama, harga, hpp, fileIcon);
                 const result = await requestAPI('POST', data);
 
                 form.reset();
+                hapusSemuaErrorTambah();
 
                 tampilkanNotifikasi(
                     result.message || 'Layanan berhasil ditambahkan.',
@@ -600,6 +793,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Memuat data saat halaman dibuka.
+    // Muat daftar layanan saat halaman dibuka
     muatLayanan();
 });

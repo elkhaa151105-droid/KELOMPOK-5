@@ -6,7 +6,7 @@ require_role(['owner', 'barber']);
 include __DIR__ . '/../includes/header.php';
 ?>
 
-<div class="riwayat-page">
+<div class="riwayat-page" data-role="<?= htmlspecialchars($_SESSION['role'] ?? '') ?>">
 
     <div class="riwayat-heading">
         <h1>Riwayat</h1>

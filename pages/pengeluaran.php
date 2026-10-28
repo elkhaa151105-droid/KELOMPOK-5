@@ -71,7 +71,7 @@ include __DIR__ . '/../includes/header.php';
 
         <h2 class="pengeluaran-form-title">Catat Pengeluaran</h2>
 
-        <form id="formPengeluaranHarian" class="pengeluaran-form">
+        <form id="formPengeluaranHarian" class="pengeluaran-form" novalidate>
 
             <div class="pengeluaran-form-group">
                 <label for="kategoriPengeluaranHarian">Kategori</label>

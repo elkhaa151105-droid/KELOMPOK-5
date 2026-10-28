@@ -48,7 +48,7 @@ require_role(['owner']);
     <div class="layanan-card tambah-layanan-card">
         <h2>Tambah Layanan</h2>
 
-        <form id="formTambahLayanan" class="tambah-layanan-form">
+        <form id="formTambahLayanan" class="tambah-layanan-form" novalidate>
 
             <div class="layanan-input-group">
                 <label for="namaLayanan">Nama</label>
@@ -83,7 +83,6 @@ require_role(['owner']);
                     id="hppLayanan"
                     min="1"
                     step="1"
-                    required
                 >
                 <span
                     id="errorHppLayanan"
@@ -128,7 +127,7 @@ require_role(['owner']);
         </div>
 
         <!-- Form edit -->
-        <form id="formEditLayanan">
+        <form id="formEditLayanan" novalidate>
 
             <input
                 type="hidden"
@@ -147,7 +146,6 @@ require_role(['owner']);
                         id="editNamaLayanan"
                         placeholder="Masukkan nama layanan"
                         maxlength="100"
-                        required
                     >
 
                     <span
@@ -165,11 +163,11 @@ require_role(['owner']);
                     <input
                         type="file"
                         id="editIconLayanan"
-                        accept="image/*"
+                        accept="image/png,image/jpeg,image/webp"
                     >
 
                     <small class="layanan-modal-hint">
-                        *Format .PNG Maks 2 mb
+                        *Format .PNG, .JPG, .WEBP Maks 2 mb
                     </small>
                 </div>
 
@@ -183,7 +181,6 @@ require_role(['owner']);
                         id="editHargaLayanan"
                         min="1"
                         placeholder="Masukkan harga layanan"
-                        required
                     >
 
                     <span
@@ -202,9 +199,7 @@ require_role(['owner']);
                         id="editHppLayanan"
                         min="1"
                         step="1"
-                        required
                         placeholder="Masukkan HPP"
-                        required
                     >
 
                     <span

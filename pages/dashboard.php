@@ -35,7 +35,7 @@ $display_role = ($role === 'owner') ? 'Owner Kataji' : ($nama ?: 'Barber');
                 </span>
                 <span class="summary-title">Pelanggan Hari Ini</span>
             </div>
-            <strong class="summary-value">2</strong>
+            <strong class="summary-value" id="dashPelangganHariIni">0</strong>
         </div>
 
         <!-- TRANSAKSI HARI INI -->
@@ -52,7 +52,7 @@ $display_role = ($role === 'owner') ? 'Owner Kataji' : ($nama ?: 'Barber');
                 </span>
                 <span class="summary-title">Transaksi Hari Ini</span>
             </div>
-            <strong class="summary-value">2</strong>
+            <strong class="summary-value" id="dashTransaksiHariIni">0</strong>
         </div>
 
         <!-- PENDAPATAN HARI INI -->
@@ -66,7 +66,7 @@ $display_role = ($role === 'owner') ? 'Owner Kataji' : ($nama ?: 'Barber');
                 </span>
                 <span class="summary-title">Pendapatan Hari Ini</span>
             </div>
-            <strong class="summary-value">Rp200.000</strong>
+            <strong class="summary-value" id="dashPendapatanHariIni">Rp0</strong>
         </div>
 
         <!-- LABA KOTOR HARI INI -->
@@ -80,7 +80,7 @@ $display_role = ($role === 'owner') ? 'Owner Kataji' : ($nama ?: 'Barber');
                 </span>
                 <span class="summary-title">Laba Kotor Hari Ini</span>
             </div>
-            <strong class="summary-value">Rp100.000</strong>
+            <strong class="summary-value" id="dashLabaKotorHariIni">Rp0</strong>
         </div>
 
     </div>
@@ -95,13 +95,21 @@ $display_role = ($role === 'owner') ? 'Owner Kataji' : ($nama ?: 'Barber');
                 <p>Rekap pemasukan harian dan transaksi per barber</p>
             </div>
 
-            <div class="filter-tanggal">
-                <label for="tanggalPemasukan">Tanggal</label>
-                <input
-                    type="date"
-                    id="tanggalPemasukan"
-                    aria-label="Pilih tanggal pemasukan"
-                >
+            <div class="rekap-filter-area">
+                <div class="periode-pemasukan" aria-label="Filter periode pemasukan">
+                    <button type="button" class="periode-pemasukan-btn active" data-period="hari" aria-pressed="true">Hari Ini</button>
+                    <button type="button" class="periode-pemasukan-btn" data-period="minggu" aria-pressed="false">Minggu Ini</button>
+                    <button type="button" class="periode-pemasukan-btn" data-period="bulan" aria-pressed="false">Bulan Ini</button>
+                </div>
+
+                <div class="filter-tanggal" id="filterTanggalPemasukan">
+                    <label for="tanggalPemasukan">Tanggal</label>
+                    <input
+                        type="date"
+                        id="tanggalPemasukan"
+                        aria-label="Pilih tanggal pemasukan"
+                    >
+                </div>
             </div>
         </div>
 
