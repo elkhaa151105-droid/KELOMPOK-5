@@ -10,6 +10,15 @@ include __DIR__ . '/../includes/header.php';
 
     <div class="riwayat-heading">
         <h1>Riwayat</h1>
+        <div class="riwayat-filter-controls">
+            <label for="filterTanggalRiwayat" class="visually-hidden">Filter tanggal transaksi</label>
+            <input
+                type="date"
+                id="filterTanggalRiwayat"
+                class="riwayat-date-filter"
+                aria-label="Filter tanggal transaksi"
+            >
+        </div>
     </div>
 
     <div class="riwayat-card">
