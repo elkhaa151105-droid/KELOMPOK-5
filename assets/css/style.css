@@ -2241,11 +2241,18 @@ body.layanan-modal-open {
     transition: all 0.15s ease;
 }
 
-.riwayat-delete-btn:hover,
-.pengeluaran-delete-btn:hover {
-    background: #D9383A;
-    color: #FFFFFF;
-    border-color: #D9383A;
+/* Cari baris 2224 di style.css dan sesuaikan menjadi seperti ini */
+.riwayat-delete-btn, .pengeluaran-delete-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    min-height: 28px;
+    
+    /* Tambahkan dua baris di bawah ini untuk menghapus background bawaan */
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none; /* Opsional: jika ingin menghilangkan garis tepi lingkaran juga */
 }
 
 .riwayat-delete-btn:disabled,
@@ -2416,52 +2423,57 @@ body.layanan-modal-open {
 }
 
 
-/* Halaman Pemasukan */
-.pemasukan-page {
-    padding: 24px;
-    min-height: calc(100vh - 40px);
-    background: #f3f4fa;
-}
+
+/* =========================
+   HALAMAN PEMASUKAN
+   ========================= */
 
 .pemasukan-page {
+    padding: 10px 18px 24px;
     margin-top: -15px;
+    min-height: calc(100vh - 40px);
+    background: #f3f4fa;
+    box-sizing: border-box;
 }
+
 .pemasukan-heading {
-    margin-bottom: 18px;
+    margin-bottom: 10px;
 }
 
 .pemasukan-heading h1 {
-   margin: 0;
-  color: var(--text-main);
-  font-size: 28px;
-  font-weight: 800;
+    margin: 0;
+    color: var(--text-main);
+    font-size: 28px;
+    font-weight: 800;
 }
 
 .pemasukan-heading p {
     margin: 0;
-    color: #777;
+    color: #888;
     font-size: 12px;
 }
 
 .pemasukan-card {
     min-height: 340px;
-    padding: 20px;
+    padding: 12px;
     background: #fff;
     border-radius: 10px;
-    box-shadow: 0 2px 4px #00000018;
+    box-shadow: 0 2px 3px #00000030;
+    box-sizing: border-box;
 }
 
 .pemasukan-card-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 16px;
+    gap: 12px;
     flex-wrap: wrap;
 }
 
 .pemasukan-card-header h2 {
     margin: 0;
     font-size: 18px;
+    font-weight: 800;
 }
 
 .pemasukan-date {
@@ -2476,11 +2488,12 @@ body.layanan-modal-open {
 }
 
 .pemasukan-date input {
-    padding: 6px 8px;
-    border: 1px solid #d5d5d5;
-    border-radius: 6px;
+    padding: 5px 8px;
+    border: 1px solid #c9c9c9;
+    border-radius: 8px;
     font: inherit;
     font-size: 12px;
+    background: #fff;
 }
 
 .pemasukan-total-row {
@@ -2488,8 +2501,7 @@ body.layanan-modal-open {
     justify-content: space-between;
     align-items: center;
     gap: 12px;
-    margin-top: 20px;
-    margin-bottom: 22px;
+    margin: 8px 0 12px;
 }
 
 .pemasukan-total-row span {
@@ -2499,43 +2511,85 @@ body.layanan-modal-open {
 
 .pemasukan-total-row strong {
     font-size: 24px;
+    font-weight: 700;
     color: #292929;
 }
 
 .pemasukan-detail h3 {
-    margin: 0 0 12px;
+    margin: 0 0 8px;
     font-size: 14px;
+    font-weight: 700;
 }
 
-.pemasukan-barber-row {
-    display: flex;
-    justify-content: space-between;
-    gap: 16px;
-    padding: 10px 0;
-    border-bottom: 1px solid #eeeeee;
-    font-size: 12px;
+.pemasukan-detail .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
 }
 
-.pemasukan-barber-row span:last-child {
-    color: #777;
+.pemasukan-detail .data-table th,
+.pemasukan-detail .data-table td {
+    padding: 3px 0;
+    text-align: left;
+    border-bottom: 1px solid #bdbdbd;
+    font-size: 13px;
+    color: #858585;
+}
+
+.pemasukan-detail .data-table th {
+    color: #858585;
+    font-weight: 600;
+}
+
+.pemasukan-detail .data-table th:nth-child(1),
+.pemasukan-detail .data-table td:nth-child(1) {
+    width: 25%;
+}
+
+.pemasukan-detail .data-table th:nth-child(2),
+.pemasukan-detail .data-table td:nth-child(2) {
+    width: 25%;
+}
+
+.pemasukan-detail .data-table th:nth-child(3),
+.pemasukan-detail .data-table td:nth-child(3) {
+    width: 50%;
 }
 
 #statusPemasukan {
+    margin: 0;
+    padding: 8px 0;
     color: #777;
     font-size: 12px;
 }
 
 @media (max-width: 600px) {
     .pemasukan-page {
-        padding: 14px;
+        padding: 10px 12px 20px;
     }
 
     .pemasukan-card {
-        padding: 16px;
+        padding: 14px;
+        min-height: 300px;
+    }
+
+    .pemasukan-heading h1 {
+        font-size: 24px;
     }
 
     .pemasukan-total-row strong {
         font-size: 20px;
+    }
+
+    .pemasukan-detail .data-table th,
+    .pemasukan-detail .data-table td {
+        font-size: 12px;
+        padding: 6px 3px;
+        overflow-wrap: anywhere;
+    }
+
+    .pemasukan-date {
+        flex-wrap: wrap;
     }
 }
 
@@ -3476,4 +3530,298 @@ body .pengeluaran-toast[hidden] {
 .btn-reset-filter:hover {
     background: #F3F4F6;
     border-color: #9CA3AF;
+}
+
+/* Perbaikan kolom harga dan HPP halaman Layanan */
+.layanan-table th:nth-child(1),
+.layanan-table td:nth-child(1) {
+    width: 24%;
+}
+
+.layanan-table th:nth-child(2),
+.layanan-table td:nth-child(2),
+.layanan-table th:nth-child(3),
+.layanan-table td:nth-child(3) {
+    width: 18%;
+}
+
+.layanan-table th:nth-child(4),
+.layanan-table td:nth-child(4) {
+    width: 8%;
+}
+
+.layanan-table th:nth-child(5),
+.layanan-table td:nth-child(5) {
+    width: 32%;
+}
+
+/* Input harga dan HPP */
+.layanan-table input.layanan-price-input,
+.layanan-table input.layanan-hpp-input {
+    width: 100%;
+    max-width: 110px;
+    min-width: 0;
+    height: 30px;
+    padding: 4px 6px;
+    border: 1px solid #BDBDBD;
+    border-radius: 10px;
+    box-sizing: border-box;
+    font-size: 12px;
+    text-align: center;
+}
+
+/* Prefix Rupiah pada kolom Harga dan HPP */
+.layanan-rupiah-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    width: 100%;
+    min-width: 0;
+}
+
+.layanan-rupiah-prefix {
+    flex-shrink: 0;
+    color: #858585;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.layanan-table input.layanan-price-input,
+.layanan-table input.layanan-hpp-input {
+    flex: 1;
+    width: 100%;
+    max-width: 110px;
+    min-width: 0;
+    height: 30px;
+    padding: 4px 6px;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+
+/* Penyesuaian halaman Pemasukan sesuai Figma */
+.pemasukan-page {
+    padding: 24px;
+    margin-top: -15px;
+    min-height: calc(100vh - 40px);
+    background: #F3F4FA;
+    box-sizing: border-box;
+}
+
+.pemasukan-heading {
+    margin-bottom: 22px;
+}
+
+.pemasukan-heading h1 {
+    margin: 0;
+    color: var(--text-main);
+    font-size: 28px;
+    font-weight: 800;
+}
+
+.pemasukan-heading p {
+    margin: 2px 0 0;
+    color: #858585;
+    font-size: 12px;
+}
+
+.pemasukan-card {
+    min-height: 340px;
+    padding: 12px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px #00000024;
+    box-sizing: border-box;
+}
+
+.pemasukan-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.pemasukan-card-header h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.pemasukan-date input {
+    padding: 6px 8px;
+    border: 1px solid #D5D5D5;
+    border-radius: 8px;
+    font: inherit;
+    font-size: 12px;
+}
+
+.pemasukan-total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin: 12px 0 16px;
+}
+
+.pemasukan-total-row span {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.pemasukan-total-row strong {
+    color: #292929;
+    font-size: 24px;
+    font-weight: 800;
+}
+
+.pemasukan-detail h3 {
+    margin: 0 0 8px;
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.pemasukan-detail #statusPemasukan {
+    margin: 12px 0;
+    color: #858585;
+    font-size: 12px;
+}
+
+.pemasukan-detail .table-responsive {
+    width: 100%;
+    overflow-x: auto;
+}
+
+
+/* Tabel pemasukan - penyesuaian sesuai Figma */
+.pemasukan-table {
+    width: 100%;
+    border-collapse: collapse;
+    border-spacing: 0;
+    table-layout: fixed;
+    font-family: inherit;
+    font-size: 12px;
+    color: #222222;
+}
+
+.pemasukan-table th,
+.pemasukan-table td {
+    padding: 4px 0;
+    text-align: left;
+    vertical-align: middle;
+    border: none;
+    border-bottom: 1px solid #CCCCCC;
+    line-height: 1.35;
+}
+
+.pemasukan-table th {
+    color: #858585;
+    font-size: 12px;
+    font-weight: 500;
+    background: transparent;
+}
+
+.pemasukan-table td {
+    color: #222222;
+    font-size: 12px;
+    font-weight: 400;
+}
+
+.pemasukan-table th:nth-child(1),
+.pemasukan-table td:nth-child(1) {
+    width: 24%;
+}
+
+.pemasukan-table th:nth-child(2),
+.pemasukan-table td:nth-child(2) {
+    width: 24%;
+}
+
+.pemasukan-table th:nth-child(3),
+.pemasukan-table td:nth-child(3) {
+    width: 52%;
+}
+
+@media (max-width: 600px) {
+    .pemasukan-page {
+        padding: 14px;
+    }
+
+    .pemasukan-card {
+        padding: 12px;
+    }
+
+    .pemasukan-total-row strong {
+        font-size: 20px;
+    }
+
+    .pemasukan-table {
+        min-width: 400px;
+    }
+}
+
+/* Tabel pemasukan - penyesuaian akhir sesuai Figma */
+.pemasukan-page .pemasukan-card .table-responsive {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.pemasukan-page .pemasukan-card table.data-table {
+    width: 100% !important;
+    table-layout: fixed !important;
+    border-collapse: collapse !important;
+    border-spacing: 0 !important;
+    margin: 0 !important;
+    background: #fff !important;
+.pemasukan-page .pemasukan-card table.data-table th {
+    /* Jika ada kode bawaan di sini, biarkan saja */
+}
+
+/* 1. Hapus semua garis border bawaan pada seluruh sel tabel */
+.pemasukan-page .pemasukan-card table.data-table th,
+.pemasukan-page .pemasukan-card table.data-table td {
+    border: none !important;
+}
+
+/* 2. Berikan satu garis hanya di bagian bawah header */
+.pemasukan-page .pemasukan-card table.data-table th {
+    border-bottom: 1px solid #E2E8F0 !important;
+    padding-bottom: 8px;
+}
+.pemasukan-page .pemasukan-card table.data-table td:nth-child(3) {
+    width: 43% !important;
+}
+
+/* Header tabel */
+.pemasukan-page .pemasukan-card table.data-table thead th {
+    padding: 2px 4px 4px !important;
+    color: #858585 !important;
+    background: #858585 !important;
+    font-family: inherit !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    line-height: 1.4 !important;
+    text-align: left !important;
+    border: none !important;
+    border-bottom: 1px solid #d0d0d0 !important;
+}
+
+/* Isi tabel */
+.pemasukan-page .pemasukan-card table.data-table tbody td {
+    padding: 3px 4px !important;
+    color: #858585 !important;
+    background: #fff !important;
+    font-family: inherit !important;
+    font-size: 12px !important;
+    font-weight: 400 !important;
+    line-height: 1.4 !important;
+    text-align: left !important;
+    border: none !important;
+    border-bottom: 1px solid #d0d0d0 !important;
+}
+
+/* Hilangkan warna baris selang-seling dari CSS global */
+.pemasukan-page .pemasukan-card table.data-table tbody tr,
+.pemasukan-page .pemasukan-card table.data-table tbody tr:nth-child(odd),
+.pemasukan-page .pemasukan-card table.data-table tbody tr:nth-child(even) {
+    background: #fff !important;
 }
