@@ -8,28 +8,44 @@ header('Content-Type: application/json; charset=utf-8');
 
 apiWajibOwner();
 
-header('Content-Type: application/json; charset=utf-8');
-
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    http_response_code(405);
-    echo json_encode([
-        'success' => false,
-        'message' => 'Gunakan metode POST.'
-    ]);
+function kirimJsonHapus(int $status, array $data): void
+{
+    http_response_code($status);
+    echo json_encode($data, JSON_UNESCAPED_UNICODE);
     exit;
 }
 
+// Endpoint ini hanya menerima DELETE.
+if ($_SERVER['REQUEST_METHOD'] !== 'DELETE') {
+    header('Allow: DELETE');
 
-
-$id = filter_input(INPUT_POST, 'id_transaksi', FILTER_VALIDATE_INT);
-
-if (!$id || $id < 1) {
-    http_response_code(400);
-    echo json_encode([
+    kirimJsonHapus(405, [
         'success' => false,
-        'message' => 'ID transaksi tidak valid.'
+        'message' => 'Gunakan metode DELETE.',
+        'error_code' => 'METHOD_NOT_ALLOWED'
     ]);
-    exit;
+}
+
+// PHP tidak mengisi $_POST untuk DELETE, jadi ID dibaca dari
+// query string (?id_transaksi=) atau body JSON ({"id_transaksi": 1}).
+$input = json_decode(file_get_contents('php://input'), true);
+
+if (!is_array($input)) {
+    $input = [];
+}
+
+$id = filter_var(
+    $_GET['id_transaksi'] ?? $input['id_transaksi'] ?? null,
+    FILTER_VALIDATE_INT,
+    ['options' => ['min_range' => 1]]
+);
+
+if ($id === false || $id === null) {
+    kirimJsonHapus(400, [
+        'success' => false,
+        'message' => 'ID transaksi tidak valid.',
+        'error_code' => 'BAD_REQUEST'
+    ]);
 }
 
 try {
@@ -43,22 +59,23 @@ try {
     $stmt->execute(['id' => $id]);
 
     if ($stmt->rowCount() === 0) {
-        http_response_code(404);
-        echo json_encode([
+        kirimJsonHapus(404, [
             'success' => false,
-            'message' => 'Transaksi tidak ditemukan atau sudah dihapus.'
+            'message' => 'Transaksi tidak ditemukan atau sudah dihapus.',
+            'error_code' => 'NOT_FOUND'
         ]);
-        exit;
     }
 
-    echo json_encode([
+    kirimJsonHapus(200, [
         'success' => true,
         'message' => 'Riwayat transaksi berhasil dihapus.'
     ]);
 } catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode([
+    error_log('API hapus transaksi: ' . $e->getMessage());
+
+    kirimJsonHapus(500, [
         'success' => false,
-        'message' => 'Gagal menghapus riwayat transaksi.'
+        'message' => 'Gagal menghapus riwayat transaksi.',
+        'error_code' => 'INTERNAL_SERVER_ERROR'
     ]);
 }

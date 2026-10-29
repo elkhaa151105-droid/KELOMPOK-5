@@ -19,7 +19,7 @@ function bacaJson(): array
         kirimJson(400, [
             'success' => false,
             'message' => 'harus berupa json yang valid .',
-            'error_code' => 'INVALID_JSON'
+            'error_code' => 'BAD_REQUEST'
         ]);
     }
 
@@ -51,7 +51,7 @@ function simpanIkon(?array $file, ?string $ikonLama = null): ?string
         kirimJson(422, [
             'success' => false,
             'message' => 'Upload ikon gagal.',
-            'error_code' => 'ICON_UPLOAD_FAILED'
+            'error_code' => 'UNPROCESSABLE_ENTITY'
         ]);
     }
 
@@ -62,7 +62,7 @@ function simpanIkon(?array $file, ?string $ikonLama = null): ?string
         kirimJson(422, [
             'success' => false,
             'message' => 'Ukuran ikon maksimal 2 MB.',
-            'error_code' => 'ICON_TOO_LARGE'
+            'error_code' => 'UNPROCESSABLE_ENTITY'
         ]);
     }
 
@@ -70,7 +70,7 @@ function simpanIkon(?array $file, ?string $ikonLama = null): ?string
         kirimJson(422, [
             'success' => false,
             'message' => 'File upload tidak valid.',
-            'error_code' => 'INVALID_UPLOAD'
+            'error_code' => 'UNPROCESSABLE_ENTITY'
         ]);
     }
 
@@ -87,7 +87,7 @@ function simpanIkon(?array $file, ?string $ikonLama = null): ?string
         kirimJson(422, [
             'success' => false,
             'message' => 'Ikon harus berformat JPG, PNG, atau WebP.',
-            'error_code' => 'INVALID_ICON_TYPE'
+            'error_code' => 'UNPROCESSABLE_ENTITY'
         ]);
     }
 
@@ -198,7 +198,7 @@ try {
             kirimJson(422, [
                 'success' => false,
                 'message' => 'Nama layanan wajib berupa teks.',
-                'error_code' => 'INVALID_NAMA_LAYANAN'
+                'error_code' => 'UNPROCESSABLE_ENTITY'
             ]);
         }
 
@@ -216,7 +216,7 @@ try {
             kirimJson(422, [
                 'success' => false,
                 'message' => 'Nama layanan wajib diisi dan maksimal 100 karakter.',
-                'error_code' => 'INVALID_NAMA_LAYANAN'
+                'error_code' => 'UNPROCESSABLE_ENTITY'
             ]);
         }
 
@@ -224,7 +224,7 @@ try {
             kirimJson(422, [
                 'success' => false,
                 'message' => 'Harga harus berupa bilangan bulat lebih dari nol.',
-                'error_code' => 'INVALID_HARGA'
+                'error_code' => 'UNPROCESSABLE_ENTITY'
             ]);
         }
 
@@ -237,7 +237,7 @@ try {
             kirimJson(422, [
                 'success' => false,
                 'message' => 'HPP harus berupa bilangan bulat nol atau lebih.',
-                'error_code' => 'INVALID_HPP'
+                'error_code' => 'UNPROCESSABLE_ENTITY'
             ]);
         }
 
@@ -290,7 +290,7 @@ try {
             kirimJson(422, [
                 'success' => false,
                 'message' => 'Nama layanan wajib berupa teks.',
-                'error_code' => 'INVALID_NAMA_LAYANAN'
+                'error_code' => 'UNPROCESSABLE_ENTITY'
             ]);
         }
 
@@ -308,7 +308,7 @@ try {
             kirimJson(422, [
                 'success' => false,
                 'message' => 'ID layanan tidak valid.',
-                'error_code' => 'INVALID_ID'
+                'error_code' => 'UNPROCESSABLE_ENTITY'
             ]);
         }
 
@@ -316,7 +316,7 @@ try {
             kirimJson(422, [
                 'success' => false,
                 'message' => 'Nama layanan wajib diisi dan maksimal 100 karakter.',
-                'error_code' => 'INVALID_NAMA_LAYANAN'
+                'error_code' => 'UNPROCESSABLE_ENTITY'
             ]);
         }
 
@@ -324,7 +324,7 @@ try {
             kirimJson(422, [
                 'success' => false,
                 'message' => 'Harga harus berupa bilangan bulat lebih dari nol.',
-                'error_code' => 'INVALID_HARGA'
+                'error_code' => 'UNPROCESSABLE_ENTITY'
             ]);
         }
 
@@ -337,7 +337,7 @@ try {
             kirimJson(422, [
                 'success' => false,
                 'message' => 'HPP harus berupa bilangan bulat nol atau lebih.',
-                'error_code' => 'INVALID_HPP'
+                'error_code' => 'UNPROCESSABLE_ENTITY'
             ]);
         }
 
@@ -355,7 +355,7 @@ try {
             kirimJson(404, [
                 'success' => false,
                 'message' => 'Layanan tidak ditemukan.',
-                'error_code' => 'LAYANAN_NOT_FOUND'
+                'error_code' => 'NOT_FOUND'
             ]);
         }
 
@@ -422,7 +422,7 @@ try {
             kirimJson(422, [
                 'success' => false,
                 'message' => 'ID layanan tidak valid.',
-                'error_code' => 'INVALID_ID'
+                'error_code' => 'UNPROCESSABLE_ENTITY'
             ]);
         }
 
@@ -434,7 +434,7 @@ try {
             kirimJson(422, [
                 'success' => false,
                 'message' => 'Status aktif harus bernilai 0 atau 1.',
-                'error_code' => 'INVALID_STATUS'
+                'error_code' => 'UNPROCESSABLE_ENTITY'
             ]);
         }
 
@@ -459,7 +459,7 @@ try {
                 kirimJson(404, [
                     'success' => false,
                     'message' => 'Layanan tidak ditemukan.',
-                    'error_code' => 'LAYANAN_NOT_FOUND'
+                    'error_code' => 'NOT_FOUND'
                 ]);
             }
         }
@@ -486,7 +486,7 @@ try {
             kirimJson(422, [
                 'success' => false,
                 'message' => 'ID layanan tidak valid.',
-                'error_code' => 'INVALID_ID'
+                'error_code' => 'UNPROCESSABLE_ENTITY'
             ]);
         }
 
@@ -503,7 +503,7 @@ try {
             kirimJson(404, [
                 'success' => false,
                 'message' => 'Layanan tidak ditemukan.',
-                'error_code' => 'LAYANAN_NOT_FOUND'
+                'error_code' => 'NOT_FOUND'
             ]);
         }
 
@@ -527,6 +527,6 @@ try {
     kirimJson(500, [
         'success' => false,
         'message' => 'Terjadi kesalahan pada server.',
-        'error_code' => 'INTERNAL_ERROR'
+        'error_code' => 'INTERNAL_SERVER_ERROR'
     ]);
 }

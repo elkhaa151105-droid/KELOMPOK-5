@@ -43,7 +43,7 @@ try {
         kirimJsonTren(422, [
             'success' => false,
             'message' => 'Periode harus 7_hari, minggu, atau bulan.',
-            'error_code' => 'VALIDATION_ERROR'
+            'error_code' => 'UNPROCESSABLE_ENTITY'
         ]);
     }
 

@@ -10,6 +10,34 @@
 | `auth_check.php`    | Belum login, akses halaman terkunci   | `/KELOMPOK-5/pages/login.php`               |
 | `auth_check.php`    | Sesi habis (lebih dari 30 menit idle) | `/KELOMPOK-5/pages/login.php?expired=1`     |
 
+## Aturan Umum `error_code`
+
+Setiap respons error berisi `success: false`, `message`, dan `error_code`.
+
+`error_code` **selalu sama dengan nama status HTTP** respons tersebut. Penjelasan penyebab yang lebih spesifik (misalnya field mana yang tidak valid) ada pada `message`. Frontend dan pengujian otomatis memeriksa `error_code`, bukan teks `message`.
+
+|  HTTP | `error_code`             | Contoh penyebab                                  |
+| ----: | ------------------------ | ------------------------------------------------ |
+| `400` | `BAD_REQUEST`            | JSON rusak, format tanggal salah, ID tidak valid |
+| `401` | `UNAUTHORIZED`           | Belum login, sesi habis, username/password salah |
+| `403` | `FORBIDDEN`              | Role tidak diizinkan, aksi tidak diperbolehkan   |
+| `404` | `NOT_FOUND`              | Data tidak ditemukan                             |
+| `405` | `METHOD_NOT_ALLOWED`     | Method HTTP tidak didukung                       |
+| `409` | `CONFLICT`               | Data berubah saat diproses (hapus pengeluaran)   |
+| `415` | `UNSUPPORTED_MEDIA_TYPE` | Content-Type tidak didukung                      |
+| `422` | `UNPROCESSABLE_ENTITY`   | Isi input tidak lolos validasi                   |
+| `500` | `INTERNAL_SERVER_ERROR`  | Kesalahan server                                 |
+
+Contoh:
+
+```json
+{
+  "success": false,
+  "message": "Nominal harus lebih dari nol",
+  "error_code": "UNPROCESSABLE_ENTITY"
+}
+```
+
 ## 2. API Contract — Login
 
 ### Login Pengguna
@@ -46,16 +74,18 @@ Berhasil — `200 OK`:
 
 Data di atas hanya contoh format respons.
 
+Catatan: hanya akun dengan `users.aktif = 1` yang dapat login. Sesi login berakhir otomatis setelah 30 menit tanpa aktivitas.
+
 Penanganan kesalahan:
 
 | Kondisi                       |  HTTP | `error_code`             |
 | ----------------------------- | ----: | ------------------------ |
-| JSON tidak valid              | `400` | `INVALID_JSON`           |
-| Username atau password kosong | `422` | `VALIDATION_ERROR`       |
-| Username atau password salah  | `401` | `INVALID_CREDENTIALS`    |
+| JSON tidak valid              | `400` | `BAD_REQUEST`            |
+| Username atau password kosong | `422` | `UNPROCESSABLE_ENTITY`   |
+| Username atau password salah  | `401` | `UNAUTHORIZED`           |
 | Content-Type tidak didukung   | `415` | `UNSUPPORTED_MEDIA_TYPE` |
 | Method tidak didukung         | `405` | `METHOD_NOT_ALLOWED`     |
-| Kesalahan internal            | `500` | `INTERNAL_ERROR`         |
+| Kesalahan internal            | `500` | `INTERNAL_SERVER_ERROR`  |
 
 Contoh respons ketika kredensial salah:
 
@@ -63,7 +93,7 @@ Contoh respons ketika kredensial salah:
 {
   "success": false,
   "message": "Username atau password salah.",
-  "error_code": "INVALID_CREDENTIALS"
+  "error_code": "UNAUTHORIZED"
 }
 ```
 
@@ -77,6 +107,29 @@ Contoh respons ketika kredensial salah:
 | Method selain POST           | `405 Method Not Allowed`     | Method ditolak  |
 
 Pengujian dilakukan menggunakan Postman pada server lokal.
+
+### Cek Sesi Login
+
+- **Method:** `GET`
+- **Endpoint:** `/KELOMPOK-5/api/auth/me.php`
+- **Autentikasi:** Wajib login (role `owner` atau `barber`).
+- **Tujuan:** Memeriksa apakah sesi masih valid dan mengambil identitas pengguna dari sesi.
+
+Berhasil — `200 OK`:
+
+```json
+{
+  "success": true,
+  "message": "Sesi login valid.",
+  "data": {
+    "id_user": 1,
+    "nama": "Nama Pengguna",
+    "role": "owner"
+  }
+}
+```
+
+Belum login atau sesi habis → `401 UNAUTHORIZED`.
 
 ## 3. API Contract — Layanan
 
@@ -114,10 +167,10 @@ Nilai di atas hanya contoh format respons. `icon_layanan` dapat bernilai `null` 
 ### POST — Menambahkan Layanan
 
 - **Endpoint:** `POST /api/layanan/`
-- **Content-Type:** `multipart/form-data`
+- **Content-Type:** `multipart/form-data` (bila mengunggah ikon) atau `application/json` (tanpa ikon).
 - **Respons sukses:** `201 Created`
 
-Field form-data:
+Field (form-data atau JSON):
 
 | Field          | Tipe | Ketentuan                                         |
 | -------------- | ---- | ------------------------------------------------- |
@@ -128,11 +181,13 @@ Field form-data:
 
 Layanan baru dibuat dengan `aktif = 1`. Ikon disimpan pada folder `uploads/layanan/`, sedangkan database menyimpan path relatifnya.
 
+Respons sukses berisi `message` (`Layanan berhasil ditambahkan.`) dan `data` berupa layanan yang baru dibuat (`id_layanan`, `nama_layanan`, `harga`, `hpp`, `aktif`, `icon_layanan`).
+
 ### PUT — Memperbarui Layanan
 
 - **Endpoint logis:** `PUT /api/layanan/`
 - **Metode upload yang digunakan:** `POST /api/layanan/` dengan field `_method=PUT` pada form-data.
-- **Content-Type:** `multipart/form-data`
+- **Content-Type:** `multipart/form-data` (bila mengganti ikon) atau `application/json` (tanpa ikon).
 - **Respons sukses:** `200 OK`
 
 Field yang diperlukan: `id_layanan`, `nama_layanan`, `harga`, dan `hpp`. Field `icon_layanan` opsional.
@@ -159,7 +214,7 @@ Contoh menonaktifkan layanan:
 }
 ```
 
-Untuk mengaktifkan kembali, kirim `"aktif": 1`. Nilai yang didukung hanya `0` dan `1`. PATCH hanya mengubah status dan tidak menghapus ikon.
+Untuk mengaktifkan kembali, kirim `"aktif": 1`. Nilai yang didukung hanya `0` dan `1`; jika field `aktif` tidak dikirim, nilainya dianggap `0` (nonaktif). PATCH hanya menerima JSON, hanya mengubah status, dan tidak menghapus ikon.
 
 ### DELETE — Menghapus Layanan Permanen
 
@@ -177,6 +232,8 @@ Contoh body:
 
 Layanan dihapus permanen beserta file ikon yang terkait. Gunakan dengan hati-hati karena operasi ini tidak sama dengan menonaktifkan layanan.
 
+Riwayat transaksi tidak ikut hilang: `detail_transaksi` menyimpan snapshot nama, harga, dan HPP layanan. Pada baris detail yang layanannya dihapus, kolom `id_layanan` diisi `NULL` (foreign key `ON DELETE SET NULL`), sehingga `id_layanan` pada respons detail transaksi dapat bernilai `null`.
+
 ### Kode Respons
 
 | HTTP Status                 | Keterangan                            |
@@ -191,11 +248,11 @@ Layanan dihapus permanen beserta file ikon yang terkait. Gunakan dengan hati-hat
 | `422 Unprocessable Content` | Validasi field atau ikon gagal        |
 | `500 Internal Server Error` | Kesalahan server                      |
 
-Respons kesalahan umumnya berisi `success: false`, `message`, dan `error_code`.
+Respons kesalahan berisi `success: false`, `message`, dan `error_code` yang mengikuti nama status HTTP (lihat Aturan Umum `error_code`).
 
 ### Catatan Implementasi
 
-- Tabel `layanan` harus memiliki kolom `icon_layanan VARCHAR(255) NULL`.
+- Tabel `layanan` memiliki kolom `hpp INT NULL` dan `icon_layanan VARCHAR(255) NULL` (lihat bagian 9, Skema Database).
 - Upload ikon menerima JPG/JPEG, PNG, dan WebP dengan ukuran maksimal 2 MB.
 - Folder `uploads/layanan/` harus dapat ditulisi oleh PHP.
 - Permintaan perubahan data memerlukan autentikasi owner melalui sesi yang digunakan proyek.
@@ -221,7 +278,8 @@ Mengambil daftar transaksi yang dapat diakses oleh pengguna yang sedang login.
 Hak akses:
 
 - **Owner:** dapat melihat semua transaksi.
-- **Barber:** hanya dapat melihat transaksi miliknya sendiri.
+- **Barber:** hanya dapat melihat transaksi yang dicatat oleh akunnya (`id_pencatat` = id pengguna yang login).
+- Role lain ditolak `403 FORBIDDEN`.
 
 Contoh respons sukses (`200 OK`):
 
@@ -236,17 +294,19 @@ Contoh respons sukses (`200 OK`):
       "nama_barber": "Sandi",
       "id_pelanggan": 7,
       "nama_pelanggan": "Pelanggan Tes",
-      "no_hp": "081234567890",
       "tanggal": "2026-10-13",
       "waktu": "09:00:00",
       "total_harga": 50000,
-      "metode_pembayaran": "cash"
+      "metode_pembayaran": "cash",
+      "dibuat_pada": "2026-10-13 09:00:00"
     }
   ]
 }
 ```
 
-Contoh nilai di atas bukan data tetap. Transaksi lama yang belum memiliki pelanggan dapat saja memiliki `id_pelanggan`, `nama_pelanggan`, atau `no_hp` bernilai `null`, sesuai data database.
+Contoh nilai di atas bukan data tetap. Transaksi lama yang belum memiliki pelanggan memiliki `id_pelanggan` dan `nama_pelanggan` bernilai `null`. Daftar dan detail transaksi tidak memuat `no_hp`.
+
+Query parameter `tanggal` (opsional, `YYYY-MM-DD`): owner tanpa `tanggal` melihat semua tanggal, barber tanpa `tanggal` otomatis melihat hari ini (WIB). Transaksi yang sudah dihapus (soft delete) tidak ditampilkan. Format `tanggal` yang tidak valid ditolak `400 BAD_REQUEST`. Daftar diurutkan dari tanggal, waktu, dan ID terbaru.
 
 ### 4.2 POST — Menambahkan Transaksi
 
@@ -260,7 +320,6 @@ Contoh body untuk owner:
 {
   "id_barber": 2,
   "nama_pelanggan": "Pelanggan Tes",
-  "no_hp": "081234567890",
   "metode_pembayaran": "qris",
   "layanan": [
     {
@@ -276,7 +335,6 @@ Contoh body untuk barber:
 ```json
 {
   "nama_pelanggan": "Pelanggan Tes",
-  "no_hp": "081234567890",
   "metode_pembayaran": "cash",
   "layanan": [
     {
@@ -296,10 +354,16 @@ Contoh body untuk barber:
 - Jika pelanggan baru, data pelanggan dibuat dan dihubungkan dengan transaksi.
 - Jika pelanggan dipilih dari saran nama yang sudah ada, transaksi harus menggunakan `id_pelanggan` pelanggan tersebut.
 - Memilih pelanggan yang sudah ada tidak boleh membuat baris pelanggan baru untuk orang yang sama hanya karena transaksi baru dicatat.
-- Nomor telepon pelanggan dapat dikirim melalui field `no_hp` sesuai validasi endpoint.
+- Field `no_hp` **tidak diproses** oleh endpoint ini. Pelanggan baru disimpan hanya dengan nama.
+- `nama_pelanggan` tetap wajib diisi walaupun `id_pelanggan` dikirim.
+- `id_pelanggan` yang tidak ditemukan ditolak dengan `422` dan pesan `Pelanggan yang dipilih tidak ditemukan.`
+- Jumlah per layanan 1 sampai 100; layanan yang sama yang dikirim berulang digabung, dengan total maksimal 100.
 - Harga layanan diambil dari database, bukan dipercaya dari harga yang dikirim oleh klien.
 - Metode pembayaran wajib dikirim dan harus bernilai `cash`, `qris`, atau `transfer`.
-- Total harga dihitung oleh server.
+- Total harga dihitung oleh server dan tidak boleh melebihi 2.147.483.647.
+- Hanya layanan **aktif** yang dapat dipakai; layanan yang tidak ditemukan atau nonaktif ditolak `422`.
+- Nama pelanggan maksimal 100 karakter.
+- Tanggal dan waktu transaksi diisi server memakai zona waktu `Asia/Jakarta` (WIB).
 - Data transaksi dan detail layanan disimpan dalam satu transaksi database.
 
 #### Validasi Nama Pelanggan
@@ -307,7 +371,7 @@ Contoh body untuk barber:
 Jika `nama_pelanggan` kosong atau hanya berisi spasi, server harus menolak transaksi.
 
 - **HTTP:** `422 Unprocessable Content`
-- **`error_code`:** `CUSTOMER_NAME_REQUIRED`
+- **`error_code`:** `UNPROCESSABLE_ENTITY`
 - **Pesan:** `Nama pelanggan wajib diisi.`
 
 Contoh respons:
@@ -316,7 +380,7 @@ Contoh respons:
 {
   "success": false,
   "message": "Nama pelanggan wajib diisi.",
-  "error_code": "CUSTOMER_NAME_REQUIRED"
+  "error_code": "UNPROCESSABLE_ENTITY"
 }
 ```
 
@@ -330,9 +394,35 @@ Metode pembayaran yang diperbolehkan:
 - `qris`
 - `transfer`
 
-Jika metode pembayaran tidak dikirim atau nilainya kosong, API menolak transaksi dengan HTTP `422 Unprocessable Content` dan kode error `VALIDATION_ERROR`. Form kasir menampilkan pesan `Pilih metode pembayaran` jika metode belum dipilih.
+Jika metode pembayaran tidak dikirim, kosong, atau bukan salah satu nilai di atas, API menolak transaksi dengan HTTP `422 Unprocessable Content`, `error_code` `UNPROCESSABLE_ENTITY`, dan pesan `Pilih metode pembayaran yang valid.` Form kasir menampilkan pesan `Pilih metode pembayaran` jika metode belum dipilih.
 
-Respons sukses pembuatan transaksi adalah `201 Created`.
+Respons sukses pembuatan transaksi adalah `201 Created`:
+
+```json
+{
+  "success": true,
+  "message": "Transaksi berhasil dicatat.",
+  "data": {
+    "id_transaksi": 16,
+    "id_pencatat": 1,
+    "id_barber": 2,
+    "id_pelanggan": 8,
+    "tanggal": "2026-10-28",
+    "waktu": "14:40:02",
+    "total_harga": 105000,
+    "metode_pembayaran": "cash",
+    "layanan": [
+      {
+        "id_layanan": 1,
+        "nama_layanan": "Potong rambut reguler",
+        "harga": 50000,
+        "hpp_saat_transaksi": null,
+        "jumlah": 1
+      }
+    ]
+  }
+}
+```
 
 ### 4.3 Pencatatan dan Saran Pelanggan
 
@@ -353,7 +443,6 @@ Contoh body ketika pelanggan yang sudah terdaftar dipilih:
 {
   "id_pelanggan": 7,
   "nama_pelanggan": "Pelanggan Tes",
-  "no_hp": "081234567890",
   "metode_pembayaran": "cash",
   "layanan": [
     {
@@ -369,7 +458,6 @@ Contoh body ketika pelanggan baru dicatat:
 ```json
 {
   "nama_pelanggan": "Pelanggan Baru",
-  "no_hp": "081234567890",
   "metode_pembayaran": "cash",
   "layanan": [
     {
@@ -380,7 +468,72 @@ Contoh body ketika pelanggan baru dicatat:
 }
 ```
 
-**Catatan endpoint saran:** nama route dan format respons khusus untuk pencarian/saran pelanggan harus dicocokkan dengan file PHP aktual. Jangan menetapkan URL baru dalam dokumentasi sebelum endpoint tersebut dipastikan ada di proyek.
+#### Endpoint Saran Nama Pelanggan
+
+- **Method:** `GET`
+- **URL:** `/api/pelanggan/index.php?q={nama}`
+- **Autentikasi:** Wajib login.
+- **Role yang diizinkan:** `owner`, `barber`.
+
+Aturan:
+
+- Jika `q` diisi (minimal 2 karakter): pencarian pada kolom nama dengan pola `%q%` (nama mengandung kata kunci), diurutkan nama A–Z, maksimal **100** hasil.
+- Jika `q` diisi tetapi kurang dari 2 karakter (mis. `a`), respons tetap `200 OK` dengan `data` berupa array kosong (bukan error).
+- Jika `q` tidak dikirim atau kosong: mengembalikan **daftar pelanggan** (nama A–Z, maksimal 100) untuk ditampilkan di tabel.
+- Pelanggan yang sudah dihapus (soft delete) tidak ikut ditampilkan.
+- Setiap data hanya berisi `id_pelanggan` dan `nama` (tidak ada `no_hp`).
+- Method yang diterima hanya `GET` dan `DELETE`; method lain ditolak `405 Method Not Allowed` (header `Allow: GET, DELETE`).
+
+Contoh request:
+
+```http
+GET {{base_url}}/api/pelanggan/index.php?q=And
+```
+
+Contoh respons sukses (`200 OK`):
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id_pelanggan": 7,
+      "nama": "Andi"
+    }
+  ]
+}
+```
+
+#### Hapus Pelanggan (Soft Delete)
+
+- **Method:** `DELETE`
+- **URL:** `/api/pelanggan/index.php?id={id_pelanggan}` (atau body JSON `{"id_pelanggan": 7}`)
+- **Role yang diizinkan:** hanya `owner` (barber mendapat `403 FORBIDDEN`).
+
+Aturan:
+
+- Data tidak dihapus dari database, hanya kolom `dihapus_pada` diisi. Riwayat transaksi lama tetap menampilkan nama pelanggan tersebut.
+- Pelanggan yang sudah dihapus tidak muncul di saran nama/daftar, dan `POST /api/transaksi/index.php` dengan `id_pelanggan` tersebut ditolak `422` (`Pelanggan yang dipilih tidak ditemukan.`).
+- ID tidak dikirim/tidak valid → `400 BAD_REQUEST`. ID tidak ada atau sudah dihapus → `404 NOT_FOUND`.
+
+Contoh request:
+
+```http
+DELETE {{base_url}}/api/pelanggan/index.php?id=7
+```
+
+Contoh respons sukses (`200 OK`):
+
+```json
+{
+  "success": true,
+  "message": "Pelanggan berhasil dihapus."
+}
+```
+
+Nama pelanggan boleh kembar (dua orang berbeda bernama sama). Untuk menghindari data ganda, kasir sebaiknya memilih dari saran nama sehingga `id_pelanggan` yang sama dipakai ulang.
+
+Daftar data pelanggan yang tersimpan dapat berisi beberapa baris bernama sama (data lama dari sebelum fitur saran). Saat kasir memilih saran, kirim `id_pelanggan` yang dipilih agar tidak menambah data ganda.
 
 ### 4.4 GET — Detail Transaksi
 
@@ -399,7 +552,40 @@ Hak akses:
 - Owner dapat melihat detail semua transaksi.
 - Barber hanya dapat melihat detail transaksi miliknya sendiri.
 
-Respons sukses: `200 OK`.
+Respons sukses: `200 OK`. Transaksi yang sudah dihapus (soft delete) atau bukan milik barber yang login menghasilkan `404 NOT_FOUND`. Parameter `id` yang tidak valid atau tidak dikirim menghasilkan `400 BAD_REQUEST`.
+
+Contoh respons:
+
+```json
+{
+  "success": true,
+  "data": {
+    "id_transaksi": 1,
+    "id_pencatat": 1,
+    "id_barber": 2,
+    "nama_barber": "Sandi",
+    "id_pelanggan": 7,
+    "nama_pelanggan": "Pelanggan Tes",
+    "tanggal": "2026-10-13",
+    "waktu": "09:00:00",
+    "total_harga": 50000,
+    "metode_pembayaran": "cash",
+    "dibuat_pada": "2026-10-13 09:00:00",
+    "layanan": [
+      {
+        "id_layanan": 1,
+        "nama_layanan": "Potong rambut reguler",
+        "harga": 50000,
+        "hpp_saat_transaksi": null,
+        "jumlah": 1,
+        "subtotal": 50000
+      }
+    ]
+  }
+}
+```
+
+`id_layanan` pada rincian dapat bernilai `null` jika layanannya sudah dihapus permanen; nama, harga, dan HPP tetap tersedia dari snapshot saat transaksi.
 
 ### 4.5 Kode Respons Transaksi
 
@@ -418,10 +604,151 @@ Respons sukses: `200 OK`.
 ### 4.6 Catatan Implementasi Transaksi
 
 - Format respons menggunakan JSON.
-- Harga pada detail transaksi menyimpan snapshot harga ketika transaksi dibuat.
-- Database yang sudah ada perlu menjalankan `database/migrations/2026-10-13-add-metode-pembayaran.sql` satu kali, jika migrasi tersebut belum diterapkan.
+- Detail transaksi menyimpan snapshot nama layanan (`nama_layanan_saat_transaksi`), harga (`harga_saat_transaksi`), dan HPP (`hpp_saat_transaksi`) ketika transaksi dibuat.
+- Skema terbaru (`database/kataji_barber.sql`) sudah memuat semua kolom hasil migrasi (`metode_pembayaran`, `hpp`, `hpp_saat_transaksi`, `dihapus_pada`, `nama_layanan_saat_transaksi`, `icon_layanan`). Migrasi di `database/migrations/` hanya diperlukan untuk database lama yang belum memakai skema tersebut.
 - Endpoint daftar dan detail transaksi menerapkan pembatasan akses berdasarkan role.
 - Semua URL pengujian Postman menggunakan variabel `{{base_url}}` pada environment Postman `Local KELOMPOK-5`.
+
+### 4.7 Hapus Riwayat Transaksi (Soft Delete)
+
+Hanya **owner**. Data tidak benar-benar dihapus: kolom `dihapus_pada` diisi waktu penghapusan, sehingga transaksi tidak lagi muncul pada daftar, detail, maupun rekap.
+
+| Endpoint                                                      | Parameter ID                                               |
+| ------------------------------------------------------------- | ---------------------------------------------------------- |
+| `DELETE /api/transaksi/index.php?id={id_transaksi}`           | query `id`                                                 |
+| `DELETE /api/transaksi/hapus.php?id_transaksi={id_transaksi}` | query `id_transaksi` atau body JSON `{"id_transaksi": 15}` |
+
+Respons sukses (`200 OK`):
+
+```json
+{
+  "success": true,
+  "message": "Riwayat transaksi berhasil dihapus."
+}
+```
+
+| HTTP Status              | Keterangan                                           |
+| ------------------------ | ---------------------------------------------------- |
+| `400 Bad Request`        | ID tidak valid atau tidak dikirim (`BAD_REQUEST`)    |
+| `401 Unauthorized`       | Belum login atau sesi habis (`UNAUTHORIZED`)         |
+| `403 Forbidden`          | Pengguna bukan owner (`FORBIDDEN`)                   |
+| `404 Not Found`          | Transaksi tidak ada atau sudah dihapus (`NOT_FOUND`) |
+| `405 Method Not Allowed` | Selain `DELETE` (khusus `hapus.php`)                 |
+
+Catatan: `/api/transaksi/index.php` hanya menerima `GET`, `POST`, dan `DELETE` (header `Allow: GET, POST, DELETE`); method lain ditolak `405 METHOD_NOT_ALLOWED`. `detail.php` hanya menerima `GET`.
+
+### 4.8 GET — Riwayat Layanan per Pelanggan
+
+**Endpoint:** `GET /api/riwayat/pelanggan.php?id_pelanggan={id_pelanggan}`
+
+Mengambil riwayat layanan yang pernah diambil satu pelanggan, berdasarkan tautan `transaksi.id_pelanggan` (lihat 4.3). Dipakai frontend untuk menampilkan riwayat kunjungan pelanggan.
+
+- **Autentikasi:** Wajib login.
+- **Role yang diizinkan:** `owner` dan `barber`. Barber dapat melihat riwayat semua transaksi pelanggan tersebut, tidak terbatas pada transaksi yang ia catat sendiri.
+- **Method:** hanya `GET`; method lain ditolak `405 METHOD_NOT_ALLOWED` (header `Allow: GET`).
+
+Query parameter:
+
+| Parameter      | Wajib | Keterangan                             |
+| -------------- | ----- | -------------------------------------- |
+| `id_pelanggan` | Ya    | ID pelanggan (bilangan bulat positif). |
+
+Contoh request:
+
+```http
+GET {{base_url}}/api/riwayat/pelanggan.php?id_pelanggan=7
+```
+
+Contoh respons sukses (`200 OK`):
+
+```json
+{
+  "success": true,
+  "data": {
+    "pelanggan": {
+      "id_pelanggan": 7,
+      "nama": "Andi"
+    },
+    "jumlah_kunjungan": 2,
+    "riwayat": [
+      {
+        "id_transaksi": 12,
+        "tanggal": "2026-10-25",
+        "waktu": "15:30:00",
+        "id_layanan": 2,
+        "nama_layanan": "Coloring",
+        "jumlah": 1
+      },
+      {
+        "id_transaksi": 12,
+        "tanggal": "2026-10-25",
+        "waktu": "15:30:00",
+        "id_layanan": 3,
+        "nama_layanan": "Creambath",
+        "jumlah": 2
+      },
+      {
+        "id_transaksi": 10,
+        "tanggal": "2026-10-20",
+        "waktu": "09:00:00",
+        "id_layanan": 1,
+        "nama_layanan": "Potong rambut reguler",
+        "jumlah": 1
+      }
+    ],
+    "ada_data": true
+  }
+}
+```
+
+Nilai di atas hanya contoh format respons.
+
+Struktur data:
+
+- `pelanggan`: identitas pelanggan (`id_pelanggan`, `nama`).
+- `jumlah_kunjungan`: jumlah transaksi berbeda milik pelanggan tersebut.
+- `riwayat`: daftar **satu baris per layanan** pada setiap transaksi. Transaksi multi-layanan (4.2) muncul sebagai beberapa baris dengan `id_transaksi`, `tanggal`, dan `waktu` yang sama; frontend dapat mengelompokkan berdasarkan `id_transaksi`.
+- `tanggal` (`YYYY-MM-DD`) dan `waktu` (`HH:MM:SS`): waktu transaksi dicatat (WIB).
+- `nama_layanan`: nama layanan saat transaksi (snapshot dari `detail_transaksi`), sehingga tetap benar walau nama layanan diubah atau layanannya dihapus.
+- `id_layanan`: dapat bernilai `null` jika layanan sudah dihapus permanen.
+- `jumlah`: jumlah layanan yang diambil pada transaksi tersebut.
+- `ada_data`: `false` bila pelanggan belum memiliki riwayat.
+
+Aturan:
+
+- Urutan dari yang terbaru: `tanggal` menurun, lalu `waktu` menurun, lalu `id_transaksi` menurun. Baris layanan dalam satu transaksi mengikuti urutan pencatatan.
+- Transaksi yang sudah dihapus (soft delete, `dihapus_pada` tidak NULL) tidak ikut.
+- Pelanggan yang ada tetapi belum pernah bertransaksi (misalnya pelanggan baru) mengembalikan `200 OK` dengan `riwayat` berupa array kosong, `jumlah_kunjungan` bernilai `0`, dan `ada_data` bernilai `false`. Ini bukan error.
+- Data tidak memuat harga, HPP, atau metode pembayaran.
+
+Contoh respons untuk pelanggan tanpa transaksi (`200 OK`):
+
+```json
+{
+  "success": true,
+  "data": {
+    "pelanggan": {
+      "id_pelanggan": 8,
+      "nama": "Pelanggan Baru"
+    },
+    "jumlah_kunjungan": 0,
+    "riwayat": [],
+    "ada_data": false
+  }
+}
+```
+
+Kode respons:
+
+| HTTP Status                 | Keterangan                                                    |
+| --------------------------- | ------------------------------------------------------------- |
+| `200 OK`                    | Riwayat berhasil diambil (termasuk riwayat kosong)            |
+| `400 Bad Request`           | `id_pelanggan` tidak dikirim atau tidak valid (`BAD_REQUEST`) |
+| `401 Unauthorized`          | Belum login atau sesi habis (`UNAUTHORIZED`)                  |
+| `403 Forbidden`             | Role tidak diizinkan (`FORBIDDEN`)                            |
+| `404 Not Found`             | Pelanggan tidak ada atau sudah dihapus (`NOT_FOUND`)          |
+| `405 Method Not Allowed`    | Method selain `GET` (`METHOD_NOT_ALLOWED`)                    |
+| `500 Internal Server Error` | Kesalahan server (`INTERNAL_SERVER_ERROR`)                    |
 
 ## 5. API Rekap Pemasukan Harian — WBS 4.5
 
@@ -431,15 +758,17 @@ Respons sukses: `200 OK`.
 
 ### Query Parameter
 
-| Parameter | Wajib | Keterangan                                                                                                                                      |
-| --------- | ----- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| `tanggal` | Tidak | Tanggal rekap dalam format `YYYY-MM-DD`. Jika tidak dikirim, endpoint menggunakan tanggal hari ini berdasarkan zona waktu WIB (`Asia/Jakarta`). |
+| Parameter | Wajib | Keterangan                                                                                                                                              |
+| --------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `tanggal` | Tidak | Tanggal acuan dalam format `YYYY-MM-DD`. Jika tidak dikirim, endpoint menggunakan tanggal hari ini berdasarkan zona waktu WIB (`Asia/Jakarta`).         |
+| `periode` | Tidak | `hari` (default), `minggu` (Senin–Minggu yang memuat tanggal acuan), atau `bulan` (bulan kalender yang memuat tanggal acuan). Nilai lain ditolak `422`. |
 
 ### Contoh Request
 
 ```http
 GET {{base_url}}/api/rekap/pemasukan.php
 GET {{base_url}}/api/rekap/pemasukan.php?tanggal=2026-10-19
+GET {{base_url}}/api/rekap/pemasukan.php?tanggal=2026-10-19&periode=minggu
 ```
 
 ### Contoh Respons Sukses
@@ -448,8 +777,12 @@ GET {{base_url}}/api/rekap/pemasukan.php?tanggal=2026-10-19
 {
   "success": true,
   "data": {
-    "tanggal": "2026-10-19",
+    "periode": "hari",
+    "tanggal_acuan": "2026-10-19",
+    "tanggal_awal": "2026-10-19",
+    "tanggal_akhir": "2026-10-19",
     "total_pemasukan": 150000,
+    "jumlah_transaksi": 2,
     "rincian_per_barber": [
       {
         "id_barber": 2,
@@ -457,7 +790,8 @@ GET {{base_url}}/api/rekap/pemasukan.php?tanggal=2026-10-19
         "jumlah_transaksi": 2,
         "total_pemasukan": 150000
       }
-    ]
+    ],
+    "ada_data": true
   }
 }
 ```
@@ -466,8 +800,12 @@ Nilai di atas hanya contoh.
 
 ### Struktur Data
 
-- `tanggal`: tanggal rekap.
-- `total_pemasukan`: total `total_harga` seluruh transaksi pada tanggal tersebut.
+- `periode`: periode yang dipakai (`hari`, `minggu`, atau `bulan`).
+- `tanggal_acuan`: tanggal yang dikirim (atau hari ini WIB jika tidak dikirim).
+- `tanggal_awal` dan `tanggal_akhir`: batas rentang rekap (sama dengan tanggal acuan untuk periode `hari`).
+- `total_pemasukan`: total `total_harga` seluruh transaksi dalam rentang tersebut.
+- `jumlah_transaksi`: jumlah transaksi dalam rentang tersebut.
+- `ada_data`: `false` bila tidak ada transaksi pada rentang tersebut.
 - `rincian_per_barber`: daftar pemasukan yang dikelompokkan berdasarkan barber.
 - `id_barber`: ID user barber.
 - `nama_barber`: nama barber.
@@ -476,13 +814,65 @@ Nilai di atas hanya contoh.
 
 ### Ketentuan
 
-- Rekap menggunakan data transaksi dari tabel `transaksi`.
+- Rekap menggunakan data transaksi dari tabel `transaksi`; transaksi yang sudah dihapus (`dihapus_pada` tidak NULL) tidak dihitung.
 - Tanggal transaksi mengikuti tanggal yang dicatat dalam zona waktu WIB.
-- Tanggal tanpa transaksi tetap mengembalikan respons sukses (`200 OK`), dengan `total_pemasukan` bernilai `0` dan `rincian_per_barber` berupa array kosong.
-- Format tanggal tidak valid ditolak dengan `422 Unprocessable Entity`.
+- Rentang tanpa transaksi tetap mengembalikan respons sukses (`200 OK`), dengan `total_pemasukan` dan `jumlah_transaksi` bernilai `0`, `rincian_per_barber` berupa array kosong, dan `ada_data` bernilai `false`.
+- Format tanggal atau nilai `periode` yang tidak valid ditolak dengan `422 Unprocessable Entity`.
 - Pengguna yang belum login harus melewati autentikasi terlebih dahulu.
 - Pengguna selain owner ditolak dengan `403 Forbidden`.
 - Method selain `GET` ditolak dengan `405 Method Not Allowed`.
+
+### 5.1 API Tren Pemasukan
+
+**Endpoint:** `GET /api/rekap/tren.php`
+
+**Akses:** Owner yang sudah login.
+
+| Parameter | Wajib | Keterangan                                                            |
+| --------- | ----- | --------------------------------------------------------------------- |
+| `periode` | Tidak | `7_hari` (default), `minggu`, atau `bulan`. Nilai lain ditolak `422`. |
+
+| `periode` | Rentang aktif                       | Pembanding        | Label grafik                   |
+| --------- | ----------------------------------- | ----------------- | ------------------------------ |
+| `7_hari`  | 7 hari terakhir (termasuk hari ini) | 7 hari sebelumnya | Nama hari (`Monday`, …)        |
+| `minggu`  | Senin–Minggu minggu berjalan        | Minggu lalu       | Nama hari (`Monday`, …)        |
+| `bulan`   | Bulan berjalan                      | Bulan lalu        | 12 bulan terakhir (`Oct 2026`) |
+
+Contoh respons (`200 OK`):
+
+```json
+{
+  "success": true,
+  "data": {
+    "periode": "7_hari",
+    "tanggal_awal": "2026-10-22",
+    "tanggal_akhir": "2026-10-28",
+    "labels": [
+      "Thursday",
+      "Friday",
+      "Saturday",
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday"
+    ],
+    "pemasukan": [120000, 95000, 0, 210000, 175000, 300000, 150000],
+    "total_pemasukan": 1050000,
+    "total_periode_sebelumnya": 900000,
+    "persentase_perubahan": 16.67,
+    "status_tren": "naik",
+    "ada_data": true
+  }
+}
+```
+
+Ketentuan:
+
+- `status_tren` bernilai `naik`, `turun`, atau `stabil` (perubahan kurang dari 5%).
+- `persentase_perubahan` bernilai `null` jika periode sebelumnya `0` sementara periode ini ada pemasukan.
+- `ada_data` bernilai `false` bila seluruh nilai `pemasukan` adalah `0`.
+- Transaksi yang sudah dihapus tidak dihitung. Tanggal mengikuti zona waktu WIB.
+- Non-owner ditolak `403 FORBIDDEN`; method selain `GET` ditolak `405 METHOD_NOT_ALLOWED`.
 
 ## 6. API Pengeluaran — WBS 4.3
 
@@ -498,7 +888,9 @@ Endpoint:
 
 Parameter `tanggal` bersifat opsional. Jika tidak diberikan, endpoint menggunakan tanggal hari ini berdasarkan zona waktu `Asia/Jakarta` (WIB). Filter dan rekap menggunakan kolom `tanggal` bertipe `DATE`.
 
-Respons berhasil (`200 OK`) memuat:
+Format `tanggal` yang tidak valid ditolak `422 UNPROCESSABLE_ENTITY`.
+
+Respons berhasil (`200 OK`) memuat objek `data` dengan isi:
 
 - `tanggal`: tanggal yang diminta.
 - `pengeluaran`: daftar pengeluaran pada tanggal tersebut.
@@ -533,22 +925,54 @@ Aturan validasi:
 - `keterangan` opsional dan maksimal 255 karakter.
 - `id_user` diambil dari sesi login, bukan dari body request.
 
-Respons sukses: `201 Created`.
+Respons sukses: `201 Created`, berisi `message` (`Pengeluaran berhasil dicatat.`) dan `data` (`id_pengeluaran`, `id_user`, `tanggal`, `kategori`, `nominal`, `keterangan`).
 
-Jika nominal kosong, nol, negatif, bukan bilangan bulat, atau melebihi batas integer, API mengembalikan `422 Unprocessable Content` dengan kode `VALIDATION_ERROR` dan pesan:
+Jika nominal kosong, nol, negatif, bukan bilangan bulat, atau melebihi batas integer, API mengembalikan `422 Unprocessable Content` dengan `error_code` `UNPROCESSABLE_ENTITY` dan pesan:
 
 `Nominal harus lebih dari nol`
 
+### 6.3 DELETE — Menghapus Pengeluaran
+
+Endpoint:
+
+`DELETE /api/pengeluaran/?id_pengeluaran={id}`
+
+`id_pengeluaran` dapat dikirim lewat query string atau body JSON `{"id_pengeluaran": 12}` (query diprioritaskan).
+
+Aturan:
+
+- Hanya owner yang dapat menghapus.
+- Hanya pengeluaran bertanggal **hari ini (WIB)** yang boleh dihapus; selain itu `403 FORBIDDEN` dengan pesan `Hanya pengeluaran hari ini yang dapat dihapus.`
+- Penghapusan bersifat permanen (baris dihapus dari tabel `pengeluaran`).
+- ID tidak valid → `422 UNPROCESSABLE_ENTITY`; ID tidak ditemukan → `404 NOT_FOUND`; data berubah saat diproses → `409 CONFLICT`.
+
+Respons sukses (`200 OK`):
+
+```json
+{
+  "success": true,
+  "message": "Pengeluaran berhasil dihapus.",
+  "data": {
+    "id_pengeluaran": 12,
+    "tanggal": "2026-10-28"
+  }
+}
+```
+
 ### Status HTTP
 
-| HTTP Status                 | Keterangan                          |
-| --------------------------- | ----------------------------------- |
-| `400 Bad Request`           | JSON tidak valid (`INVALID_JSON`)   |
-| `401 Unauthorized`          | Sesi login tidak valid              |
-| `403 Forbidden`             | Pengguna bukan owner                |
-| `405 Method Not Allowed`    | Method tidak didukung               |
-| `422 Unprocessable Content` | Validasi gagal (`VALIDATION_ERROR`) |
-| `500 Internal Server Error` | Kesalahan server                    |
+| HTTP Status                 | Keterangan                                                       |
+| --------------------------- | ---------------------------------------------------------------- |
+| `200 OK`                    | GET atau DELETE berhasil                                         |
+| `201 Created`               | Pengeluaran berhasil dicatat                                     |
+| `400 Bad Request`           | JSON tidak valid (`BAD_REQUEST`)                                 |
+| `401 Unauthorized`          | Sesi login tidak valid (`UNAUTHORIZED`)                          |
+| `403 Forbidden`             | Bukan owner, atau pengeluaran bukan milik hari ini (`FORBIDDEN`) |
+| `404 Not Found`             | Pengeluaran tidak ditemukan (`NOT_FOUND`)                        |
+| `405 Method Not Allowed`    | Method tidak didukung (`Allow: GET, POST, DELETE`)               |
+| `409 Conflict`              | Data berubah saat dihapus (`CONFLICT`)                           |
+| `422 Unprocessable Content` | Validasi gagal (`UNPROCESSABLE_ENTITY`)                          |
+| `500 Internal Server Error` | Kesalahan server                                                 |
 
 ### Skenario Pengujian Pengeluaran
 
@@ -572,6 +996,20 @@ Jika nominal kosong, nol, negatif, bukan bilangan bulat, atau melebihi batas int
 - [ ] Mengirim transaksi dengan `nama_pelanggan` kosong dan memastikan server menolak request.
 - [ ] Mengirim transaksi dengan `nama_pelanggan` berisi spasi saja dan memastikan server menolak request.
 - [ ] Memastikan pesan validasi nama pelanggan adalah `Nama pelanggan wajib diisi.`
+- [ ] Owner menghapus pelanggan (soft delete) dan menerima `200`.
+- [ ] Barber mencoba menghapus pelanggan dan menerima `403`.
+- [ ] Menghapus pelanggan tanpa ID `400`, ID tidak ada atau sudah dihapus `404`.
+- [ ] Pelanggan yang dihapus tidak muncul di saran nama dan tidak bisa dipakai untuk transaksi baru (`422`).
+- [ ] Riwayat transaksi lama tetap menampilkan nama pelanggan yang sudah dihapus.
+
+### Riwayat Layanan per Pelanggan
+
+- [ ] Pelanggan yang pernah bertransaksi: `GET /api/riwayat/pelanggan.php?id_pelanggan=...` mengembalikan daftar layanan dengan nama dan tanggal.
+- [ ] Urutan riwayat dari yang terbaru (tanggal, lalu waktu).
+- [ ] Transaksi multi-layanan muncul sebagai beberapa baris dengan `id_transaksi` yang sama.
+- [ ] Pelanggan baru tanpa transaksi mengembalikan `200` dengan `riwayat` kosong dan `ada_data: false`.
+- [ ] Transaksi yang sudah dihapus (soft delete) tidak muncul di riwayat.
+- [ ] `id_pelanggan` tidak dikirim atau tidak valid `400`; pelanggan tidak ada atau sudah dihapus `404`; tanpa login `401`.
 
 ### Pengelolaan Layanan
 
@@ -580,12 +1018,13 @@ Jika nominal kosong, nol, negatif, bukan bilangan bulat, atau melebihi batas int
 - [ ] Owner dapat mengaktifkan kembali layanan nonaktif.
 - [ ] Owner dapat menonaktifkan layanan aktif.
 - [ ] Pengguna selain owner tidak dapat melakukan perubahan layanan.
+- [ ] Owner menghapus layanan permanen dan riwayat transaksi lama tetap tampil (`id_layanan` pada detail menjadi `null`, nama dan harga tetap dari snapshot).
 
 ## 8. Catatan Verifikasi Dokumentasi
 
-Dokumen ini dirapikan berdasarkan kontrak API dan ERD yang tersedia serta kebutuhan fitur pelanggan dan layanan.
+Dokumen ini diselaraskan dengan kode API di folder `api/` dan skema database `database/kataji_barber.sql` melalui pemeriksaan statis (membaca kode dan query). Endpoint belum diuji ulang di Postman setelah penyelarasan ini.
 
-Sebelum dianggap sebagai dokumentasi final, cocokkan dengan kode aktual di repository, terutama:
+Sebelum dianggap sebagai dokumentasi final, cocokkan kembali dengan kode aktual di repository bila ada perubahan, terutama:
 
 - Nama endpoint dan format respons API saran pelanggan.
 - Nama kolom serta nilai status aktif/nonaktif layanan.
@@ -642,7 +1081,7 @@ Contoh respons sukses:
       "tanggal": "2026-10-23",
       "waktu": "11:40:00",
       "total_harga": 50000,
-      "metode_pembayaran": "Tunai"
+      "metode_pembayaran": "cash"
     }
   ]
 }
@@ -660,7 +1099,7 @@ Aturan:
 
 - Parameter `id` digunakan untuk menentukan transaksi yang diminta.
 - Barber hanya boleh mengakses detail transaksi yang dicatat oleh akun yang sedang login (`id_pencatat`).
-- Transaksi yang sudah dihapus secara logis seharusnya tidak dapat diakses melalui endpoint detail.
+- Transaksi yang sudah dihapus secara logis tidak dapat diakses melalui endpoint detail (respons `404 NOT_FOUND`).
 - Hasil pengujian otorisasi harus diverifikasi melalui Postman.
 
 ### Perilaku antarmuka
@@ -690,3 +1129,46 @@ Aturan:
 Lampirkan screenshot Postman yang memperlihatkan method, URL, status HTTP, dan body respons. Jangan tampilkan cookie sesi, token, atau kredensial pada screenshot yang dibagikan.
 
 Catat hasil aktual berdasarkan request yang benar-benar dijalankan. Jangan menandai skenario sebagai berhasil jika belum diuji.
+
+## 9. API Daftar Barber
+
+**Endpoint:** `GET /api/barber/index.php`
+
+**Akses:** Wajib login (`owner` atau `barber`).
+
+Mengembalikan pengguna aktif (`aktif = 1`) dengan role `barber` atau `owner`, diurutkan nama A–Z. Dipakai owner untuk memilih barber pelaksana saat mencatat transaksi.
+
+Contoh respons (`200 OK`):
+
+```json
+{
+  "success": true,
+  "data": [{ "id_user": 2, "nama": "Sandi" }]
+}
+```
+
+Method selain `GET` ditolak `405 METHOD_NOT_ALLOWED` (header `Allow: GET`). Belum login → `401 UNAUTHORIZED`.
+
+## 10. Skema Database
+
+Database: `kataji_barber` (MySQL/MariaDB, `utf8mb4`). File skema lengkap beserta data awal: `database/kataji_barber.sql`. Tanggal bertipe `DATE`, waktu bertipe `TIME`, dan seluruh nilai uang berupa bilangan bulat rupiah (`INT`).
+
+| Tabel              | Kolom utama                                                                                                                                                                                            | Keterangan                                      |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------- |
+| `users`            | `id_user` PK, `username` (unik), `password_hash`, `nama`, `role` (`owner`/`barber`), `aktif`, `dibuat_pada`                                                                                            | Akun login. Hanya `aktif = 1` yang dapat login. |
+| `layanan`          | `id_layanan` PK, `nama_layanan`, `harga` (> 0), `hpp` (NULL atau ≥ 0), `icon_layanan` (NULL), `aktif`, `dibuat_pada`                                                                                   | `aktif = 0` berarti nonaktif.                   |
+| `pelanggan`        | `id_pelanggan` PK, `nama`, `no_hp` (NULL), `dibuat_pada`, `dihapus_pada` (NULL)                                                                                                                        | Soft delete lewat `dihapus_pada`.               |
+| `transaksi`        | `id_transaksi` PK, `id_pencatat` FK, `id_barber` FK, `id_pelanggan` FK (NULL), `tanggal`, `waktu`, `total_harga`, `metode_pembayaran` (`cash`/`qris`/`transfer`), `dibuat_pada`, `dihapus_pada` (NULL) | Soft delete lewat `dihapus_pada`.               |
+| `detail_transaksi` | `id_detail` PK, `id_transaksi` FK, `id_layanan` FK (NULL), `nama_layanan_saat_transaksi`, `harga_saat_transaksi`, `hpp_saat_transaksi` (NULL), `jumlah` (1–100)                                        | Snapshot data layanan saat transaksi.           |
+| `pengeluaran`      | `id_pengeluaran` PK, `id_user` FK, `tanggal`, `kategori`, `nominal` (> 0), `keterangan` (NULL), `dibuat_pada`                                                                                          | Dicatat owner.                                  |
+
+Foreign key:
+
+- `transaksi.id_pencatat` → `users.id_user` (`ON DELETE SET NULL`).
+- `transaksi.id_barber` → `users.id_user` (`ON DELETE RESTRICT`).
+- `transaksi.id_pelanggan` → `pelanggan.id_pelanggan` (`ON DELETE SET NULL`); boleh `NULL` untuk transaksi lama yang belum memiliki pelanggan.
+- `detail_transaksi.id_transaksi` → `transaksi.id_transaksi` (`ON DELETE CASCADE`).
+- `detail_transaksi.id_layanan` → `layanan.id_layanan` (`ON DELETE SET NULL`), agar layanan dapat dihapus permanen tanpa merusak riwayat.
+- `pengeluaran.id_user` → `users.id_user` (`ON DELETE RESTRICT`).
+
+Data awal pada skema: akun `erik` (owner), `sandi` (barber), `ujang` (barber), serta tiga layanan contoh. Ganti password akun awal sebelum dipakai sungguhan.

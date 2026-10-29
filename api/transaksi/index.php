@@ -46,7 +46,7 @@ try {
             kirimJson(400, [
                 'success' => false,
                 'message' => 'ID transaksi tidak valid.',
-                'error_code' => 'INVALID_TRANSACTION_ID'
+                'error_code' => 'BAD_REQUEST'
             ]);
         }
 
@@ -65,7 +65,7 @@ try {
             kirimJson(404, [
                 'success' => false,
                 'message' => 'Transaksi tidak ditemukan atau sudah dihapus.',
-                'error_code' => 'TRANSACTION_NOT_FOUND'
+                'error_code' => 'NOT_FOUND'
             ]);
         }
 
@@ -108,7 +108,7 @@ try {
                 kirimJson(400, [
                     'success' => false,
                     'message' => 'Format tanggal tidak valid.',
-                    'error_code' => 'VALIDATION_ERROR'
+                    'error_code' => 'BAD_REQUEST'
                 ]);
             }
 
@@ -125,7 +125,7 @@ try {
                 kirimJson(400, [
                     'success' => false,
                     'message' => 'Tanggal harus menggunakan format YYYY-MM-DD.',
-                    'error_code' => 'VALIDATION_ERROR'
+                    'error_code' => 'BAD_REQUEST'
                 ]);
             }
         }
@@ -217,7 +217,7 @@ try {
             kirimJson(400, [
                 'success' => false,
                 'message' => 'Body harus berupa JSON yang valid.',
-                'error_code' => 'INVALID_JSON'
+                'error_code' => 'BAD_REQUEST'
             ]);
         }
 
@@ -230,7 +230,7 @@ try {
             kirimJson(422, [
                 'success' => false,
                 'message' => 'Nama pelanggan tidak valid.',
-                'error_code' => 'INVALID_CUSTOMER_NAME'
+                'error_code' => 'UNPROCESSABLE_ENTITY'
             ]);
         }
 
@@ -240,7 +240,7 @@ try {
             kirimJson(422, [
                 'success' => false,
                 'message' => 'Nama pelanggan wajib diisi.',
-                'error_code' => 'CUSTOMER_NAME_REQUIRED'
+                'error_code' => 'UNPROCESSABLE_ENTITY'
             ]);
         }
 
@@ -248,7 +248,7 @@ try {
             kirimJson(422, [
                 'success' => false,
                 'message' => 'Nama pelanggan maksimal 100 karakter.',
-                'error_code' => 'INVALID_CUSTOMER_NAME'
+                'error_code' => 'UNPROCESSABLE_ENTITY'
             ]);
         }
 
@@ -264,7 +264,7 @@ try {
             kirimJson(422, [
                 'success' => false,
                 'message' => 'Pilih metode pembayaran yang valid.',
-                'error_code' => 'VALIDATION_ERROR'
+                'error_code' => 'UNPROCESSABLE_ENTITY'
             ]);
         }
 
@@ -276,7 +276,7 @@ try {
             kirimJson(422, [
                 'success' => false,
                 'message' => 'Transaksi harus memiliki minimal satu layanan.',
-                'error_code' => 'VALIDATION_ERROR'
+                'error_code' => 'UNPROCESSABLE_ENTITY'
             ]);
         }
 
@@ -294,7 +294,7 @@ try {
                 kirimJson(422, [
                     'success' => false,
                     'message' => 'Owner wajib memilih barber yang melayani.',
-                    'error_code' => 'BARBER_REQUIRED'
+                    'error_code' => 'UNPROCESSABLE_ENTITY'
                 ]);
             }
 
@@ -315,7 +315,7 @@ try {
                 kirimJson(422, [
                     'success' => false,
                     'message' => 'Barber tidak ditemukan atau tidak aktif.',
-                    'error_code' => 'BARBER_NOT_FOUND'
+                    'error_code' => 'UNPROCESSABLE_ENTITY'
                 ]);
             }
         }
@@ -328,7 +328,7 @@ try {
                 kirimJson(422, [
                     'success' => false,
                     'message' => 'Format layanan tidak valid.',
-                    'error_code' => 'INVALID_SERVICE'
+                    'error_code' => 'UNPROCESSABLE_ENTITY'
                 ]);
             }
 
@@ -351,7 +351,7 @@ try {
                 kirimJson(422, [
                     'success' => false,
                     'message' => 'ID layanan atau jumlah tidak valid.',
-                    'error_code' => 'INVALID_SERVICE_QUANTITY'
+                    'error_code' => 'UNPROCESSABLE_ENTITY'
                 ]);
             }
 
@@ -362,7 +362,7 @@ try {
                 kirimJson(422, [
                     'success' => false,
                     'message' => 'Jumlah layanan tidak boleh lebih dari 100.',
-                    'error_code' => 'SERVICE_QUANTITY_LIMIT'
+                    'error_code' => 'UNPROCESSABLE_ENTITY'
                 ]);
             }
         }
@@ -397,6 +397,7 @@ try {
                     'SELECT id_pelanggan, nama
                      FROM pelanggan
                      WHERE id_pelanggan = :id
+                       AND dihapus_pada IS NULL
                      LIMIT 1'
                 );
 
@@ -611,7 +612,7 @@ try {
     kirimJson(422, [
         'success' => false,
         'message' => $e->getMessage(),
-        'error_code' => 'VALIDATION_ERROR'
+        'error_code' => 'UNPROCESSABLE_ENTITY'
     ]);
 
 } catch (Throwable $e) {

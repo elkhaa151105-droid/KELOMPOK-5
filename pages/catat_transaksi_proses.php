@@ -699,7 +699,7 @@ try {
         $idPelanggan = (int) $pelangganAda;
     } else {
         if ($namaPelanggan === '') {
-            throw new DomainException('Nama pelanggan wajib diisi');
+            throw new DomainException('Nama pelanggan wajib diisi.');
         }
 
         $stmtPelanggan = $pdo->prepare(

@@ -38,7 +38,7 @@ if ($idTransaksi === false) {
     kirimJsonDetail(400, [
         'success' => false,
         'message' => 'ID transaksi tidak valid.',
-        'error_code' => 'VALIDATION_ERROR'
+        'error_code' => 'BAD_REQUEST'
     ]);
 }
 
@@ -51,7 +51,6 @@ try {
             u.nama AS nama_barber,
             t.id_pelanggan,
             p.nama AS nama_pelanggan,
-            p.no_hp,
             t.tanggal,
             t.waktu,
             t.total_harga,

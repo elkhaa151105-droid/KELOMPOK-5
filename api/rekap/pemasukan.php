@@ -13,7 +13,10 @@ $role = strtolower(trim($_SESSION['role'] ?? ''));
 function kirimJsonRekap(int $status, array $data): void
 {
     http_response_code($status);
-    echo json_encode($data, JSON_UNESCAPED_UNICODE);
+    echo json_encode(
+        $data,
+        JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE
+    );
     exit;
 }
 
@@ -36,14 +39,31 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 }
 
 try {
-    // Default tanggal menggunakan zona waktu WIB.
+    // Gunakan WIB untuk tanggal acuan dan batas periode.
     $zonaWIB = new DateTimeZone('Asia/Jakarta');
-    $hariIniWIB = (new DateTimeImmutable('now', $zonaWIB))
-        ->format('Y-m-d');
 
-    $tanggal = $_GET['tanggal'] ?? $hariIniWIB;
+    $hariIniWIB = new DateTimeImmutable('today', $zonaWIB);
+    $periode = $_GET['periode'] ?? 'hari';
+    $tanggal = $_GET['tanggal'] ?? $hariIniWIB->format('Y-m-d');
 
-    // Validasi tanggal YYYY-MM-DD secara ketat.
+    if (!is_string($periode) ||
+        !in_array($periode, ['hari', 'minggu', 'bulan'], true)) {
+        kirimJsonRekap(422, [
+            'success' => false,
+            'message' => 'Periode harus hari, minggu, atau bulan.',
+            'error_code' => 'UNPROCESSABLE_ENTITY'
+        ]);
+    }
+
+    // Validasi tanggal dengan format YYYY-MM-DD.
+    if (!is_string($tanggal)) {
+        kirimJsonRekap(422, [
+            'success' => false,
+            'message' => 'Format tanggal harus YYYY-MM-DD.',
+            'error_code' => 'UNPROCESSABLE_ENTITY'
+        ]);
+    }
+
     $tanggalObj = DateTimeImmutable::createFromFormat(
         '!Y-m-d',
         $tanggal,
@@ -53,7 +73,6 @@ try {
     $errorTanggal = DateTimeImmutable::getLastErrors();
 
     if (
-        !is_string($tanggal) ||
         !$tanggalObj ||
         ($errorTanggal !== false &&
             ($errorTanggal['warning_count'] > 0 ||
@@ -62,39 +81,68 @@ try {
     ) {
         kirimJsonRekap(422, [
             'success' => false,
-            'message' => 'Format tanggal harus YYYY-MM-DD.',
-            'error_code' => 'VALIDATION_ERROR'
+            'message' => 'Format tanggal tidak valid. Gunakan YYYY-MM-DD.',
+            'error_code' => 'UNPROCESSABLE_ENTITY'
         ]);
     }
 
-    // Total pemasukan seluruh transaksi pada tanggal pilihan.
+    // Tentukan batas periode berdasarkan tanggal acuan.
+    if ($periode === 'hari') {
+        $awal = $tanggalObj;
+        $akhir = $tanggalObj;
+    } elseif ($periode === 'minggu') {
+        // Minggu dimulai Senin dan berakhir Minggu.
+        $awal = $tanggalObj->modify('monday this week');
+        $akhir = $awal->modify('+6 days');
+    } else {
+        // Periode bulan kalender.
+        $awal = $tanggalObj->modify('first day of this month');
+        $akhir = $tanggalObj->modify('last day of this month');
+    }
+
+    $tanggalAwal = $awal->format('Y-m-d');
+    $tanggalAkhir = $akhir->format('Y-m-d');
+
+    // Total seluruh pemasukan dalam periode yang dipilih.
     $stmtTotal = $pdo->prepare(
-    'SELECT COALESCE(SUM(total_harga), 0)
-     FROM transaksi
-     WHERE tanggal = :tanggal
-       AND dihapus_pada IS NULL'
-);
+        'SELECT
+            COUNT(*) AS jumlah_transaksi,
+            COALESCE(SUM(total_harga), 0) AS total_pemasukan
+         FROM transaksi
+         WHERE tanggal BETWEEN :awal_total AND :akhir_total
+           AND dihapus_pada IS NULL'
+    );
 
-    $stmtTotal->execute([':tanggal' => $tanggal]);
-    $totalPemasukan = (int) $stmtTotal->fetchColumn();
+    $stmtTotal->execute([
+        ':awal_total' => $tanggalAwal,
+        ':akhir_total' => $tanggalAkhir
+    ]);
 
-    // Rincian pemasukan per barber pada tanggal yang sama.
+    $hasilTotal = $stmtTotal->fetch(PDO::FETCH_ASSOC);
+
+    $jumlahTransaksi = (int) ($hasilTotal['jumlah_transaksi'] ?? 0);
+    $totalPemasukan = (int) ($hasilTotal['total_pemasukan'] ?? 0);
+
+    // Rincian pemasukan untuk setiap barber dalam periode yang sama.
     $stmtBarber = $pdo->prepare(
-    'SELECT
-        t.id_barber,
-        u.nama AS nama_barber,
-        COUNT(t.id_transaksi) AS jumlah_transaksi,
-        COALESCE(SUM(t.total_harga), 0) AS total_pemasukan
-     FROM transaksi t
-     INNER JOIN users u ON u.id_user = t.id_barber
-     WHERE t.tanggal = :tanggal
-       AND t.dihapus_pada IS NULL
-     GROUP BY t.id_barber, u.nama
-     ORDER BY u.nama ASC'
-);
+        'SELECT
+            t.id_barber,
+            u.nama AS nama_barber,
+            COUNT(t.id_transaksi) AS jumlah_transaksi,
+            COALESCE(SUM(t.total_harga), 0) AS total_pemasukan
+         FROM transaksi t
+         INNER JOIN users u ON u.id_user = t.id_barber
+         WHERE t.tanggal BETWEEN :awal_barber AND :akhir_barber
+           AND t.dihapus_pada IS NULL
+         GROUP BY t.id_barber, u.nama
+         ORDER BY u.nama ASC'
+    );
 
+    $stmtBarber->execute([
+        ':awal_barber' => $tanggalAwal,
+        ':akhir_barber' => $tanggalAkhir
+    ]);
 
-    $stmtBarber->execute([':tanggal' => $tanggal]);
     $rincianBarber = $stmtBarber->fetchAll(PDO::FETCH_ASSOC);
 
     foreach ($rincianBarber as &$barber) {
@@ -107,11 +155,17 @@ try {
     kirimJsonRekap(200, [
         'success' => true,
         'data' => [
-            'tanggal' => $tanggal,
+            'periode' => $periode,
+            'tanggal_acuan' => $tanggal,
+            'tanggal_awal' => $tanggalAwal,
+            'tanggal_akhir' => $tanggalAkhir,
             'total_pemasukan' => $totalPemasukan,
-            'rincian_per_barber' => $rincianBarber
+            'jumlah_transaksi' => $jumlahTransaksi,
+            'rincian_per_barber' => $rincianBarber,
+            'ada_data' => $jumlahTransaksi > 0
         ]
     ]);
+
 } catch (Throwable $e) {
     error_log('API rekap pemasukan: ' . $e->getMessage());
 
