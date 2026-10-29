@@ -838,6 +838,8 @@ Nilai di atas hanya contoh.
 | `minggu`  | Senin–Minggu minggu berjalan        | Minggu lalu       | Nama hari (`Monday`, …)        |
 | `bulan`   | Bulan berjalan                      | Bulan lalu        | 12 bulan terakhir (`Oct 2026`) |
 
+**Asumsi:** awal minggu adalah hari **Senin** (minggu = Senin sampai Minggu). Sudah dikonfirmasi ke tim.
+
 Contoh respons (`200 OK`):
 
 ```json
@@ -856,6 +858,15 @@ Contoh respons (`200 OK`):
       "Tuesday",
       "Wednesday"
     ],
+    "tanggal": [
+      "2026-10-22",
+      "2026-10-23",
+      "2026-10-24",
+      "2026-10-25",
+      "2026-10-26",
+      "2026-10-27",
+      "2026-10-28"
+    ],
     "pemasukan": [120000, 95000, 0, 210000, 175000, 300000, 150000],
     "total_pemasukan": 1050000,
     "total_periode_sebelumnya": 900000,
@@ -868,9 +879,93 @@ Contoh respons (`200 OK`):
 
 Ketentuan:
 
+- `tanggal` berisi tanggal ISO untuk tiap `labels` (`YYYY-MM-DD` untuk `7_hari`/`minggu`, `YYYY-MM` untuk `bulan`), urutannya sama.
 - `status_tren` bernilai `naik`, `turun`, atau `stabil` (perubahan kurang dari 5%).
 - `persentase_perubahan` bernilai `null` jika periode sebelumnya `0` sementara periode ini ada pemasukan.
 - `ada_data` bernilai `false` bila seluruh nilai `pemasukan` adalah `0`.
+- Transaksi yang sudah dihapus tidak dihitung. Tanggal mengikuti zona waktu WIB.
+- Non-owner ditolak `403 FORBIDDEN`; method selain `GET` ditolak `405 METHOD_NOT_ALLOWED`.
+
+### 5.2 API Dashboard Owner
+
+**Endpoint:** `GET /api/rekap/dashboard.php`
+
+**Akses:** Owner yang sudah login.
+
+| Parameter | Wajib | Keterangan                                                                    |
+| --------- | ----- | ----------------------------------------------------------------------------- |
+| `periode` | Tidak | `hari` (default), `minggu`, `bulan`, atau `semua`. Nilai lain ditolak `422`.  |
+| `tanggal` | Tidak | `YYYY-MM-DD`, default hari ini (WIB). Format salah ditolak `422`.             |
+| `limit`   | Tidak | Jumlah layanan populer, `1`–`20`, default `5`. Di luar rentang ditolak `422`. |
+
+| `periode` | Rentang                                                |
+| --------- | ------------------------------------------------------ |
+| `hari`    | Tanggal acuan                                          |
+| `minggu`  | Senin–Minggu yang memuat tanggal acuan                 |
+| `bulan`   | Tanggal 1 sampai akhir bulan acuan                     |
+| `semua`   | Seluruh data (`tanggal_awal`/`tanggal_akhir` = `null`) |
+
+Contoh respons (`200 OK`):
+
+```json
+{
+  "success": true,
+  "data": {
+    "periode": "hari",
+    "tanggal_acuan": "2026-10-29",
+    "tanggal_awal": "2026-10-29",
+    "tanggal_akhir": "2026-10-29",
+    "jumlah_transaksi": 2,
+    "jumlah_pelanggan": 2,
+    "keuangan": {
+      "pemasukan": 200000,
+      "hpp": 40000,
+      "laba_kotor": 160000,
+      "biaya_operasional": 60000,
+      "laba_bersih": 100000,
+      "hpp_lengkap": true
+    },
+    "pembayaran": [
+      {
+        "metode": "cash",
+        "label": "Tunai",
+        "jumlah_transaksi": 1,
+        "total_pemasukan": 120000
+      },
+      {
+        "metode": "transfer",
+        "label": "Transfer",
+        "jumlah_transaksi": 0,
+        "total_pemasukan": 0
+      },
+      {
+        "metode": "qris",
+        "label": "QRIS",
+        "jumlah_transaksi": 1,
+        "total_pemasukan": 80000
+      }
+    ],
+    "layanan_populer": [
+      {
+        "id_layanan": 1,
+        "nama_layanan": "Potong rambut reguler",
+        "jumlah_terjual": 3,
+        "total_pemasukan": 120000
+      }
+    ],
+    "ada_data": true
+  }
+}
+```
+
+Ketentuan:
+
+- `laba_kotor = pemasukan - hpp`; `laba_bersih = laba_kotor - biaya_operasional`.
+- `hpp` = jumlah `hpp_saat_transaksi × jumlah` tiap item. Item tanpa HPP dihitung `0` dan `hpp_lengkap` menjadi `false`.
+- `biaya_operasional` = total pengeluaran pada rentang yang sama.
+- `pembayaran` selalu berisi 3 metode dengan urutan `cash`, `transfer`, `qris` (nilai `0` bila tidak ada transaksi).
+- `layanan_populer` terurut `jumlah_terjual` menurun, lalu nama; maksimal `limit` item.
+- Periode tanpa transaksi mengembalikan `200` dengan semua angka `0`, daftar `[]`, dan `ada_data: false`.
 - Transaksi yang sudah dihapus tidak dihitung. Tanggal mengikuti zona waktu WIB.
 - Non-owner ditolak `403 FORBIDDEN`; method selain `GET` ditolak `405 METHOD_NOT_ALLOWED`.
 

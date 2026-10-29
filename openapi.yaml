@@ -585,7 +585,7 @@ paths:
       description: |
         Mengisi `dihapus_pada` pada transaksi (data tidak benar-benar dihapus).
         ID dikirim lewat **query string** `?id=`.
-        Setara dengan `POST /transaksi/hapus.php`.
+                Setara dengan `DELETE /transaksi/hapus.php`.
       operationId: deleteTransaksi
       parameters:
         - name: id
@@ -1289,6 +1289,58 @@ paths:
               schema: { $ref: "#/components/schemas/Error" }
         "500": { $ref: "#/components/responses/ServerError" }
 
+  /rekap/dashboard.php:
+    get:
+      tags: [Rekap]
+      summary: Dashboard owner (rekap keuangan, pembayaran, layanan populer)
+      description: |
+        Satu endpoint untuk kartu-kartu dashboard owner.
+
+        | `periode` | Rentang |
+        |---|---|
+        | `hari` (default) | Tanggal acuan |
+        | `minggu` | Senin–Minggu yang memuat tanggal acuan |
+        | `bulan` | Tanggal 1 sampai akhir bulan tanggal acuan |
+        | `semua` | Seluruh data (`tanggal_awal` dan `tanggal_akhir` bernilai `null`) |
+
+        Rumus: `laba_kotor = pemasukan - hpp`, `laba_bersih = laba_kotor - biaya_operasional`.
+        HPP diambil dari `hpp_saat_transaksi` tiap item; item tanpa HPP dihitung 0 dan `hpp_lengkap` menjadi `false`.
+        `pembayaran` selalu berisi 3 metode (`cash`, `transfer`, `qris`) dengan urutan tetap.
+      operationId: dashboardOwner
+      parameters:
+        - name: periode
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [hari, minggu, bulan, semua]
+            default: hari
+        - $ref: "#/components/parameters/Tanggal"
+        - name: limit
+          in: query
+          required: false
+          description: Jumlah layanan populer (1-20)
+          schema: { type: integer, minimum: 1, maximum: 20, default: 5 }
+      responses:
+        "200":
+          description: Data dashboard
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data: { $ref: "#/components/schemas/Dashboard" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/ForbiddenOwner" }
+        "405": { $ref: "#/components/responses/MethodNotAllowed" }
+        "422":
+          description: Periode, tanggal, atau limit tidak valid (`UNPROCESSABLE_ENTITY`)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "500": { $ref: "#/components/responses/ServerError" }
+
 # =============================================================================
 components:
   securitySchemes:
@@ -1629,6 +1681,63 @@ components:
           maxLength: 255
           example: Token listrik bulan Oktober
 
+    Dashboard:
+      type: object
+      properties:
+        periode:
+          { type: string, enum: [hari, minggu, bulan, semua], example: hari }
+        tanggal_acuan: { type: string, format: date, example: "2026-10-29" }
+        tanggal_awal:
+          { type: string, format: date, nullable: true, example: "2026-10-29" }
+        tanggal_akhir:
+          { type: string, format: date, nullable: true, example: "2026-10-29" }
+        jumlah_transaksi: { type: integer, example: 2 }
+        jumlah_pelanggan:
+          {
+            type: integer,
+            description: Pelanggan unik pada periode,
+            example: 2,
+          }
+        keuangan:
+          type: object
+          properties:
+            pemasukan: { type: integer, example: 200000 }
+            hpp: { type: integer, example: 40000 }
+            laba_kotor: { type: integer, example: 160000 }
+            biaya_operasional: { type: integer, example: 60000 }
+            laba_bersih: { type: integer, example: 100000 }
+            hpp_lengkap:
+              {
+                type: boolean,
+                description: "`false` bila ada item tanpa HPP (dihitung 0)",
+                example: true,
+              }
+        pembayaran:
+          type: array
+          items:
+            type: object
+            properties:
+              metode: { type: string, enum: [cash, transfer, qris] }
+              label: { type: string, enum: [Tunai, Transfer, QRIS] }
+              jumlah_transaksi: { type: integer }
+              total_pemasukan: { type: integer }
+        layanan_populer:
+          type: array
+          description: Terurut `jumlah_terjual` menurun, lalu nama
+          items:
+            type: object
+            properties:
+              id_layanan: { type: integer, nullable: true }
+              nama_layanan: { type: string }
+              jumlah_terjual: { type: integer }
+              total_pemasukan: { type: integer }
+        ada_data:
+          {
+            type: boolean,
+            description: "`false` bila tidak ada transaksi pada periode",
+            example: true,
+          }
+
     Tren:
       type: object
       properties:
@@ -1641,6 +1750,11 @@ components:
           items: { type: string }
           example:
             [Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday]
+                  tanggal:
+          type: array
+          description: "Tanggal ISO tiap label (`YYYY-MM-DD` untuk 7_hari/minggu, `YYYY-MM` untuk bulan), urutan sama dengan `labels`"
+          items: { type: string }
+          example: ["2026-10-19", "2026-10-20", "2026-10-21", "2026-10-22", "2026-10-23", "2026-10-24", "2026-10-25"]
         pemasukan:
           type: array
           description: Nilai pemasukan, urutan sama dengan `labels`
