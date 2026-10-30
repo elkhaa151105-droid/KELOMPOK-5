@@ -312,6 +312,22 @@ document.addEventListener('DOMContentLoaded', function () {
         return input;
     }
 
+    // Membuat input harga atau HPP dengan prefix Rp
+function buatInputRupiah(className, value, min) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'layanan-rupiah-wrapper';
+
+    const prefix = document.createElement('span');
+    prefix.className = 'layanan-rupiah-prefix';
+    prefix.textContent = 'Rp';
+
+    const input = buatInputAngka(className, value, min);
+
+    wrapper.append(prefix, input);
+
+    return wrapper;
+}
+
     function buatTombol(teks, className, aksi) {
         const tombol = document.createElement('button');
         tombol.type = 'button';
@@ -505,22 +521,40 @@ document.addEventListener('DOMContentLoaded', function () {
         namaCell.appendChild(namaInputBaris);
 
         // Kolom harga
-        const hargaCell = document.createElement('td');
-        const hargaInputBaris = buatInputAngka(
-            'layanan-price-input',
-            layanan.harga,
-            1
-        );
-        hargaCell.appendChild(hargaInputBaris);
+    const hargaCell = document.createElement('td');
+    const hargaInputBaris = buatInputAngka(
+        'layanan-price-input',
+        layanan.harga,
+        1
+    );
 
-        // Kolom HPP
-        const hppCell = document.createElement('td');
-        const hppInputBaris = buatInputAngka(
-            'layanan-hpp-input',
-            layanan.hpp,
-            1
-        );
-        hppCell.appendChild(hppInputBaris);
+    const hargaWrapper = document.createElement('div');
+    hargaWrapper.className = 'layanan-rupiah-wrapper';
+
+    const hargaPrefix = document.createElement('span');
+    hargaPrefix.className = 'layanan-rupiah-prefix';
+    hargaPrefix.textContent = 'Rp';
+
+    hargaWrapper.append(hargaPrefix, hargaInputBaris);
+    hargaCell.appendChild(hargaWrapper);
+
+    // Kolom HPP
+    const hppCell = document.createElement('td');
+    const hppInputBaris = buatInputAngka(
+        'layanan-hpp-input',
+        layanan.hpp,
+        1
+    );
+
+    const hppWrapper = document.createElement('div');
+    hppWrapper.className = 'layanan-rupiah-wrapper';
+
+    const hppPrefix = document.createElement('span');
+    hppPrefix.className = 'layanan-rupiah-prefix';
+    hppPrefix.textContent = 'Rp';
+
+    hppWrapper.append(hppPrefix, hppInputBaris);
+    hppCell.appendChild(hppWrapper);
 
         // Kolom status aktif
         const statusCell = document.createElement('td');

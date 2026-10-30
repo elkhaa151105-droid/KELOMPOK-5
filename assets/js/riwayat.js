@@ -6,6 +6,7 @@
 document.addEventListener('DOMContentLoaded', function () {
     const tableBody = document.getElementById('riwayatTableBody');
     const notification = document.getElementById('riwayatNotification');
+    const filterTanggal = document.getElementById('filterTanggalRiwayat');
     const pageEl = document.querySelector('.riwayat-page');
     const userRole = (pageEl?.dataset.role || '').toLowerCase();
 
@@ -140,6 +141,14 @@ document.addEventListener('DOMContentLoaded', function () {
         }).format(Number(nominal) || 0);
     }
 
+    function tanggalHariIni() {
+        const sekarang = new Date();
+        const tahun = sekarang.getFullYear();
+        const bulan = String(sekarang.getMonth() + 1).padStart(2, '0');
+        const hari = String(sekarang.getDate()).padStart(2, '0');
+        return `${tahun}-${bulan}-${hari}`;
+    }
+
     function formatTanggal(tanggal) {
         if (!tanggal) return '-';
         const bagian = String(tanggal).slice(0, 10).split('-');
@@ -244,15 +253,27 @@ document.addEventListener('DOMContentLoaded', function () {
                 );
             }
 
-            if (!Array.isArray(result.data) || result.data.length === 0) {
-                tampilkanPesan('Belum ada riwayat transaksi.');
+            const semuaTransaksi = Array.isArray(result.data) ? result.data : [];
+            const tanggalDipilih = filterTanggal?.value || '';
+            const transaksiTampil = tanggalDipilih
+                ? semuaTransaksi.filter(function (transaksi) {
+                    return String(transaksi.tanggal || '').slice(0, 10) === tanggalDipilih;
+                })
+                : semuaTransaksi;
+
+            if (transaksiTampil.length === 0) {
+                tampilkanPesan(
+                    tanggalDipilih
+                        ? 'Belum ada riwayat transaksi pada tanggal ini.'
+                        : 'Belum ada riwayat transaksi.'
+                );
                 return;
             }
 
             tableBody.replaceChildren();
 
             const transaksiDenganDetail = await Promise.all(
-                result.data.map(async function (transaksi) {
+                transaksiTampil.map(async function (transaksi) {
                     try {
                         const detail = await muatDetailTransaksi(
                             transaksi.id_transaksi
@@ -431,6 +452,11 @@ document.addEventListener('DOMContentLoaded', function () {
             tombol.disabled = false;
         }
     });
+
+    if (filterTanggal) {
+        filterTanggal.value = tanggalHariIni();
+        filterTanggal.addEventListener('change', muatRiwayat);
+    }
 
     muatRiwayat();
 });

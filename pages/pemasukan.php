@@ -61,6 +61,4 @@ include __DIR__ . '/../includes/header.php';
     </section>
 </main>
 
-<script src="/KELOMPOK-5/assets/js/pemasukan.js"></script>
-
 <?php include __DIR__ . '/../includes/footer.php'; ?>
