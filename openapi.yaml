@@ -1258,7 +1258,8 @@ paths:
         | `minggu` | Senin–Minggu minggu berjalan | Minggu lalu | Nama hari (Monday, …) |
         | `bulan` | Bulan berjalan | Bulan lalu | 12 bulan terakhir (mis. `Oct 2026`) |
 
-        `status_tren`: `naik`, `turun`, atau `stabil` (perubahan < 5%).
+        `status_tren`: `naik`, `turun`, atau `stabil` (selisih kurang dari `ambang_stabil_persen`, saat ini 5%).
+         `Periode tanpa transaksi mengembalikan `200` dengan semua nilai 0, `ada_data: false`, dan `status_tren: stabil`.
         `persentase_perubahan` bernilai `null` bila periode sebelumnya 0 tetapi periode ini ada pemasukan.
       operationId: trenPemasukan
       parameters:
@@ -1336,6 +1337,60 @@ paths:
         "405": { $ref: "#/components/responses/MethodNotAllowed" }
         "422":
           description: Periode, tanggal, atau limit tidak valid (`UNPROCESSABLE_ENTITY`)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "500": { $ref: "#/components/responses/ServerError" }
+
+  /rekap/layanan.php:
+    get:
+      tags: [Rekap]
+      summary: Jumlah transaksi per layanan (owner)
+      description: |
+        Jumlah transaksi per layanan pada periode terpilih, diurutkan paling sering (`terbanyak`, default)
+        atau paling jarang (`tersedikit`). Batas periode memakai WIB.
+
+        | `periode` | Rentang |
+        |---|---|
+        | `hari` (default) | Tanggal acuan |
+        | `minggu` | Senin–Minggu yang memuat tanggal acuan |
+        | `bulan` | Tanggal 1 sampai akhir bulan tanggal acuan |
+
+        Dihitung per baris layanan, jadi transaksi multi-layanan menambah hitungan tiap layanan di dalamnya.
+        Hanya layanan yang punya transaksi pada periode yang muncul. Periode tanpa transaksi mengembalikan
+        `200` dengan `layanan: []` dan `ada_data: false`. Transaksi yang sudah dihapus tidak dihitung.
+      operationId: rekapLayanan
+      parameters:
+        - name: periode
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [hari, minggu, bulan]
+            default: hari
+        - $ref: "#/components/parameters/Tanggal"
+        - name: urutan
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [terbanyak, tersedikit]
+            default: terbanyak
+      responses:
+        "200":
+          description: Daftar layanan beserta jumlah transaksi
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data: { $ref: "#/components/schemas/RekapLayanan" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/ForbiddenOwner" }
+        "405": { $ref: "#/components/responses/MethodNotAllowed" }
+        "422":
+          description: Periode, tanggal, atau urutan tidak valid (`UNPROCESSABLE_ENTITY`)
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Error" }
@@ -1738,6 +1793,38 @@ components:
             example: true,
           }
 
+    RekapLayanan:
+      type: object
+      properties:
+        periode: { type: string, enum: [hari, minggu, bulan], example: minggu }
+        tanggal_acuan: { type: string, format: date, example: "2026-10-21" }
+        tanggal_awal: { type: string, format: date, example: "2026-10-19" }
+        tanggal_akhir: { type: string, format: date, example: "2026-10-25" }
+        urutan:
+          { type: string, enum: [terbanyak, tersedikit], example: terbanyak }
+        layanan:
+          type: array
+          description: Kosong bila periode tanpa transaksi
+          items:
+            type: object
+            properties:
+              peringkat: { type: integer, example: 1 }
+              id_layanan:
+                {
+                  type: integer,
+                  nullable: true,
+                  example: 1,
+                  description: "`null` bila layanan sudah dihapus permanen",
+                }
+              nama_layanan: { type: string, example: Potong rambut reguler }
+              jumlah_transaksi: { type: integer, example: 3 }
+              total_jumlah:
+                {
+                  type: integer,
+                  example: 3,
+                  description: Total unit (SUM jumlah),
+                }
+        ada_data: { type: boolean, example: true }
     Tren:
       type: object
       properties:
@@ -1750,11 +1837,20 @@ components:
           items: { type: string }
           example:
             [Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday]
-                  tanggal:
+        tanggal:
           type: array
           description: "Tanggal ISO tiap label (`YYYY-MM-DD` untuk 7_hari/minggu, `YYYY-MM` untuk bulan), urutan sama dengan `labels`"
           items: { type: string }
-          example: ["2026-10-19", "2026-10-20", "2026-10-21", "2026-10-22", "2026-10-23", "2026-10-24", "2026-10-25"]
+          example:
+            [
+              "2026-10-19",
+              "2026-10-20",
+              "2026-10-21",
+              "2026-10-22",
+              "2026-10-23",
+              "2026-10-24",
+              "2026-10-25",
+            ]
         pemasukan:
           type: array
           description: Nilai pemasukan, urutan sama dengan `labels`
@@ -1769,6 +1865,10 @@ components:
           example: 16.67
         status_tren:
           { type: string, enum: [naik, turun, stabil], example: naik }
+        ambang_stabil_persen:
+          type: number
+          description: "Ambang persen status `stabil` yang dipakai server (saat ini 5, menunggu konfirmasi Erik). Diubah lewat konstanta `TREN_AMBANG_STABIL_PERSEN` di `api/rekap/tren.php`"
+          example: 5
         ada_data:
           {
             type: boolean,

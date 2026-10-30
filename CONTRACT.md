@@ -809,8 +809,8 @@ Nilai di atas hanya contoh.
 - `rincian_per_barber`: daftar pemasukan yang dikelompokkan berdasarkan barber.
 - `id_barber`: ID user barber.
 - `nama_barber`: nama barber.
-- `jumlah_transaksi`: jumlah transaksi barber pada tanggal tersebut.
-- `total_pemasukan` di dalam setiap item: total pemasukan barber pada tanggal tersebut.
+- `jumlah_transaksi`: jumlah transaksi barber pada periode tersebut.
+- `total_pemasukan` di dalam setiap item: total pemasukan barber pada periode tersebut.
 
 ### Ketentuan
 
@@ -821,6 +821,16 @@ Nilai di atas hanya contoh.
 - Pengguna yang belum login harus melewati autentikasi terlebih dahulu.
 - Pengguna selain owner ditolak dengan `403 Forbidden`.
 - Method selain `GET` ditolak dengan `405 Method Not Allowed`.
+
+### Kesepakatan dengan Frontend (Kartu 4.8)
+
+Format respons rekap mingguan dan bulanan sudah dikonfirmasi cocok dengan pemakaian frontend (`assets/js/pemasukan.js`, `assets/js/dashboard.js`):
+
+- Field yang dipakai frontend: `total_pemasukan`, `rincian_per_barber`, dan `ada_data`.
+- Periode mingguan adalah **Senin–Minggu**; periode bulanan mengikuti **bulan kalender**, keduanya dalam zona waktu WIB (`Asia/Jakarta`).
+- Seluruh nominal dan jumlah dikirim sebagai **angka (integer)**, bukan string: `total_pemasukan`, `jumlah_transaksi`, dan `id_barber`.
+- Setiap item `rincian_per_barber` berisi `id_barber`, `nama_barber`, `jumlah_transaksi`, dan `total_pemasukan`.
+- Jika tidak ada transaksi pada periode: `total_pemasukan: 0`, `jumlah_transaksi: 0`, `rincian_per_barber: []`, dan `ada_data: false`.
 
 ### 5.1 API Tren Pemasukan
 
@@ -872,6 +882,7 @@ Contoh respons (`200 OK`):
     "total_periode_sebelumnya": 900000,
     "persentase_perubahan": 16.67,
     "status_tren": "naik",
+    "ambang_stabil_persen": 5,
     "ada_data": true
   }
 }
@@ -880,11 +891,23 @@ Contoh respons (`200 OK`):
 Ketentuan:
 
 - `tanggal` berisi tanggal ISO untuk tiap `labels` (`YYYY-MM-DD` untuk `7_hari`/`minggu`, `YYYY-MM` untuk `bulan`), urutannya sama.
-- `status_tren` bernilai `naik`, `turun`, atau `stabil` (perubahan kurang dari 5%).
+- `status_tren` bernilai `naik`, `turun`, atau `stabil`. Disebut `stabil` bila selisih persentase kurang dari `ambang_stabil_persen` (positif maupun negatif); tepat di ambang dihitung `naik`/`turun`.
+- `ambang_stabil_persen` mengembalikan ambang yang dipakai (saat ini `5`). Nilainya **belum final**, menunggu konfirmasi Erik. Untuk mengubahnya cukup ubah konstanta `TREN_AMBANG_STABIL_PERSEN` di bagian atas `api/rekap/tren.php`. Frontend cukup membaca `status_tren` dan `ambang_stabil_persen` dari respons.
 - `persentase_perubahan` bernilai `null` jika periode sebelumnya `0` sementara periode ini ada pemasukan.
 - `ada_data` bernilai `false` bila seluruh nilai `pemasukan` adalah `0`.
 - Transaksi yang sudah dihapus tidak dihitung. Tanggal mengikuti zona waktu WIB.
 - Non-owner ditolak `403 FORBIDDEN`; method selain `GET` ditolak `405 METHOD_NOT_ALLOWED`.
+- Periode tanpa transaksi mengembalikan `200` dengan seluruh `pemasukan` bernilai `0`, `total_pemasukan` `0`, `ada_data: false`, dan `status_tren: stabil` (bukan error).
+
+#### Data contoh demo (7 hari terakhir)
+
+File `database/migrations/demo_tren.sql` mengisi transaksi 14 hari terakhir (tanggal relatif terhadap hari ini WIB) untuk demo grafik. Setelah diimpor, `GET /api/rekap/tren.php?periode=7_hari` menghasilkan:
+
+| Hari ke-  |     -6 |     -5 |  -4 |     -3 |     -2 |     -1 | hari ini |
+| --------- | -----: | -----: | --: | -----: | -----: | -----: | -------: |
+| Pemasukan | 150000 | 100000 |   0 | 200000 | 150000 | 300000 |   150000 |
+
+`total_pemasukan` = 1.050.000, `total_periode_sebelumnya` = 900.000, `persentase_perubahan` = 16.67, `status_tren` = `naik`. Semua baris demo memakai pelanggan bernama `Demo Tren`. Mengimpor ulang file yang sama membersihkan data demo lama lebih dulu, jadi aman diulang. Data demo ikut terhitung di rekap dan dashboard, jadi hapus bila tidak diperlukan.
 
 ### 5.2 API Dashboard Owner
 
@@ -968,6 +991,84 @@ Ketentuan:
 - Periode tanpa transaksi mengembalikan `200` dengan semua angka `0`, daftar `[]`, dan `ada_data: false`.
 - Transaksi yang sudah dihapus tidak dihitung. Tanggal mengikuti zona waktu WIB.
 - Non-owner ditolak `403 FORBIDDEN`; method selain `GET` ditolak `405 METHOD_NOT_ALLOWED`.
+
+### 5.3 API Jumlah Transaksi per Layanan
+
+**Endpoint:** `GET /api/rekap/layanan.php`
+
+**Akses:** Owner yang sudah login.
+
+| Parameter | Wajib | Keterangan                                                                                           |
+| --------- | ----- | ---------------------------------------------------------------------------------------------------- |
+| `periode` | Tidak | `hari` (default), `minggu` (Senin–Minggu), atau `bulan` (kalender). Nilai lain `422`.                |
+| `tanggal` | Tidak | Tanggal acuan `YYYY-MM-DD`. Default: hari ini (WIB). Tidak valid `422`.                              |
+| `urutan`  | Tidak | `terbanyak` (default, paling sering dikerjakan) atau `tersedikit` (paling jarang). Nilai lain `422`. |
+
+Contoh request:
+
+```
+GET {{base_url}}/api/rekap/layanan.php?periode=minggu&tanggal=2026-10-21
+GET {{base_url}}/api/rekap/layanan.php?periode=bulan&tanggal=2026-10-21&urutan=tersedikit
+```
+
+Contoh respons (`200 OK`):
+
+```json
+{
+  "success": true,
+  "data": {
+    "periode": "minggu",
+    "tanggal_acuan": "2026-10-21",
+    "tanggal_awal": "2026-10-19",
+    "tanggal_akhir": "2026-10-25",
+    "urutan": "terbanyak",
+    "layanan": [
+      {
+        "peringkat": 1,
+        "id_layanan": 1,
+        "nama_layanan": "Potong rambut reguler",
+        "jumlah_transaksi": 3,
+        "total_jumlah": 3
+      },
+      {
+        "peringkat": 2,
+        "id_layanan": 3,
+        "nama_layanan": "Creambath",
+        "jumlah_transaksi": 1,
+        "total_jumlah": 3
+      }
+    ],
+    "ada_data": true
+  }
+}
+```
+
+Periode tanpa transaksi (`200 OK`, bukan error):
+
+```json
+{
+  "success": true,
+  "data": {
+    "periode": "hari",
+    "tanggal_acuan": "2026-01-01",
+    "tanggal_awal": "2026-01-01",
+    "tanggal_akhir": "2026-01-01",
+    "urutan": "terbanyak",
+    "layanan": [],
+    "ada_data": false
+  }
+}
+```
+
+Ketentuan:
+
+- Dihitung per baris layanan di `detail_transaksi`. Transaksi multi-layanan (4.2) menambah hitungan **setiap** layanan di dalamnya.
+- `jumlah_transaksi` = banyak transaksi yang memuat layanan itu; `total_jumlah` = jumlah unit (`SUM(jumlah)`).
+- `urutan=terbanyak` mengurutkan `jumlah_transaksi` menurun, `tersedikit` menaik; seri diurutkan `total_jumlah` lalu nama A–Z. `peringkat` mengikuti urutan yang dipilih (mulai dari 1).
+- Hanya layanan yang punya transaksi pada periode yang muncul (layanan tanpa transaksi tidak dimasukkan).
+- Layanan yang sudah dihapus permanen tetap muncul dengan `id_layanan: null` dan nama dari snapshot transaksi.
+- Batas periode dan tanggal default memakai WIB. Transaksi yang sudah dihapus (soft delete) tidak dihitung.
+- Tanpa login `401`; non-owner `403 FORBIDDEN`; method selain `GET` `405 METHOD_NOT_ALLOWED`.
 
 ## 6. API Pengeluaran — WBS 4.3
 
@@ -1105,6 +1206,16 @@ Respons sukses (`200 OK`):
 - [ ] Pelanggan baru tanpa transaksi mengembalikan `200` dengan `riwayat` kosong dan `ada_data: false`.
 - [ ] Transaksi yang sudah dihapus (soft delete) tidak muncul di riwayat.
 - [ ] `id_pelanggan` tidak dikirim atau tidak valid `400`; pelanggan tidak ada atau sudah dihapus `404`; tanpa login `401`.
+
+### Layanan Terlaris per Periode
+
+- [ ] `GET /api/rekap/layanan.php?periode=minggu&tanggal=...` mengembalikan layanan dengan `jumlah_transaksi`, urut paling sering (default `urutan=terbanyak`).
+- [ ] `urutan=tersedikit` membalik urutan (paling jarang lebih dulu).
+- [ ] Transaksi multi-layanan dihitung untuk setiap layanan di dalamnya.
+- [ ] Batas periode: `hari`, `minggu` (Senin–Minggu), `bulan`.
+- [ ] Periode tanpa transaksi mengembalikan `200` dengan `layanan` kosong dan `ada_data: false`.
+- [ ] Transaksi yang sudah dihapus tidak dihitung.
+- [ ] `periode`/`urutan`/`tanggal` tidak valid `422`; barber `403`; tanpa login `401`; POST `405`.
 
 ### Pengelolaan Layanan
 
