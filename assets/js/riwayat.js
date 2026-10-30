@@ -1,11 +1,138 @@
+/**
+ * Kataji Barber - Riwayat Transaksi (Frontend)
+ * Penyesuaian dengan API backend terbaru & dialog konfirmasi Figma
+ */
+
 document.addEventListener('DOMContentLoaded', function () {
     const tableBody = document.getElementById('riwayatTableBody');
     const notification = document.getElementById('riwayatNotification');
+    const filterTanggal = document.getElementById('filterTanggalRiwayat');
+    const pageEl = document.querySelector('.riwayat-page');
+    const userRole = (pageEl?.dataset.role || '').toLowerCase();
 
-    const API_URL = '/KELOMPOK-5/api/transaksi/index.php';
+    const API_TRANSAKSI = '/KELOMPOK-5/api/transaksi/index.php';
     const DETAIL_URL = '/KELOMPOK-5/api/transaksi/detail.php';
 
-    // Format nominal menjadi Rupiah.
+    if (!tableBody) {
+        return;
+    }
+
+    let notificationTimer;
+
+    // ======================================================
+    // 1. DIALOG KONFIRMASI (SESUAI DESAIN FIGMA KATAJI)
+    // ======================================================
+
+    function konfirmasiTindakan({
+        judul = 'Hapus Riwayat Transaksi?',
+        pesan = 'Apakah Anda yakin ingin menghapus riwayat transaksi ini?',
+        teksBatal = 'Batal',
+        teksKonfirmasi = 'Ya, Hapus',
+        tipe = 'danger'
+    }) {
+        if (typeof window.katajiKonfirmasi === 'function') {
+            return window.katajiKonfirmasi({
+                judul,
+                pesan,
+                teksBatal,
+                teksKonfirmasi,
+                tipe
+            });
+        }
+
+        return new Promise(function (resolve) {
+            let overlay = document.getElementById('katajiModalKonfirmasi');
+
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.id = 'katajiModalKonfirmasi';
+                overlay.className = 'kataji-confirm-overlay';
+                overlay.setAttribute('role', 'dialog');
+                overlay.setAttribute('aria-modal', 'true');
+                overlay.innerHTML = `
+                    <div class="kataji-confirm-box">
+                        <h3 class="kataji-confirm-title" id="katajiConfirmTitle"></h3>
+                        <p class="kataji-confirm-desc" id="katajiConfirmDesc"></p>
+                        <div class="kataji-confirm-actions">
+                            <button type="button" class="btn-confirm-cancel" id="btnConfirmBatal">Batal</button>
+                            <button type="button" class="btn-confirm-danger" id="btnConfirmAksi">Ya</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(overlay);
+            }
+
+            const titleEl = overlay.querySelector('#katajiConfirmTitle');
+            const descEl = overlay.querySelector('#katajiConfirmDesc');
+            const btnBatal = overlay.querySelector('#btnConfirmBatal');
+            const btnAksi = overlay.querySelector('#btnConfirmAksi');
+
+            titleEl.textContent = judul;
+            descEl.textContent = pesan;
+            btnAksi.textContent = teksKonfirmasi;
+
+            if (!teksBatal) {
+                btnBatal.style.display = 'none';
+                btnAksi.className = 'btn-confirm-primary btn-single-alert';
+            } else {
+                btnBatal.style.display = '';
+                btnBatal.textContent = teksBatal;
+                btnAksi.className = tipe === 'primary'
+                    ? 'btn-confirm-primary'
+                    : 'btn-confirm-danger';
+            }
+
+            function tutup(hasil) {
+                overlay.style.display = 'none';
+                document.body.classList.remove('kataji-confirm-open');
+                btnBatal.onclick = null;
+                btnAksi.onclick = null;
+                overlay.onclick = null;
+                document.removeEventListener('keydown', onKeyDown);
+                resolve(hasil);
+            }
+
+            function onKeyDown(e) {
+                if (e.key === 'Escape') {
+                    tutup(false);
+                }
+            }
+
+            btnBatal.onclick = function () { tutup(false); };
+            btnAksi.onclick = function () { tutup(true); };
+            overlay.onclick = function (e) {
+                if (e.target === overlay) tutup(false);
+            };
+            document.addEventListener('keydown', onKeyDown);
+
+            document.body.classList.add('kataji-confirm-open');
+            overlay.style.display = 'flex';
+            btnAksi.focus();
+        });
+    }
+
+    function tampilkanAlert({
+        judul = 'Perhatian',
+        pesan = '',
+        teksTombol = 'Mengerti',
+        tipe = 'primary'
+    }) {
+        if (typeof window.katajiAlert === 'function') {
+            return window.katajiAlert({ judul, pesan, teksTombol, tipe });
+        }
+        return konfirmasiTindakan({
+            judul,
+            pesan,
+            teksBatal: null,
+            teksKonfirmasi: teksTombol,
+            tipe
+        });
+    }
+
+    // ======================================================
+    // 2. HELPER FORMAT
+    // ======================================================
+
     function formatRupiah(nominal) {
         return new Intl.NumberFormat('id-ID', {
             style: 'currency',
@@ -14,35 +141,64 @@ document.addEventListener('DOMContentLoaded', function () {
         }).format(Number(nominal) || 0);
     }
 
-    // Format tanggal menjadi DD-MM-YYYY.
+    function tanggalHariIni() {
+        const sekarang = new Date();
+        const tahun = sekarang.getFullYear();
+        const bulan = String(sekarang.getMonth() + 1).padStart(2, '0');
+        const hari = String(sekarang.getDate()).padStart(2, '0');
+        return `${tahun}-${bulan}-${hari}`;
+    }
+
     function formatTanggal(tanggal) {
         if (!tanggal) return '-';
-
-        const bagian = tanggal.split('-');
-
+        const bagian = String(tanggal).slice(0, 10).split('-');
         if (bagian.length !== 3) return tanggal;
-
         return `${bagian[2]}-${bagian[1]}-${bagian[0]}`;
     }
 
-    // Ubah kode pembayaran menjadi label.
     function formatMetodePembayaran(metode) {
-        const metodePembayaran = {
+        const daftar = {
             cash: 'Cash',
             qris: 'QRIS',
             transfer: 'Transfer'
         };
-
-        return metodePembayaran[metode] || '-';
+        return daftar[String(metode || '').toLowerCase()] || '-';
     }
 
-    // Tampilkan pesan di dalam tabel.
+    // ======================================================
+    // 3. NOTIFIKASI
+    // ======================================================
+
+    function tampilkanNotifikasi(pesan, berhasil = true) {
+        if (!notification) {
+            return;
+        }
+
+        clearTimeout(notificationTimer);
+
+        notification.textContent = pesan;
+        notification.hidden = false;
+
+        notification.classList.toggle('transaction-success', berhasil);
+        notification.classList.toggle('transaction-error', !berhasil);
+
+        requestAnimationFrame(() => {
+            notification.classList.add('show');
+        });
+
+        notificationTimer = setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => {
+                notification.hidden = true;
+            }, 300);
+        }, 3000);
+    }
+
     function tampilkanPesan(pesan) {
         tableBody.replaceChildren();
 
         const row = document.createElement('tr');
         const cell = document.createElement('td');
-
         cell.colSpan = 7;
         cell.textContent = pesan;
 
@@ -50,11 +206,15 @@ document.addEventListener('DOMContentLoaded', function () {
         tableBody.appendChild(row);
     }
 
-    // Ambil rincian layanan berdasarkan ID transaksi.
+    // ======================================================
+    // 4. MEMUAT DETAIL & DAFTAR TRANSAKSI
+    // ======================================================
+
     async function muatDetailTransaksi(idTransaksi) {
         const response = await fetch(
             `${DETAIL_URL}?id=${encodeURIComponent(idTransaksi)}`,
             {
+                method: 'GET',
                 headers: {
                     'Accept': 'application/json'
                 },
@@ -73,10 +233,12 @@ document.addEventListener('DOMContentLoaded', function () {
         return result.data;
     }
 
-    // Ambil dan tampilkan seluruh riwayat.
     async function muatRiwayat() {
+        tampilkanPesan('Memuat riwayat transaksi...');
+
         try {
-            const response = await fetch(API_URL, {
+            const response = await fetch(API_TRANSAKSI, {
+                method: 'GET',
                 headers: {
                     'Accept': 'application/json'
                 },
@@ -91,16 +253,27 @@ document.addEventListener('DOMContentLoaded', function () {
                 );
             }
 
-            tableBody.replaceChildren();
+            const semuaTransaksi = Array.isArray(result.data) ? result.data : [];
+            const tanggalDipilih = filterTanggal?.value || '';
+            const transaksiTampil = tanggalDipilih
+                ? semuaTransaksi.filter(function (transaksi) {
+                    return String(transaksi.tanggal || '').slice(0, 10) === tanggalDipilih;
+                })
+                : semuaTransaksi;
 
-            if (!Array.isArray(result.data) || result.data.length === 0) {
-                tampilkanPesan('Belum ada riwayat transaksi.');
+            if (transaksiTampil.length === 0) {
+                tampilkanPesan(
+                    tanggalDipilih
+                        ? 'Belum ada riwayat transaksi pada tanggal ini.'
+                        : 'Belum ada riwayat transaksi.'
+                );
                 return;
             }
 
-            // Ambil detail setiap transaksi.
+            tableBody.replaceChildren();
+
             const transaksiDenganDetail = await Promise.all(
-                result.data.map(async function (transaksi) {
+                transaksiTampil.map(async function (transaksi) {
                     try {
                         const detail = await muatDetailTransaksi(
                             transaksi.id_transaksi
@@ -111,11 +284,6 @@ document.addEventListener('DOMContentLoaded', function () {
                             layanan: detail.layanan || []
                         };
                     } catch (error) {
-                        console.error(
-                            `Detail transaksi ${transaksi.id_transaksi}:`,
-                            error
-                        );
-
                         return {
                             ...transaksi,
                             layanan: null
@@ -125,76 +293,72 @@ document.addEventListener('DOMContentLoaded', function () {
             );
 
             transaksiDenganDetail.forEach(function (transaksi) {
- 
-const row = document.createElement('tr');
+                const row = document.createElement('tr');
+                row.dataset.idTransaksi = transaksi.id_transaksi;
 
-// Kolom Barber
-const barber = document.createElement('td');
-barber.textContent = transaksi.nama_barber || '-';
+                // Barber
+                const barber = document.createElement('td');
+                barber.textContent = transaksi.nama_barber || '-';
 
-// Kolom Nama pelanggan
-const nama = document.createElement('td');
-nama.textContent = transaksi.nama_pelanggan || '-';
+                // Nama Pelanggan
+                const nama = document.createElement('td');
+                nama.textContent = transaksi.nama_pelanggan || '-';
 
-// Kolom Tanggal (DD-MM-YYYY)
-const tanggal = document.createElement('td');
-tanggal.textContent = formatTanggal(transaksi.tanggal);
+                // Tanggal
+                const tanggal = document.createElement('td');
+                tanggal.textContent = formatTanggal(transaksi.tanggal);
 
-// Kolom Layanan
-const layanan = document.createElement('td');
+                // Layanan
+                const layanan = document.createElement('td');
+                if (transaksi.layanan === null) {
+                    layanan.textContent = 'Gagal memuat';
+                } else if (transaksi.layanan.length === 0) {
+                    layanan.textContent = '-';
+                } else {
+                    layanan.textContent = transaksi.layanan.map(function (item) {
+                        const jumlah = Number(item.jumlah) || 1;
+                        return jumlah > 1
+                            ? `${item.nama_layanan} (${jumlah}x)`
+                            : item.nama_layanan;
+                    }).join(', ');
+                }
 
-if (transaksi.layanan === null) {
-    layanan.textContent = 'Gagal memuat';
-} else if (transaksi.layanan.length === 0) {
-    layanan.textContent = '-';
-} else {
-    layanan.textContent = transaksi.layanan.map(function (item) {
-        const jumlah = Number(item.jumlah) || 1;
+                // Nominal
+                const nominal = document.createElement('td');
+                nominal.textContent = formatRupiah(transaksi.total_harga);
 
-        return jumlah > 1
-            ? `${item.nama_layanan} (${jumlah}x)`
-            : item.nama_layanan;
-    }).join(', ');
-}
+                // Metode Pembayaran
+                const pembayaran = document.createElement('td');
+                pembayaran.textContent = formatMetodePembayaran(
+                    transaksi.metode_pembayaran
+                );
 
-// Kolom Nominal
-const nominal = document.createElement('td');
-nominal.textContent = formatRupiah(transaksi.total_harga);
+                // Aksi (Hanya owner yang berhak menghapus)
+                const aksi = document.createElement('td');
 
-// Kolom Metode Pembayaran
-const pembayaran = document.createElement('td');
-pembayaran.textContent = formatMetodePembayaran(
-    transaksi.metode_pembayaran
-);
+                if (userRole === 'owner') {
+                    const tombolHapus = document.createElement('button');
+                    tombolHapus.type = 'button';
+                    tombolHapus.className = 'riwayat-delete-btn';
+                    tombolHapus.textContent = '×';
+                    tombolHapus.setAttribute('aria-label', 'Hapus riwayat transaksi');
+                    tombolHapus.dataset.idTransaksi = transaksi.id_transaksi;
+                    aksi.appendChild(tombolHapus);
+                } else {
+                    aksi.textContent = '-';
+                }
 
-// Kolom Aksi
-const aksi = document.createElement('td');
+                row.append(
+                    barber,
+                    nama,
+                    tanggal,
+                    layanan,
+                    nominal,
+                    pembayaran,
+                    aksi
+                );
 
-const tombolHapus = document.createElement('button');
-tombolHapus.type = 'button';
-tombolHapus.className = 'riwayat-delete-btn';
-tombolHapus.textContent = '×';
-tombolHapus.setAttribute(
-    'aria-label',
-    'Hapus riwayat transaksi'
-);
-tombolHapus.dataset.idTransaksi = transaksi.id_transaksi;
-
-aksi.appendChild(tombolHapus);
-
-// Masukkan kolom sesuai urutan yang diinginkan.
-row.append(
-    barber,
-    nama,
-    tanggal,
-    layanan,
-    nominal,
-    pembayaran,
-    aksi
-);
-
-tableBody.appendChild(row);
-
+                tableBody.appendChild(row);
             });
         } catch (error) {
             console.error('Gagal memuat riwayat:', error);
@@ -204,18 +368,95 @@ tableBody.appendChild(row);
         }
     }
 
-    // Tombol hapus menunggu endpoint DELETE transaksi.
-    if (tableBody) {
-        tableBody.addEventListener('click', function (event) {
-            const tombol = event.target.closest('.riwayat-delete-btn');
+    // ======================================================
+    // 5. HAPUS RIWAYAT TRANSAKSI (DELETE API DENGAN KONFIRMASI)
+    // ======================================================
 
-            if (!tombol) return;
+    tableBody.addEventListener('click', async function (event) {
+        const tombol = event.target.closest('.riwayat-delete-btn');
+        if (!tombol) return;
 
-            alert(
-                'Fitur hapus belum dihubungkan ke API penghapusan transaksi.'
-            );
+        const idTransaksi = tombol.dataset.idTransaksi;
+        if (!idTransaksi) {
+            tampilkanNotifikasi('ID transaksi tidak ditemukan.', false);
+            await tampilkanAlert({
+                judul: 'Validasi Riwayat',
+                pesan: 'ID transaksi tidak ditemukan.',
+                tipe: 'danger'
+            });
+            return;
+        }
+
+        const yakin = await konfirmasiTindakan({
+            judul: 'Hapus Riwayat Transaksi?',
+            pesan: 'Apakah Anda yakin ingin menghapus riwayat transaksi ini? Data yang dihapus tidak akan ditampilkan lagi.',
+            teksBatal: 'Batal',
+            teksKonfirmasi: 'Ya, Hapus',
+            tipe: 'danger'
         });
 
-        muatRiwayat();
+        if (!yakin) {
+            return;
+        }
+
+        tombol.disabled = true;
+
+        try {
+            // Sesuai kontrak backend: DELETE /api/transaksi/index.php?id={id_transaksi}
+            const response = await fetch(
+                `${API_TRANSAKSI}?id=${encodeURIComponent(idTransaksi)}`,
+                {
+                    method: 'DELETE',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                }
+            );
+
+            let result;
+            try {
+                result = await response.json();
+            } catch (jsonErr) {
+                throw new Error('Respons server bukan JSON yang valid.');
+            }
+
+            if (!response.ok || !result.success) {
+                throw new Error(
+                    result.message || 'Gagal menghapus riwayat transaksi.'
+                );
+            }
+
+            tampilkanNotifikasi(
+                result.message || 'Riwayat transaksi berhasil dihapus.',
+                true
+            );
+            await tampilkanAlert({
+                judul: 'Berhasil Dihapus',
+                pesan: result.message || 'Riwayat transaksi berhasil dihapus.',
+                tipe: 'primary'
+            });
+
+            await muatRiwayat();
+        } catch (error) {
+            console.error('Gagal menghapus transaksi:', error);
+            tampilkanNotifikasi(
+                error.message || 'Gagal menghapus riwayat transaksi.',
+                false
+            );
+            await tampilkanAlert({
+                judul: 'Gagal Menghapus',
+                pesan: error.message || 'Gagal menghapus riwayat transaksi.',
+                tipe: 'danger'
+            });
+            tombol.disabled = false;
+        }
+    });
+
+    if (filterTanggal) {
+        filterTanggal.value = tanggalHariIni();
+        filterTanggal.addEventListener('change', muatRiwayat);
     }
+
+    muatRiwayat();
 });

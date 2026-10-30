@@ -19,8 +19,10 @@ unset($_SESSION['login_notification']);
     <title>Kataji Barber</title>
 
     <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Pastikan 3 baris ini ada dan file sudah di-SAVE -->
+    <link rel="preconnect" href="https://googleapis.com">
+    <link rel="preconnect" href="https://gstatic.com" crossorigin>
+    <link href="https://googleapis.com/css2?family=New+Amsterdam&display=swap" rel="stylesheet">
 
     <link
         href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
@@ -111,7 +113,7 @@ unset($_SESSION['login_notification']);
         <span>Layanan</span>
     </a>
 
-    <!-- KONTEN WEB -->
+    <!-- PEMASUKAN -->
     <a
         href="/KELOMPOK-5/pages/pemasukan.php"
         class="sidebar-link <?= $current_page === 'pemasukan.php' ? 'active' : '' ?>"

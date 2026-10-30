@@ -99,15 +99,15 @@ $saved_username = $_POST['username'] ?? $_GET['username'] ?? '';
         </div>
 
         <h1>Masuk Ke Akun</h1>
-
+        
         <p class="login-description">
-            Masukkan email/username dan password akunmu.
+            Silahkan masuk untuk mengakses sistem Kataji Barber
         </p>
 
         <form
             id="loginForm"
             method="post"
-            action="/KELOMPOK-5/pages/login_process.php"
+            action="/KELOMPOK-5/api/auth/login.php"        
             class="login-form"
             novalidate
         >

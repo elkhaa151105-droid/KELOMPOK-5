@@ -2,7 +2,7 @@
 
 require_once __DIR__ . '/../includes/auth_check.php';
 
-require_login();
+require_role(['owner']);
 
 $role = $_SESSION['role'] ?? '';
 $nama = $_SESSION['nama'] ?? '';
@@ -35,7 +35,7 @@ $display_role = ($role === 'owner') ? 'Owner Kataji' : ($nama ?: 'Barber');
                 </span>
                 <span class="summary-title">Pelanggan Hari Ini</span>
             </div>
-            <strong class="summary-value">2</strong>
+            <strong class="summary-value" id="dashPelangganHariIni">0</strong>
         </div>
 
         <!-- TRANSAKSI HARI INI -->
@@ -52,7 +52,7 @@ $display_role = ($role === 'owner') ? 'Owner Kataji' : ($nama ?: 'Barber');
                 </span>
                 <span class="summary-title">Transaksi Hari Ini</span>
             </div>
-            <strong class="summary-value">2</strong>
+            <strong class="summary-value" id="dashTransaksiHariIni">0</strong>
         </div>
 
         <!-- PENDAPATAN HARI INI -->
@@ -64,9 +64,9 @@ $display_role = ($role === 'owner') ? 'Owner Kataji' : ($nama ?: 'Barber');
                         <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
                     </svg>
                 </span>
-                <span class="summary-title">Pendapatan Hari Ini</span>
+                <span class="summary-title">Pemasukan Hari Ini</span>
             </div>
-            <strong class="summary-value">Rp200.000</strong>
+            <strong class="summary-value" id="dashPendapatanHariIni">Rp0</strong>
         </div>
 
         <!-- LABA KOTOR HARI INI -->
@@ -80,40 +80,48 @@ $display_role = ($role === 'owner') ? 'Owner Kataji' : ($nama ?: 'Barber');
                 </span>
                 <span class="summary-title">Laba Kotor Hari Ini</span>
             </div>
-            <strong class="summary-value">Rp100.000</strong>
+            <strong class="summary-value" id="dashLabaKotorHariIni">Rp0</strong>
         </div>
 
     </div>
 
 
     <!-- REKAP KEUANGAN -->
-        <!-- REKAP PEMASUKAN HARIAN (4.5) -->
-    <section class="dashboard-section rekap-pemasukan">
+        <!-- REKAP PEMASUKAN HARIAN, MINGGUAN, DAN BULANAN (4.8.2) -->
+    <section class="dashboard-section rekap-pemasukan rekap-card">
         <div class="rekap-header">
-            <div>
-                <h2>Pemasukan</h2>
-                <p>Rekap pemasukan harian dan transaksi per barber</p>
-            </div>
+            <h2>Rekap Keuangan</h2>
 
-            <div class="filter-tanggal">
-                <label for="tanggalPemasukan">Tanggal</label>
-                <input
-                    type="date"
-                    id="tanggalPemasukan"
-                    aria-label="Pilih tanggal pemasukan"
-                >
+            <div class="rekap-filter-area">
+                <div class="periode-pemasukan" aria-label="Filter periode pemasukan">
+                    <button type="button" class="periode-pemasukan-btn active" data-period="minggu" aria-pressed="true">Minggu Ini</button>
+                    <button type="button" class="periode-pemasukan-btn" data-period="bulan" aria-pressed="false">Bulan Ini</button>
+                    <button type="button" class="periode-pemasukan-btn" data-period="semua" aria-pressed="false">Semua</button>
+                </div>
             </div>
         </div>
 
-        <div class="pemasukan-total">
-            <span>Total Pemasukan</span>
-            <strong id="totalPemasukan">Rp0</strong>
-        </div>
-
-        <h3>Rincian Per Barber</h3>
-
-        <div id="statusPemasukan" role="status" aria-live="polite">
-            Memuat data pemasukan...
+        <div class="financial-metrics rekap-metrics">
+            <div class="metric-item metric-pemasukan">
+                <span class="metric-label">Pemasukan</span>
+                <strong class="metric-val" id="totalPemasukan">Rp0</strong>
+            </div>
+            <div class="metric-item">
+                <span class="metric-label">HPP</span>
+                <strong class="metric-val">Rp0</strong>
+            </div>
+            <div class="metric-item">
+                <span class="metric-label">Laba Kotor</span>
+                <strong class="metric-val">Rp0</strong>
+            </div>
+            <div class="metric-item">
+                <span class="metric-label">Biaya Operasional</span>
+                <strong class="metric-val">Rp0</strong>
+            </div>
+            <div class="metric-item">
+                <span class="metric-label">Laba Bersih</span>
+                <strong class="metric-val">Rp0</strong>
+            </div>
         </div>
 
         <div class="table-responsive" id="tabelPemasukanWrapper" hidden>
@@ -129,99 +137,108 @@ $display_role = ($role === 'owner') ? 'Owner Kataji' : ($nama ?: 'Barber');
         </div>
     </section>
 
+    <!-- PEMASUKAN PER BARBER -->
+    <section class="dashboard-section rekap-barber-section">
+        <h2 class="dashboard-card-title">Pemasukan per Barber</h2>
 
-    <!-- BARBER HARI INI -->
-    <section class="barber-section">
-
-        <h2 class="section-title">Barber Hari Ini</h2>
-
-        <div class="barber-grid">
-
-            <!-- BARBER 1: SANDI -->
-            <div class="barber-card">
-                <div class="barber-photo-box">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#999999" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                        <polyline points="21 15 16 10 5 21"></polyline>
-                    </svg>
-                </div>
-
-                <div class="barber-details">
-                    <h3 class="barber-name">SANDI</h3>
-                    <p class="barber-specialty">
-                        Spesialis:<br>
-                        Coloring, Perming
-                    </p>
-                    <span class="barber-badge badge-hadir">
-                        <span class="badge-dot"></span> Hadir
-                    </span>
-                </div>
-            </div>
-
-            <!-- BARBER 2: ERIK -->
-            <div class="barber-card">
-                <div class="barber-photo-box">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#999999" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                        <polyline points="21 15 16 10 5 21"></polyline>
-                    </svg>
-                </div>
-
-                <div class="barber-details">
-                    <h3 class="barber-name">ERIK</h3>
-                    <p class="barber-specialty">
-                        Spesialis:<br>
-                        Coloring, Smoothing
-                    </p>
-                    <span class="barber-badge badge-izin">
-                        <span class="badge-dot"></span> Izin
-                    </span>
-                </div>
-            </div>
-
-            <!-- BARBER 3: UJANG -->
-            <div class="barber-card">
-                <div class="barber-photo-box">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#999999" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                        <polyline points="21 15 16 10 5 21"></polyline>
-                    </svg>
-                </div>
-
-                <div class="barber-details">
-                    <h3 class="barber-name">UJANG</h3>
-                    <p class="barber-specialty">
-                        Spesialis:<br>
-                        Smoothing, Perming
-                    </p>
-                    <span class="barber-badge badge-tidak-hadir">
-                        <span class="badge-dot"></span> Tidak Hadir
-                    </span>
-                </div>
-            </div>
-
+        <div id="statusPemasukan" class="rekap-status" role="status" aria-live="polite">
+            Memuat data pemasukan...
         </div>
 
+        <div class="table-responsive rekap-barber-table" id="tabelPemasukanWrapper" hidden>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Nama Barber</th>
+                        <th>Total Pemasukan</th>
+                    </tr>
+                </thead>
+                <tbody id="tabelPemasukanBody"></tbody>
+            </table>
+        </div>
     </section>
 
 
-    <!-- PERMINTAAN RESET PASSWORD -->
-    <section class="dashboard-section reset-section">
+    <!-- GRAFIK DASHBOARD -->
+    <div class="dashboard-chart-grid">
+        <section class="dashboard-section dashboard-chart-card">
+            <h2 class="dashboard-card-title">Pemasukan 7 Hari Terakhir</h2>
+            <div class="line-chart" id="dashboardLineChart" aria-label="Grafik pemasukan tujuh hari terakhir" aria-live="polite">
+                <svg viewBox="0 0 560 190" role="img" aria-labelledby="chartTitle">
+                    <title id="chartTitle">Contoh grafik pemasukan tujuh hari terakhir</title>
+                    <g class="chart-grid-lines">
+                        <line x1="48" y1="25" x2="540" y2="25"></line>
+                        <line x1="48" y1="65" x2="540" y2="65"></line>
+                        <line x1="48" y1="105" x2="540" y2="105"></line>
+                        <line x1="48" y1="145" x2="540" y2="145"></line>
+                    </g>
+                    <g class="chart-values">
+                        <text x="8" y="29">Rp400K</text>
+                        <text x="8" y="69">Rp300K</text>
+                        <text x="8" y="109">Rp200K</text>
+                        <text x="8" y="149">Rp100K</text>
+                    </g>
+                    <polyline class="chart-line-shadow" points="48,105 128,65 208,25 288,145 368,105 448,65 532,65"></polyline>
+                    <polyline class="chart-line" points="48,105 128,65 208,25 288,145 368,105 448,65 532,65"></polyline>
+                    <g class="chart-point-list">
+                        <circle cx="48" cy="105" r="4"></circle>
+                        <circle cx="128" cy="65" r="4"></circle>
+                        <circle cx="208" cy="25" r="4"></circle>
+                        <circle cx="288" cy="145" r="4"></circle>
+                        <circle cx="368" cy="105" r="4"></circle>
+                        <circle cx="448" cy="65" r="4"></circle>
+                        <circle cx="532" cy="65" r="4"></circle>
+                    </g>
+                    <g class="chart-labels">
+                        <text x="34" y="174">Sen</text>
+                        <text x="114" y="174">Sel</text>
+                        <text x="194" y="174">Rab</text>
+                        <text x="274" y="174">Kam</text>
+                        <text x="354" y="174">Jum</text>
+                        <text x="434" y="174">Sab</text>
+                        <text x="518" y="174">Min</text>
+                    </g>
+                </svg>
+            </div>
+        </section>
 
-        <h2 class="reset-card-title">Permintaan Reset Password</h2>
+        <section class="dashboard-section payment-chart-card">
+            <h2 class="dashboard-card-title">Distribusi Pembayaran</h2>
+            <div class="payment-chart-content">
+                <div class="payment-donut" role="img" aria-label="Distribusi pembayaran belum tersedia">
+                    <div class="payment-donut-center"><strong id="dashboardJumlahTransaksi">0</strong><span>Transaksi</span></div>
+                </div>
+                <div class="payment-legend">
+                    <div><span class="legend-dot legend-cash"></span><span>Tunai</span><strong>-</strong></div>
+                    <div><span class="legend-dot legend-card"></span><span>Kartu</span><strong>-</strong></div>
+                    <div><span class="legend-dot legend-qris"></span><span>QRIS</span><strong>-</strong></div>
+                </div>
+            </div>
+        </section>
+    </div>
 
-        <div class="reset-card-body">
-            <span class="reset-user-name">Erik</span>
+    <!-- AKSI DASHBOARD -->
+    <div class="dashboard-bottom-grid">
+        <section class="dashboard-section menu-terlaris-section">
+            <h2 class="dashboard-card-title">Layanan Populer</h2>
 
-            <button type="button" class="btn-reset-password">
-                Reset Password
-            </button>
-        </div>
+            <div class="layanan-populer-empty">
+                Belum ada data layanan populer.
+            </div>
+        </section>
 
-    </section>
+        <section class="dashboard-section reset-section">
+            <h2 class="reset-card-title">Permintaan Reset Password</h2>
+
+            <div class="reset-card-body">
+                <span class="reset-user-name">Erik</span>
+
+                <button type="button" class="btn-reset-password">
+                    Reset Password
+                </button>
+            </div>
+        </section>
+    </div>
 
 </div>
 

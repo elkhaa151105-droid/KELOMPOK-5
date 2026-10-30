@@ -16,10 +16,8 @@ include __DIR__ . '/../includes/header.php';
 
 <main class="pemasukan-page">
     <header class="pemasukan-heading">
-        <div>
-            <h1>Pemasukan</h1>
-            <p>Rekap pemasukan harian dari transaksi</p>
-        </div>
+        <h1>Pemasukan</h1>
+        <p>Rekap Pemasukan Harian dari Transaksi</p>
     </header>
 
     <section class="pemasukan-card">
@@ -27,8 +25,11 @@ include __DIR__ . '/../includes/header.php';
             <h2>Pemasukan Harian</h2>
 
             <div class="pemasukan-date">
-                <label for="tanggalPemasukan">Tanggal</label>
-                <input type="date" id="tanggalPemasukan">
+                <input
+                    type="date"
+                    id="tanggalPemasukan"
+                    aria-label="Pilih tanggal pemasukan"
+                >
             </div>
         </div>
 
@@ -44,12 +45,13 @@ include __DIR__ . '/../includes/header.php';
                 Memuat data pemasukan...
             </p>
 
-                        <div class="table-responsive" id="tabelPemasukanWrapper" hidden>
-                <table class="data-table">
+            <div class="table-responsive" id="tabelPemasukanWrapper" hidden>
+                <table class="data-table pemasukan-table">
                     <thead>
                         <tr>
-                            <th>Nama Barber</th>
-                            <th>Total Pemasukan</th>
+                            <th>Barber</th>
+                            <th>Transaksi</th>
+                            <th>Pemasukan</th>
                         </tr>
                     </thead>
                     <tbody id="tabelPemasukanBody"></tbody>
