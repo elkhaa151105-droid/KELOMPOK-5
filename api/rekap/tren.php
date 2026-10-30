@@ -1,10 +1,16 @@
-
 <?php
 
 require_once __DIR__ . '/../../config/config.php';
 require_once __DIR__ . '/../middleware/auth.php';
 
 header('Content-Type: application/json; charset=utf-8');
+
+/*
+ * Ambang status "stabil" (dalam persen).
+ * Selisih kurang dari ambang ini dianggap "stabil".
+ * Nilai 5 menunggu konfirmasi Erik; ubah angka ini bila berbeda.
+ */
+const TREN_AMBANG_STABIL_PERSEN = 5;
 
 apiWajibLogin();
 
@@ -113,6 +119,7 @@ try {
     $totalSebelumnya = (int) $stmtLama->fetchColumn();
 
     $labels = [];
+    $tanggalTitik = [];
     $nilai = [];
     $totalAktif = 0;
 
@@ -147,6 +154,7 @@ try {
             $jumlah = $hasilBulanan[$key] ?? 0;
 
             $labels[] = $bulan->format('M Y');
+            $tanggalTitik[] = $key;
             $nilai[] = $jumlah;
 
             if ($key >= $awal->format('Y-m') &&
@@ -155,14 +163,13 @@ try {
             }
         }
     } else {
-        $jumlahHari = $periode === '7_hari' ? 7 : 7;
-
-        for ($i = 0; $i < $jumlahHari; $i++) {
+                for ($i = 0; $i < 7; $i++) {
             $tanggalObj = $awal->modify("+$i days");
             $key = $tanggalObj->format('Y-m-d');
             $jumlah = $totalPerTanggal[$key] ?? 0;
 
             $labels[] = $tanggalObj->format('l');
+            $tanggalTitik[] = $key;
             $nilai[] = $jumlah;
             $totalAktif += $jumlah;
         }
@@ -176,7 +183,7 @@ try {
         $persentase = (($totalAktif - $totalSebelumnya)
             / $totalSebelumnya) * 100;
 
-        if (abs($persentase) < 5) {
+        if (abs($persentase) < TREN_AMBANG_STABIL_PERSEN) {
             $statusTren = 'stabil';
         } elseif ($persentase > 0) {
             $statusTren = 'naik';
@@ -192,12 +199,14 @@ try {
             'tanggal_awal' => $awalAktif,
             'tanggal_akhir' => $akhirAktif,
             'labels' => $labels,
+            'tanggal' => $tanggalTitik,
             'pemasukan' => $nilai,
             'total_pemasukan' => $totalAktif,
             'total_periode_sebelumnya' => $totalSebelumnya,
             'persentase_perubahan' => $persentase === null
                 ? null : round($persentase, 2),
             'status_tren' => $statusTren,
+            'ambang_stabil_persen' => TREN_AMBANG_STABIL_PERSEN,
             'ada_data' => array_sum($nilai) > 0
         ]
     ]);
