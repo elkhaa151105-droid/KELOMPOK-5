@@ -121,6 +121,15 @@ document.addEventListener('DOMContentLoaded', function () {
     clearFieldError('errorMetodePembayaranKasir');
     }
 
+    setTimeout(() => {
+        notifikasi.classList.remove('show');
+    }, 4000);
+}
+
+function simpanNotifikasiLogin(pesan) {
+    sessionStorage.setItem('loginNotification', pesan);
+}
+  
     // ======================================================
     // 3. LOGIN MENGGUNAKAN API BACKEND
     // ======================================================
