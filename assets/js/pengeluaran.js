@@ -412,6 +412,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 );
 
                 await muatPengeluaran();
+            localStorage.setItem('kataji:data-changed', String(Date.now()));
+                localStorage.setItem('kataji:data-changed', String(Date.now()));
             } catch (error) {
                 await tampilkanAlert({
                     judul: 'Gagal Menghapus',
@@ -577,6 +579,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             await muatPengeluaran();
+            localStorage.setItem('kataji:data-changed', String(Date.now()));
         } catch (error) {
             tampilkanNotifikasi(
                 error.message || 'Terjadi kesalahan saat menyimpan.',

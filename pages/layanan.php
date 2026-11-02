@@ -295,6 +295,6 @@ $layanan = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </div>
 </div>
 
-<script src="/KELOMPOK-5/assets/js/layanan.js?v=3"></script>
+<script src="/KELOMPOK-5/assets/js/layanan.js?v=4"></script>
 
 <?php include __DIR__ . '/../includes/footer.php'; ?>

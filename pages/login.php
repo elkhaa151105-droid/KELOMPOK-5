@@ -14,6 +14,18 @@ $expired = isset($_GET['expired']);
 $error_username = false;
 $error_password = false;
 $error_message = '';
+<<<<<<< HEAD
+if (isset($_GET['both_empty'])) {
+    $error_message = 'Username/email dan password wajib diisi';
+} elseif (isset($_GET['username_empty'])) {
+    $error_message = 'Username/email wajib diisi';
+} elseif (isset($_GET['password_empty'])) {
+    $error_message = 'Password wajib diisi';
+} elseif (isset($_GET['error'])) {
+    $error_message = 'Username atau password salah.';
+} elseif (isset($_GET['expired'])) {
+    $error_message = 'Sesi anda sudah habis, silakan login kembali.';
+=======
 
 if (
     $error === 'empty'
@@ -41,6 +53,7 @@ if (
         $error_message = 'Password wajib diisi';
     }
 } elseif ($error === 'invalid' || $error === '1') {
+>>>>>>> origin/fe_dashboard
     $error_username = true;
     $error_password = true;
     $error_message = 'Username atau password salah';
