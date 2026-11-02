@@ -158,7 +158,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function formatMetodePembayaran(metode) {
         const daftar = {
-            cash: 'Cash',
+            cash: 'Tunai',
             qris: 'QRIS',
             transfer: 'Transfer'
         };
@@ -427,15 +427,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 );
             }
 
+            localStorage.setItem('kataji:data-changed', String(Date.now()));
+
             tampilkanNotifikasi(
                 result.message || 'Riwayat transaksi berhasil dihapus.',
                 true
             );
-            await tampilkanAlert({
-                judul: 'Berhasil Dihapus',
-                pesan: result.message || 'Riwayat transaksi berhasil dihapus.',
-                tipe: 'primary'
-            });
 
             await muatRiwayat();
         } catch (error) {

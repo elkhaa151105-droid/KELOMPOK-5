@@ -1018,7 +1018,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (!namaPelanggan || !namaPelanggan.value.trim()) {
                 showFieldError(
                     'errorNamaKasir',
-                    'Nama wajib diisi',
+                    'Nama pelanggan wajib diisi',
                     namaPelanggan
                 );
                 namaPelanggan?.focus();
@@ -1091,6 +1091,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     );
                 }
 
+                localStorage.setItem('kataji:data-changed', String(Date.now()));
                 showSuccessNotification('Transaksi berhasil dicatat.', true);
 
                 Object.keys(selectedServices).forEach(id => {
@@ -1153,7 +1154,7 @@ document.addEventListener('DOMContentLoaded', function () {
             saranPelanggan.replaceChildren();
             saranPelanggan.hidden = true;
 
-            if (kataKunci.length < 2) return;
+            if (kataKunci.length < 1) return;
 
             timerSaran = setTimeout(async function () {
                 permintaanSaran = new AbortController();
@@ -1187,7 +1188,23 @@ document.addEventListener('DOMContentLoaded', function () {
                         kosong.textContent = 'Pelanggan tidak ditemukan';
                         saranPelanggan.appendChild(kosong);
                     } else {
+                        const pelangganUnik = [];
+                        const namaPelangganSudahAda = new Set();
+
                         result.data.forEach(function (pelanggan) {
+                            const namaUnik = String(pelanggan.nama || '')
+                                .trim()
+                                .toLowerCase();
+
+                            if (!namaUnik || namaPelangganSudahAda.has(namaUnik)) {
+                                return;
+                            }
+
+                            namaPelangganSudahAda.add(namaUnik);
+                            pelangganUnik.push(pelanggan);
+                        });
+
+                        pelangganUnik.forEach(function (pelanggan) {
                             const tombol = document.createElement('button');
 
                             tombol.type = 'button';

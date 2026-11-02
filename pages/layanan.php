@@ -226,6 +226,6 @@ require_role(['owner']);
     </div>
 </div>
 
-<script src="/KELOMPOK-5/assets/js/layanan.js"></script>
+<script src="/KELOMPOK-5/assets/js/layanan.js?v=3"></script>
 
 <?php include __DIR__ . '/../includes/footer.php'; ?>

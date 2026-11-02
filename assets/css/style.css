@@ -869,6 +869,12 @@ body:has(.login-page) main.container {
     stroke-width: 1;
 }
 
+.chart-guide-line {
+    stroke: #DCE1EE;
+    stroke-width: 1;
+    stroke-dasharray: 4 4;
+}
+
 .chart-values text,
 .chart-labels text {
     fill: #8B8D9F;
@@ -890,10 +896,110 @@ body:has(.login-page) main.container {
     stroke-linejoin: round;
 }
 
-.chart-point-list circle {
-    fill: var(--primary-navy);
-    stroke: #FFFFFF;
+.chart-point-list .chart-dot {
+    fill: #FFFFFF;
+    stroke: var(--primary-navy);
     stroke-width: 2;
+}
+
+.chart-point-list .chart-hit-area {
+    fill: transparent;
+    stroke: none;
+}
+
+.trend-chart-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.trend-heading {
+    min-width: 0;
+}
+
+.trend-chart-header .dashboard-card-title {
+    font-size: 15px;
+    line-height: 1.35;
+    margin-bottom: 3px;
+}
+
+.trend-period-select {
+    width: 145px;
+    height: 34px;
+    flex-shrink: 0;
+    min-height: 34px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    font-size: 12px;
+}
+
+.trend-status {
+    min-height: 0;
+    margin-top: 0;
+}
+
+.trend-indicator {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 999px;
+    font-size: 12px;
+}
+
+.trend-naik { color: #147A40; background: #E8F6EE; }
+.trend-turun { color: #B42318; background: #FEECEB; }
+.trend-stabil { color: #575D6B; background: #EEF0F5; }
+
+.line-chart {
+    position: relative;
+}
+
+.chart-hit-area {
+    fill: transparent;
+    stroke: transparent;
+}
+
+.chart-dot {
+    cursor: pointer;
+    transition: r 0.15s ease;
+}
+
+.chart-point:hover .chart-dot,
+.chart-point:focus .chart-dot {
+    r: 6px;
+}
+
+.chart-tooltip {
+    position: absolute;
+    z-index: 5;
+    min-width: 120px;
+    padding: 7px 10px;
+    border: 1px solid #CBD8F5;
+    border-radius: 7px;
+    color: #18265A;
+    background: #EDF4FF;
+    box-shadow: 0 4px 12px rgba(24, 38, 90, 0.12);
+    font-size: 11px;
+    pointer-events: none;
+}
+
+.chart-tooltip strong,
+.chart-tooltip span {
+    display: block;
+}
+
+.chart-tooltip span {
+    margin-top: 2px;
+    font-weight: 700;
+}
+
+.chart-empty-state {
+    min-height: 175px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #8B8D9F;
+    text-align: center;
 }
 
 .card-work-label {
@@ -905,7 +1011,6 @@ body:has(.login-page) main.container {
     letter-spacing: 0.02em;
 }
 
-.trend-chart-header,
 .layanan-terlaris-header {
     display: flex;
     align-items: flex-start;
@@ -913,21 +1018,17 @@ body:has(.login-page) main.container {
     gap: 16px;
 }
 
-.trend-period-select {
-    width: 170px;
-    padding: 7px 34px 7px 10px;
-    font-size: 13px;
+.dashboard-chart-card {
+    height: 215px;
 }
 
-.trend-status {
+.dashboard-chart-card .line-chart {
+    height: 145px;
     margin-top: 4px;
 }
 
-.trend-indicator {
-    display: inline-block;
-    padding: 4px 10px;
-    border-radius: 999px;
-    font-size: 12px;
+.dashboard-chart-card .line-chart svg {
+    height: 145px;
 }
 
 .trend-naik {
@@ -1100,6 +1201,7 @@ body:has(.login-page) main.container {
 }
 
 .legend-cash { background: var(--primary-navy); }
+.legend-transfer { background: #6C7DFF; }
 .legend-card { background: #6C7DFF; }
 .legend-qris { background: #D8DAE8; }
 
@@ -1456,7 +1558,7 @@ body:has(.login-page) main.container {
 
 @media (max-width: 1024px) {
     .dashboard-summary {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
     }
     .financial-metrics {
         grid-template-columns: repeat(3, 1fr);
@@ -1828,6 +1930,239 @@ body:has(.login-page) main.container {
         grid-template-columns: 1fr;
     }
 
+    /* ========================================
+       BAGIAN: PENYESUAIAN FIGMA DASHBOARD
+       ======================================== */
+    .dashboard-page {
+        --dashboard-card-border: #e5e6ef;
+    }
+
+    .dashboard-page .dashboard-heading {
+        margin-bottom: 20px;
+    }
+
+    .dashboard-page .dashboard-heading h1 {
+        font-size: 30px;
+        line-height: 1.15;
+    }
+
+    .dashboard-page .dashboard-summary {
+        gap: 18px;
+        margin-bottom: 18px;
+    }
+
+    .dashboard-page .summary-card {
+        min-height: 96px;
+        padding: 15px 18px;
+        border: 1px solid var(--dashboard-card-border);
+        border-radius: 13px;
+    }
+
+    .dashboard-page .summary-card-header {
+        margin-bottom: 8px;
+    }
+
+    .dashboard-page .summary-title {
+        font-size: 12px;
+    }
+
+    .dashboard-page .summary-value {
+        font-size: 24px;
+    }
+
+    .dashboard-page .dashboard-section {
+        border: 1px solid var(--dashboard-card-border);
+        border-radius: 13px;
+    }
+
+    .dashboard-page .rekap-card {
+        padding: 19px 24px 18px;
+    }
+
+    .dashboard-page .rekap-header {
+        margin-bottom: 17px;
+    }
+
+    .dashboard-page .rekap-header h2,
+    .dashboard-page .dashboard-card-title {
+        font-size: 17px;
+    }
+
+    .dashboard-page .rekap-metrics {
+        gap: 0;
+    }
+
+    .dashboard-page .rekap-metrics .metric-item {
+        min-height: 48px;
+        padding: 0 20px;
+        border-left: 1px solid #eeeef4;
+    }
+
+    .dashboard-page .rekap-metrics .metric-item:first-child {
+        padding-left: 0;
+        border-left: 0;
+    }
+
+    .dashboard-page .rekap-metrics .metric-label {
+        margin-bottom: 7px;
+        font-size: 12px;
+    }
+
+    .dashboard-page .rekap-metrics .metric-val {
+        font-size: 17px;
+    }
+
+    .dashboard-page .rekap-barber-section {
+        min-height: 128px;
+        padding: 18px 24px;
+    }
+
+    .dashboard-page .rekap-barber-table .data-table th {
+        color: var(--text-main);
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .dashboard-page .rekap-barber-table .data-table th:nth-child(1),
+    .dashboard-page .rekap-barber-table .data-table td:nth-child(1) {
+        width: 52%;
+        text-align: left;
+    }
+
+    .dashboard-page .rekap-barber-table .data-table th:nth-child(2),
+    .dashboard-page .rekap-barber-table .data-table td:nth-child(2) {
+        width: 18%;
+        text-align: center;
+    }
+
+    .dashboard-page .rekap-barber-table .data-table th:nth-child(3),
+    .dashboard-page .rekap-barber-table .data-table td:nth-child(3) {
+        width: 30%;
+        text-align: left;
+    }
+
+    .dashboard-page .dashboard-chart-grid,
+    .dashboard-page .dashboard-bottom-grid {
+        grid-template-columns: minmax(0, 2fr) minmax(270px, 1fr);
+        gap: 18px;
+    }
+
+    .dashboard-page .dashboard-chart-card,
+    .dashboard-page .payment-chart-card,
+    .dashboard-page .menu-terlaris-section,
+    .dashboard-page .reset-section {
+        min-height: 300px;
+        padding: 18px 24px;
+    }
+
+    .dashboard-page .trend-chart-header {
+        align-items: flex-start;
+    }
+
+    .dashboard-page .trend-chart-header > div {
+        min-width: 0;
+    }
+
+    .dashboard-page .trend-chart-header .dashboard-card-title {
+        font-size: 17px;
+        white-space: nowrap;
+    }
+
+    .dashboard-page .trend-period-select {
+        width: 150px;
+    }
+
+    .dashboard-page .trend-summary-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+        margin: 12px 0 10px;
+    }
+
+    .dashboard-page .trend-summary-card {
+        min-height: 58px;
+        padding: 8px 11px;
+    }
+
+    .dashboard-page .trend-summary-card strong {
+        font-size: 12px;
+    }
+
+    .dashboard-page .line-chart svg {
+        height: 155px;
+    }
+
+    .dashboard-page .payment-chart-content {
+        min-height: 225px;
+        gap: 22px;
+    }
+
+    .dashboard-page .payment-donut {
+        width: 124px;
+        height: 124px;
+    }
+
+    .dashboard-page .payment-donut::after {
+        width: 82px;
+        height: 82px;
+    }
+
+    .dashboard-page .payment-legend {
+        min-width: 118px;
+    }
+
+    .dashboard-page .layanan-terlaris-header {
+        align-items: center;
+    }
+
+    .dashboard-page .layanan-terlaris-controls {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 4px;
+    }
+
+    .dashboard-page .layanan-period-btn,
+    .dashboard-page .layanan-sort-btn {
+        min-height: 28px;
+        border: 0;
+        border-radius: 14px;
+        padding: 4px 10px;
+        background: transparent;
+        color: var(--text-secondary);
+        font-family: inherit;
+        font-size: 10px;
+    }
+
+    .dashboard-page .layanan-period-btn.active,
+    .dashboard-page .layanan-sort-btn {
+        background: var(--primary-navy);
+        color: #fff;
+    }
+
+    @media (max-width: 1200px) {
+        .dashboard-page .dashboard-chart-card,
+        .dashboard-page .payment-chart-card,
+        .dashboard-page .menu-terlaris-section,
+        .dashboard-page .reset-section {
+            padding-left: 18px;
+            padding-right: 18px;
+        }
+
+        .dashboard-page .trend-chart-header .dashboard-card-title {
+            font-size: 15px;
+            white-space: normal;
+        }
+
+        .dashboard-page .trend-summary-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .dashboard-page .trend-summary-status {
+            grid-column: 1 / -1;
+        }
+    }
+
     .service-card:last-child {
         grid-column: auto;
     }
@@ -1907,34 +2242,102 @@ body:has(.login-page) main.container {
 
 .layanan-table {
     width: 100%;
-    min-width: 760px;
+    min-width: 0;
     border-collapse: collapse;
     table-layout: fixed;
     font-size: 14px;
 }
 
 .layanan-table th {
-    padding: 12px 67px; /*asli dari ai 12px 16*/
+    padding: 12px 35px; /*asli dari ai 12px 16*/
     color: #858585;
     background: transparent;
     border-bottom: 2px solid #BDBDBD;
     font-size: 14px;
     font-weight: 600;
-    text-align: left;
+    text-align: center;
     white-space: nowrap;
 }
+
+/* ========================================================
+   PENGATURAN POSISI KOLOM TABEL LAYANAN (CUSTOM ADJUST)
+======================================================== */
+
+/* KONTROL UMUM: Reset padding bawaan agar bisa diatur mandiri */
+.layanan-table th,
+.layanan-table td {
+    padding: 12px 10px !important; /* Memperkecil padding horizontal dari 35px ke 10px */
+}
+
+/* --- 1. KOLOM LAYANAN --- */
+.layanan-table th:nth-child(1),
+.layanan-table td:nth-child(1) {
+    text-align: center!important;      /* Rata kiri */
+    padding-left: 20px !important;    /* Atur jarak mepetnya dari dinding kiri di sini */
+    width: 20%;                       /* Lebar kolom Layanan */
+}
+
+/* --- 2. KOLOM HARGA --- */
+.layanan-table th:nth-child(2),
+.layanan-table td:nth-child(2) {
+    text-align: center !important;    /* Buat ke tengah atau ganti 'left'/'right' */
+    width: 19%;
+}
+
+/* --- 3. KOLOM HPP --- */
+.layanan-table th:nth-child(3),
+.layanan-table td:nth-child(3) {
+    text-align: center !important;    /* Buat ke tengah agar sejajar dengan kolom harga */
+    width: 19%;
+}
+
+/* --- 4. KOLOM AKTIF --- */
+.layanan-table th:nth-child(4),
+.layanan-table td:nth-child(4) {
+    text-align: center !important;    /* Ikon centang/status bagus di tengah */
+    width: 8%;
+}
+
+/* --- 5. KOLOM AKSI --- */
+.layanan-table th:nth-child(5),
+.layanan-table td:nth-child(5) {
+    text-align: center !important;    /* Tombol aksi (Edit/Hapus) di tengah */
+    width: 20%;                       /* Diberi ruang lebih lebar agar tombol tidak menumpuk */
+}
+
+.layanan-table th,
+.layanan-table td {
+    box-sizing: border-box;
+}
+
+.layanan-table td:nth-child(2),
+.layanan-table td:nth-child(3) {
+    padding-left: 6px !important;
+    padding-right: 6px !important;
+}
+
+.layanan-table td:nth-child(2) .layanan-rupiah-wrapper,
+.layanan-table td:nth-child(3) .layanan-rupiah-wrapper {
+    justify-content: center;
+}
+
+.layanan-table td.layanan-aksi {
+    display: table-cell;
+    text-align: center !important;
+}
+
 
 /* Persentase kolom mencakup kolom Aksi agar tabel tidak melebar tak terkendali. */
 .layanan-table th:nth-child(1),
 .layanan-table td:nth-child(1) { width: 24%; }
 .layanan-table th:nth-child(2),
-.layanan-table td:nth-child(2) { width: 15%; }
+.layanan-table td:nth-child(2) { width: 18%; }
 .layanan-table th:nth-child(3),
-.layanan-table td:nth-child(3) { width: 15%; }
+.layanan-table td:nth-child(3) { width: 18%; }
 .layanan-table th:nth-child(4),
-.layanan-table td:nth-child(4) { width: 8%; }
+.layanan-table td:nth-child(4) { width: 10%; }
 .layanan-table th:nth-child(5),
-.layanan-table td:nth-child(5) { width: 38%; }
+.layanan-table td:nth-child(5) { width: 30%; }
 
 .layanan-table td {
     box-sizing: border-box;
@@ -1972,7 +2375,7 @@ body:has(.login-page) main.container {
 }
 
 .layanan-table input[type="checkbox"] {
-    width: 17px;
+    width: 75px;
     height: 17px;
     margin: 0;
     accent-color: var(--success);
@@ -1990,13 +2393,13 @@ body:has(.login-page) main.container {
     align-items: center;
     justify-content: center;
     box-sizing: border-box;
-    min-height: 32px;
-    margin: 2px 4px 2px 0;
-    padding: 6px 10px;
-    border: 1px solid transparent;
+    min-height: 45px;
+    margin: 2px 3px;
+    padding: 5px 54px;
+    border: 0;
     border-radius: 7px;
     font-family: inherit;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 600;
     line-height: 1.2;
     vertical-align: middle;
@@ -2029,6 +2432,38 @@ body:has(.login-page) main.container {
     color: var(--text-secondary);
     text-decoration: line-through;
     text-decoration-color: #B8B8B8;
+}
+
+@media (max-width: 1024px) {
+    .layanan-card {
+        padding: 18px 16px;
+    }
+
+    .layanan-table th,
+    .layanan-table td {
+        padding-left: 4px !important;
+        padding-right: 4px !important;
+    }
+
+    .layanan-table input:not([type="checkbox"]) {
+        height: 34px;
+        padding-left: 8px;
+        padding-right: 8px;
+        font-size: 12px;
+    }
+
+    .layanan-rupiah-wrapper {
+        gap: 2px;
+    }
+
+    .layanan-rupiah-prefix {
+        font-size: 10px;
+    }
+
+    .layanan-table td.layanan-aksi button {
+        padding-left: 8px;
+        padding-right: 8px;
+    }
 }
 
 .layanan-empty,
@@ -2180,9 +2615,9 @@ body:has(.login-page) main.container {
 
 @media (max-width: 900px) {
     .layanan-card { padding: 16px; border-radius: 14px; margin-bottom: 16px; }
-    .layanan-table { min-width: 760px; }
+    .layanan-table { min-width: 0; }
     .tambah-layanan-card h2 { font-size: 22px; }
-    .tambah-layanan-form { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 18px; }
+    .tambah-layanan-form { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px 18px; }
 }
 
 @media (max-width: 560px) {
@@ -2604,15 +3039,17 @@ body.layanan-modal-open {
 
 .riwayat-notification,
 .riwayat-delete-notification {
-    position: absolute;
-    top: -20px;
-    right: 12px;
-    min-width: 90px;
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    min-width: 220px;
     min-height: 28px;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 4px 12px;
+    padding: 10px 24px;
     border: 1px solid #E8A0A0;
     border-radius: 10px;
     background: #FFF7F7;
@@ -2622,6 +3059,7 @@ body.layanan-modal-open {
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.2s ease;
+    z-index: 11000;
 }
 
 .riwayat-notification.show,
@@ -2632,6 +3070,16 @@ body.layanan-modal-open {
 .riwayat-delete-notification {
     background: #FBEAEA;
     color: #D64545;
+}
+
+.riwayat-delete-notification.transaction-success {
+    background: #FBEAEA;
+    color: #D64545;
+    border-color: #F0BABA;
+}
+
+.riwayat-delete-notification[hidden] {
+    display: none;
 }
 
 @media (max-width: 600px) {
@@ -2648,6 +3096,74 @@ body.layanan-modal-open {
 .rekap-pemasukan {
     margin-top: 18px;
     padding: 14px 20px 16px;
+}
+
+.dashboard-section[data-card-label] {
+    position: relative;
+}
+
+.dashboard-section[data-card-label]::after {
+    content: "";
+    position: absolute;
+    right: 16px;
+    bottom: 8px;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    opacity: 0;
+}
+
+.trend-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin: 4px 0 8px;
+}
+
+.trend-summary-card {
+    min-height: 72px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #F5F6FA;
+    box-shadow: inset 0 0 0 1px rgba(23, 24, 107, 0.03);
+}
+
+.trend-summary-status {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+    background: #F3FBF6;
+}
+
+.trend-summary-icon {
+    width: 28px;
+    height: 28px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: #DCF4E5;
+    color: #1D9D51;
+    font-size: 18px;
+}
+
+.trend-summary-card > span,
+.trend-summary-card small {
+    color: var(--text-secondary);
+    font-size: 9px;
+}
+
+.trend-summary-card strong {
+    margin-top: 2px;
+    color: var(--text-main);
+    font-size: 14px;
+}
+
+.trend-summary-status strong {
+    color: #1D9D51;
 }
 
 .rekap-pemasukan .rekap-header {
@@ -2787,6 +3303,262 @@ body.layanan-modal-open {
 @media (max-width: 600px) {
     .rekap-barber-section {
         padding: 14px 16px;
+    }
+
+    @media (max-width: 768px) {
+        .trend-summary-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Dashboard layout exact to the approved Figma reference */
+    .dashboard-page {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .dashboard-page .dashboard-heading {
+        margin-bottom: 14px;
+    }
+
+    .dashboard-page .dashboard-heading h1 {
+        font-size: 25px;
+    }
+
+    .dashboard-page .dashboard-summary {
+        gap: 14px;
+        margin-bottom: 14px;
+        grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    }
+
+    .dashboard-page .summary-card {
+        min-height: 74px;
+        padding: 10px 12px;
+        border-radius: 13px;
+        box-shadow: 0 7px 18px rgba(28, 29, 80, 0.09);
+    }
+
+    .dashboard-page .summary-card-header {
+        margin-bottom: 3px;
+    }
+
+    .dashboard-page .summary-title {
+        font-size: 10px;
+    }
+
+    .dashboard-page .summary-value {
+        font-size: 20px;
+    }
+
+    .dashboard-page .dashboard-section {
+        border-radius: 13px;
+        box-shadow: 0 7px 18px rgba(28, 29, 80, 0.09);
+        overflow: hidden;
+    }
+
+    .dashboard-page .rekap-pemasukan {
+        margin-top: 0;
+        padding: 14px 18px;
+    }
+
+    .dashboard-page .rekap-header {
+        margin-bottom: 8px;
+    }
+
+    .dashboard-page .rekap-metrics .metric-label {
+        font-size: 10px;
+    }
+
+    .dashboard-page .rekap-metrics .metric-val {
+        font-size: 15px;
+    }
+
+    .dashboard-page .rekap-barber-section {
+        margin-bottom: 14px;
+        padding: 14px 18px;
+    }
+
+    .dashboard-page .rekap-status {
+        min-height: 14px;
+        padding-top: 5px;
+    }
+
+    .dashboard-page .rekap-barber-table {
+        max-width: none;
+    }
+
+    .dashboard-page .rekap-barber-table th,
+    .dashboard-page .rekap-barber-table td {
+        padding: 5px 8px;
+    }
+
+    .dashboard-page .rekap-barber-table .data-table {
+        width: 100%;
+        table-layout: fixed;
+        border-collapse: collapse;
+    }
+
+    .dashboard-page .rekap-barber-table th:nth-child(1),
+    .dashboard-page .rekap-barber-table td:nth-child(1) {
+        width: 55%;
+        text-align: left;
+    }
+
+    .dashboard-page .rekap-barber-table th:nth-child(2),
+    .dashboard-page .rekap-barber-table td:nth-child(2) {
+        width: 18%;
+        text-align: center;
+    }
+
+    .dashboard-page .rekap-barber-table th:nth-child(3),
+    .dashboard-page .rekap-barber-table td:nth-child(3) {
+        width: 27%;
+        text-align: right;
+    }
+
+    .dashboard-page .dashboard-chart-grid,
+    .dashboard-page .dashboard-bottom-grid {
+        gap: 14px;
+        margin-bottom: 14px;
+    }
+
+    .dashboard-page .dashboard-chart-card,
+    .dashboard-page .payment-chart-card,
+    .dashboard-page .menu-terlaris-section,
+    .dashboard-page .reset-section {
+        min-height: 0;
+        padding: 14px 18px;
+    }
+
+    .dashboard-page .trend-summary-grid {
+        gap: 8px;
+        margin: 6px 0 2px;
+    }
+
+    .dashboard-page .trend-summary-card {
+        min-height: 58px;
+        border-radius: 9px;
+        padding: 7px 10px;
+    }
+
+    .dashboard-page .line-chart {
+        margin-top: 4px;
+    }
+
+    .dashboard-page .line-chart svg {
+        height: 150px;
+    }
+
+    .dashboard-page .payment-chart-content {
+        min-height: 145px;
+        gap: 16px;
+    }
+
+    .dashboard-page .payment-donut {
+        width: 125px;
+        height: 125px;
+    }
+
+    .dashboard-page .payment-donut::after {
+        width: 82px;
+        height: 82px;
+    }
+
+    .dashboard-page .payment-legend {
+        min-width: 150px;
+        font-size: 9px;
+    }
+
+    .dashboard-page .payment-legend strong {
+        font-size: 9px;
+    }
+
+    .dashboard-page .layanan-terlaris-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .dashboard-page .layanan-terlaris-header-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .dashboard-page .layanan-period-options {
+        display: inline-flex;
+        padding: 2px;
+        border-radius: 16px;
+        background: #F3F4F8;
+    }
+
+    .dashboard-page .layanan-period-btn,
+    .dashboard-page .layanan-sort-btn {
+        border: 0;
+        border-radius: 14px;
+        padding: 4px 9px;
+        background: transparent;
+        color: var(--text-secondary);
+        font-family: inherit;
+        font-size: 9px;
+        font-weight: 600;
+    }
+
+    .dashboard-page .layanan-period-btn.active,
+    .dashboard-page .layanan-sort-btn {
+        background: var(--primary-navy);
+        color: #fff;
+    }
+
+    .dashboard-page .layanan-populer-list {
+        gap: 4px;
+        margin-top: 8px;
+    }
+
+    .dashboard-page .layanan-populer-item {
+        min-height: 28px;
+        display: grid;
+        grid-template-columns: 18px 92px minmax(100px, 1fr) 24px;
+        gap: 8px;
+        padding: 4px 7px;
+        border-radius: 7px;
+        background: transparent;
+    }
+
+    .dashboard-page .layanan-rank {
+        font-weight: 700;
+    }
+
+    .dashboard-page .layanan-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .dashboard-page .layanan-bar-track {
+        height: 7px;
+        align-self: center;
+        overflow: hidden;
+        border-radius: 999px;
+        background: #EDF0F7;
+    }
+
+    .dashboard-page .layanan-bar-track span {
+        height: 100%;
+        display: block;
+        border-radius: inherit;
+        background: var(--primary-navy);
+    }
+
+    .dashboard-page .card-work-label {
+        display: none;
+    }
+
+    @media (min-width: 769px) {
+        .dashboard-page .dashboard-summary {
+            grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+        }
     }
 
     .rekap-header {
@@ -3750,7 +4522,7 @@ body .pengeluaran-toast[hidden] {
 .kasir-field-error {
     display: block;
     color: #e53935;
-    font-size: 12px;
+    font-size: 10px;
     margin-top: 3px;
 }
 
@@ -3989,17 +4761,17 @@ body .pengeluaran-toast[hidden] {
 .layanan-table td:nth-child(2),
 .layanan-table th:nth-child(3),
 .layanan-table td:nth-child(3) {
-    width: 18%;
+    width: 19%;
 }
 
 .layanan-table th:nth-child(4),
 .layanan-table td:nth-child(4) {
-    width: 8%;
+    width: 10%;
 }
 
 .layanan-table th:nth-child(5),
 .layanan-table td:nth-child(5) {
-    width: 32%;
+    width: 36%;
 }
 
 /* Input harga dan HPP */
@@ -4010,7 +4782,7 @@ body .pengeluaran-toast[hidden] {
     min-width: 0;
     height: 30px;
     padding: 4px 6px;
-    border: 1px solid #BDBDBD;
+    border: 2px solid #BDBDBD;
     border-radius: 10px;
     box-sizing: border-box;
     font-size: 12px;
@@ -4040,7 +4812,7 @@ body .pengeluaran-toast[hidden] {
     max-width: 110px;
     min-width: 0;
     height: 30px;
-    padding: 4px 6px;
+    padding: 19px 9px;
     box-sizing: border-box;
     text-align: center;
 }

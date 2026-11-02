@@ -58,6 +58,6 @@ include __DIR__ . '/../includes/header.php';
 
 </div>
 
-<script src="/KELOMPOK-5/assets/js/riwayat.js?v=3"></script>
+<script src="/KELOMPOK-5/assets/js/riwayat.js?v=5"></script>
 
 <?php include __DIR__ . '/../includes/footer.php'; ?>
