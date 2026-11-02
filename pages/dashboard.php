@@ -124,6 +124,17 @@ $display_role = ($role === 'owner') ? 'Owner Kataji' : ($nama ?: 'Barber');
             </div>
         </div>
 
+        <div class="table-responsive" id="tabelPemasukanWrapper" hidden>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Nama Barber</th>
+                        <th>Total Pemasukan</th>
+                    </tr>
+                </thead>
+                <tbody id="tabelPemasukanBody"></tbody>
+            </table>
+        </div>
     </section>
 
     <!-- PEMASUKAN PER BARBER -->

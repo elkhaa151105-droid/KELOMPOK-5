@@ -1,16 +1,46 @@
 <?php
-
 require_once __DIR__ . '/../includes/auth_check.php';
+require_role(['owner', 'barber']);
+require_once __DIR__ . '/../config/config.php';
 
-require_login();
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
 
+$layananStmt = $pdo->query(
+    "SELECT id_layanan, nama_layanan, harga
+     FROM layanan
+     WHERE aktif = 1
+     ORDER BY CASE WHEN LOWER(nama_layanan) = 'creambath' THEN 1 ELSE 0 END,
+              nama_layanan ASC, id_layanan ASC"
+);
+$layanan = $layananStmt->fetchAll(PDO::FETCH_ASSOC);
+
+$barberStmt = $pdo->query(
+    "SELECT id_user, nama, role
+     FROM users
+     WHERE aktif = 1 AND role IN ('barber', 'owner')
+     ORDER BY nama ASC"
+);
+$daftarBarber = $barberStmt->fetchAll(PDO::FETCH_ASSOC);
+
+$iconByType = require __DIR__ . '/kasir_icons.php';
+$errorMessages = [
+    'no_service' => 'Pilih minimal satu layanan.',
+    'customer_required' => 'Nama pelanggan wajib diisi.',
+    'price_invalid' => 'Harga atau total transaksi tidak valid.',
+    'invalid_barber' => 'Pilih barber yang valid.',
+    'payment_required' => 'Pilih metode pembayaran.',
+    'invalid' => 'Data transaksi tidak valid atau sesi formulir kedaluwarsa.',
+    'failed' => 'Transaksi gagal disimpan. Silakan coba lagi.'
+];
+$error = $errorMessages[$_GET['error'] ?? ''] ?? '';
+$success = ($_GET['success'] ?? '') === '1';
+
+include __DIR__ . '/../includes/header.php';
 ?>
 
-<?php include __DIR__ . '/../includes/header.php'; ?>
-
 <div class="kasir-page">
-
-    <!-- HEADER -->
     <div class="kasir-heading">
         <h1>Kasir</h1>
         <p>Pricelist - Klik untuk tambah (hanya layanan aktif)</p>
