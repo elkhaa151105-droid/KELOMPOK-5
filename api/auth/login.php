@@ -47,7 +47,7 @@ if (json_last_error() !== JSON_ERROR_NONE || !is_array($input)) {
     kirimJson(400, [
         'success' => false,
         'message' => 'Format JSON tidak valid.',
-        'error_code' => 'INVALID_JSON'
+        'error_code' => 'BAD_REQUEST'
     ]);
 }
 
@@ -63,7 +63,7 @@ if (
     kirimJson(422, [
         'success' => false,
         'message' => 'Username dan password wajib diisi.',
-        'error_code' => 'VALIDATION_ERROR'
+        'error_code' => 'UNPROCESSABLE_ENTITY'
     ]);
 }
 
@@ -84,7 +84,7 @@ try {
         kirimJson(401, [
             'success' => false,
             'message' => 'Username atau password salah.',
-            'error_code' => 'INVALID_CREDENTIALS'
+            'error_code' => 'UNAUTHORIZED'
         ]);
     }
 
@@ -114,6 +114,6 @@ try {
     kirimJson(500, [
         'success' => false,
         'message' => 'Terjadi kesalahan pada server.',
-        'error_code' => 'INTERNAL_ERROR'
+        'error_code' => 'INTERNAL_SERVER_ERROR'
     ]);
 }

@@ -47,7 +47,7 @@ function apiWajibLogin(): void
         echo json_encode([
             'success' => false,
             'message' => 'Sesi login telah berakhir. Silakan login kembali.',
-            'error_code' => 'SESSION_EXPIRED'
+            'error_code' => 'UNAUTHORIZED'
         ], JSON_UNESCAPED_UNICODE);
         exit;
     }

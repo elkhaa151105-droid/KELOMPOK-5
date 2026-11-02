@@ -661,6 +661,11 @@ document.addEventListener('DOMContentLoaded', function () {
         const footerTotal = document.getElementById('layananTotalTerjual');
         if (!container) return;
 
+    // ========================================
+    // BAGIAN: GRAFIK TREN PEMASUKAN
+    // ========================================
+    async function loadTrend(period = '7_hari') {
+        const container = document.getElementById('dashboardLineChart');
         try {
             container.innerHTML = '<div class="layanan-populer-empty">Memuat data layanan...</div>';
 

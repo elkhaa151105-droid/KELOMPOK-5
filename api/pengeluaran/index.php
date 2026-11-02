@@ -45,7 +45,7 @@ try {
             kirimJsonPengeluaran(422, [
                 'success' => false,
                 'message' => 'Format tanggal harus YYYY-MM-DD.',
-                'error_code' => 'VALIDATION_ERROR'
+                'error_code' => 'UNPROCESSABLE_ENTITY'
             ]);
         }
 
@@ -86,7 +86,7 @@ try {
             kirimJsonPengeluaran(400, [
                 'success' => false,
                 'message' => 'Body harus berupa JSON yang valid.',
-                'error_code' => 'INVALID_JSON'
+                'error_code' => 'BAD_REQUEST'
             ]);
         }
 
@@ -114,7 +114,7 @@ try {
             kirimJsonPengeluaran(422, [
                 'success' => false,
                 'message' => 'Nominal harus lebih dari nol',
-                'error_code' => 'VALIDATION_ERROR'
+                'error_code' => 'UNPROCESSABLE_ENTITY'
             ]);
         }
 
@@ -124,7 +124,7 @@ try {
             kirimJsonPengeluaran(422, [
                 'success' => false,
                 'message' => 'Kategori wajib diisi (maksimal 100 karakter).',
-                'error_code' => 'VALIDATION_ERROR'
+                'error_code' => 'UNPROCESSABLE_ENTITY'
             ]);
         }
 
@@ -132,7 +132,7 @@ try {
             kirimJsonPengeluaran(422, [
                 'success' => false,
                 'message' => 'Format tanggal harus YYYY-MM-DD.',
-                'error_code' => 'VALIDATION_ERROR'
+                'error_code' => 'UNPROCESSABLE_ENTITY'
             ]);
         }
 
@@ -140,7 +140,7 @@ try {
             kirimJsonPengeluaran(422, [
                 'success' => false,
                 'message' => 'Keterangan harus berupa teks.',
-                'error_code' => 'VALIDATION_ERROR'
+                'error_code' => 'UNPROCESSABLE_ENTITY'
             ]);
         }
 
@@ -154,7 +154,7 @@ try {
             kirimJsonPengeluaran(422, [
                 'success' => false,
                 'message' => 'Keterangan maksimal 255 karakter.',
-                'error_code' => 'VALIDATION_ERROR'
+                'error_code' => 'UNPROCESSABLE_ENTITY'
             ]);
         }
 
@@ -209,7 +209,7 @@ try {
             kirimJsonPengeluaran(422, [
                 'success' => false,
                 'message' => 'ID pengeluaran tidak valid.',
-                'error_code' => 'VALIDATION_ERROR'
+                'error_code' => 'UNPROCESSABLE_ENTITY'
             ]);
         }
 
@@ -239,7 +239,7 @@ try {
             kirimJsonPengeluaran(403, [
                 'success' => false,
                 'message' => 'Hanya pengeluaran hari ini yang dapat dihapus.',
-                'error_code' => 'DATE_NOT_ALLOWED'
+                'error_code' => 'FORBIDDEN'
             ]);
         }
 
@@ -258,7 +258,7 @@ try {
             kirimJsonPengeluaran(409, [
                 'success' => false,
                 'message' => 'Pengeluaran tidak dapat dihapus. Muat ulang data lalu coba lagi.',
-                'error_code' => 'DELETE_CONFLICT'
+                'error_code' => 'CONFLICT'
             ]);
         }
 

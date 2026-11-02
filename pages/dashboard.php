@@ -127,21 +127,6 @@ $display_role = ($role === 'owner') ? 'Owner Kataji' : ($nama ?: 'Barber');
                 <strong class="metric-val" id="totalLabaBersih">Rp0</strong>
             </div>
         </div>
-<<<<<<< HEAD
-=======
-
-        <div class="table-responsive" id="tabelPemasukanWrapper" hidden>
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Nama Barber</th>
-                        <th>Total Pemasukan</th>
-                    </tr>
-                </thead>
-                <tbody id="tabelPemasukanBody"></tbody>
-            </table>
-        </div>
->>>>>>> origin/fe_dashboard
     </section>
 
     <!-- ======================================== -->
@@ -270,6 +255,7 @@ $display_role = ($role === 'owner') ? 'Owner Kataji' : ($nama ?: 'Barber');
                 <span class="layanan-footer-total" id="layananTotalTerjual">Total layanan terjual: 0</span>
                 <a href="/KELOMPOK-5/pages/laporan.php" class="layanan-footer-link">Rincian per barber ada di Laporan</a>
             </div>
+            <div class="layanan-populer-empty">Memuat data layanan...</div>
         </section>
 
         <!-- 2. DISTRIBUSI PEMBAYARAN -->
