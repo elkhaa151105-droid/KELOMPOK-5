@@ -717,13 +717,14 @@ function simpanNotifikasiLogin(pesan) {
         const icon = String(layanan.icon_layanan || '').trim();
 
         if (icon) {
+            if (/^data:image\//i.test(icon)) return icon;
             if (/^https?:\/\//i.test(icon)) return icon;
             if (icon.startsWith('/')) return icon;
 
             return '/KELOMPOK-5/' + icon.replace(/^\.?\//, '');
         }
 
-        return gambarLayanan[layanan.nama_layanan] || '';
+        return '';
     }
 
     async function muatLayananDariAPI() {
@@ -791,7 +792,6 @@ function simpanNotifikasiLogin(pesan) {
 
                     gambar.addEventListener('error', function () {
                         gambar.remove();
-                        ikon.textContent = '✂';
                         console.error(
                             'Gambar layanan gagal dimuat:',
                             sumberGambar
@@ -799,8 +799,6 @@ function simpanNotifikasiLogin(pesan) {
                     });
 
                     ikon.appendChild(gambar);
-                } else {
-                    ikon.textContent = '✂';
                 }
 
                 const info = document.createElement('span');

@@ -7,7 +7,7 @@ require_role(['owner']);
 $role = $_SESSION['role'] ?? '';
 $nama = $_SESSION['nama'] ?? '';
 
-// Format sapaan sesuai role & nama
+// Format sapaan sesuai role & nama (Figma: "Selamat datang, Owner Kataji")
 $display_role = ($role === 'owner') ? 'Owner Kataji' : ($nama ?: 'Barber');
 ?>
 
@@ -15,16 +15,20 @@ $display_role = ($role === 'owner') ? 'Owner Kataji' : ($nama ?: 'Barber');
 
 <div class="dashboard-page">
 
-    <!-- HEADER DASHBOARD -->
+    <!-- ======================================== -->
+    <!-- BAGIAN: HEADER DASHBOARD -->
+    <!-- ======================================== -->
     <div class="dashboard-heading">
         <h1>Dashboard</h1>
-        <p>Selamat Datang, <?= htmlspecialchars($display_role) ?></p>
+        <p>Selamat datang, <?= htmlspecialchars($display_role) ?></p>
     </div>
 
-    <!-- SUMMARY CARDS (4 KARTU) -->
+    <!-- ======================================== -->
+    <!-- BAGIAN: RINGKASAN HARIAN (4 KARTU) -->
+    <!-- ======================================== -->
     <div class="dashboard-summary">
 
-        <!-- PELANGGAN HARI INI -->
+        <!-- 1. PELANGGAN HARI INI -->
         <div class="summary-card">
             <div class="summary-card-header">
                 <span class="summary-icon">
@@ -38,7 +42,7 @@ $display_role = ($role === 'owner') ? 'Owner Kataji' : ($nama ?: 'Barber');
             <strong class="summary-value" id="dashPelangganHariIni">0</strong>
         </div>
 
-        <!-- TRANSAKSI HARI INI -->
+        <!-- 2. TRANSAKSI HARI INI -->
         <div class="summary-card">
             <div class="summary-card-header">
                 <span class="summary-icon">
@@ -55,7 +59,7 @@ $display_role = ($role === 'owner') ? 'Owner Kataji' : ($nama ?: 'Barber');
             <strong class="summary-value" id="dashTransaksiHariIni">0</strong>
         </div>
 
-        <!-- PENDAPATAN HARI INI -->
+        <!-- 3. PEMASUKAN HARI INI -->
         <div class="summary-card">
             <div class="summary-card-header">
                 <span class="summary-icon">
@@ -64,12 +68,12 @@ $display_role = ($role === 'owner') ? 'Owner Kataji' : ($nama ?: 'Barber');
                         <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
                     </svg>
                 </span>
-                <span class="summary-title">Pemasukan Hari Ini</span>
+                <span class="summary-title">Pemasukkan Hari Ini</span>
             </div>
             <strong class="summary-value" id="dashPendapatanHariIni">Rp0</strong>
         </div>
 
-        <!-- LABA KOTOR HARI INI -->
+        <!-- 4. LABA KOTOR HARI INI -->
         <div class="summary-card">
             <div class="summary-card-header">
                 <span class="summary-icon">
@@ -85,9 +89,9 @@ $display_role = ($role === 'owner') ? 'Owner Kataji' : ($nama ?: 'Barber');
 
     </div>
 
-
-    <!-- REKAP KEUANGAN -->
-        <!-- REKAP PEMASUKAN HARIAN, MINGGUAN, DAN BULANAN (4.8.2) -->
+    <!-- ======================================== -->
+    <!-- BAGIAN: REKAP KEUANGAN -->
+    <!-- ======================================== -->
     <section class="dashboard-section rekap-pemasukan rekap-card">
         <div class="rekap-header">
             <h2>Rekap Keuangan</h2>
@@ -103,7 +107,7 @@ $display_role = ($role === 'owner') ? 'Owner Kataji' : ($nama ?: 'Barber');
 
         <div class="financial-metrics rekap-metrics">
             <div class="metric-item metric-pemasukan">
-                <span class="metric-label">Pemasukan</span>
+                <span class="metric-label">Pemasukkan</span>
                 <strong class="metric-val" id="totalPemasukan">Rp0</strong>
             </div>
             <div class="metric-item">
@@ -137,9 +141,11 @@ $display_role = ($role === 'owner') ? 'Owner Kataji' : ($nama ?: 'Barber');
         </div>
     </section>
 
-    <!-- PEMASUKAN PER BARBER -->
+    <!-- ======================================== -->
+    <!-- BAGIAN: PEMASUKAN PER BARBER -->
+    <!-- ======================================== -->
     <section class="dashboard-section rekap-barber-section">
-        <h2 class="dashboard-card-title">Pemasukan per Barber</h2>
+        <h2 class="dashboard-card-title">Pemasukkan per Barber</h2>
 
         <div id="statusPemasukan" class="rekap-status" role="status" aria-live="polite">
             Memuat data pemasukan...
@@ -149,9 +155,9 @@ $display_role = ($role === 'owner') ? 'Owner Kataji' : ($nama ?: 'Barber');
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>Nama Barber</th>
-                        <th>Jumlah Transaksi</th>
-                        <th>Total Pemasukan</th>
+                        <th class="th-barber-nama">Nama Barber</th>
+                        <th class="th-barber-trx text-center">Transaksi</th>
+                        <th class="th-barber-total text-start">Total Pemasukkan</th>
                     </tr>
                 </thead>
                 <tbody id="tabelPemasukanBody"></tbody>
@@ -159,48 +165,72 @@ $display_role = ($role === 'owner') ? 'Owner Kataji' : ($nama ?: 'Barber');
         </div>
     </section>
 
-
-    <!-- GRAFIK DASHBOARD -->
-    <div class="dashboard-chart-grid">
+    <!-- ======================================== -->
+    <!-- BAGIAN: GRAFIK TREN PEMASUKAN & DISTRIBUSI -->
+    <!-- ======================================== -->
+    <div class="dashboard-chart-grid-single">
+        <!-- TREN PEMASUKAN (LEBAR PENUH SESUAI FIGMA) -->
         <section class="dashboard-section dashboard-chart-card">
             <div class="trend-chart-header">
                 <div>
-                    <h2 class="dashboard-card-title" id="trenPemasukanJudul">Pemasukan 7 Hari Terakhir</h2>
-                    <strong id="trenPemasukanIndicator" class="trend-indicator trend-stabil">Stabil 0%</strong>
+                    <h2 class="dashboard-card-title" id="trenPemasukanJudul">Tren Pemasukkan</h2>
+                    <span class="trend-card-subtitle" id="trenPemasukanSubtitle">Pemasukan per hari</span>
                 </div>
-                <select id="trenPemasukanPeriode" class="form-select trend-period-select">
-                    <option value="7_hari">7 Hari Terakhir</option>
+                <!-- FILTER PILL TREN (FIGMA) -->
+                <div class="trend-period-pill-group" role="group" aria-label="Periode tren pemasukan">
+                    <button type="button" class="trend-pill-btn active" data-period="7_hari">7 Hari Terakhir</button>
+                    <button type="button" class="trend-pill-btn" data-period="minggu">Per Minggu</button>
+                    <button type="button" class="trend-pill-btn" data-period="bulan">Per Bulan</button>
+                </div>
+                <!-- Sembunyikan select lama agar kompatibilitas kode tetap terjaga -->
+                <select id="trenPemasukanPeriode" class="form-select trend-period-select visually-hidden" aria-hidden="true">
+                    <option value="7_hari" selected>7 Hari Terakhir</option>
                     <option value="minggu">Per Minggu</option>
                     <option value="bulan">Per Bulan</option>
                 </select>
             </div>
-            <div class="trend-summary-grid">
-                <div class="trend-summary-card trend-summary-status"><span class="trend-summary-icon">↗</span><div><strong id="trenStatusRingkas">Stabil 0%</strong><small>dibanding periode sebelumnya</small></div></div>
-                <div class="trend-summary-card"><span>Total periode</span><strong id="trenTotalAktif">Rp0</strong></div>
-                <div class="trend-summary-card"><span>Hari tertinggi</span><strong id="trenHariTertinggi">Rp0</strong><small id="trenHariTertinggiTanggal">Belum ada data</small></div>
-            </div>
-            <div class="line-chart" id="dashboardLineChart" aria-label="Grafik pemasukan tujuh hari terakhir" aria-live="polite">
-                <div class="chart-empty-state">Memuat grafik pemasukan...</div>
-            </div>
-        </section>
 
-        <section class="dashboard-section payment-chart-card">
-            <h2 class="dashboard-card-title">Distribusi Pembayaran</h2>
-            <div class="payment-chart-content">
-                <div class="payment-donut" role="img" aria-label="Distribusi pembayaran belum tersedia">
-                    <div class="payment-donut-center"><strong id="dashboardJumlahTransaksi">0</strong><span>Transaksi</span></div>
+            <!-- 3 KARTU SUMMARY TREN (FIGMA) -->
+            <div class="trend-summary-grid">
+                <div class="trend-summary-card trend-summary-status-box" id="trenStatusCard">
+                    <div class="trend-badge-icon" id="trenBadgeIcon">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                            <polyline points="17 6 23 6 23 12"></polyline>
+                        </svg>
+                    </div>
+                    <div class="trend-badge-info">
+                        <strong id="trenStatusRingkas">Stabil 0%</strong>
+                        <small id="trenStatusSub">dibanding periode sebelumnya</small>
+                    </div>
                 </div>
-                <div class="payment-legend">
-                    <div><span class="legend-dot legend-cash"></span><span>Tunai</span><strong id="legendCash">(0 trx) Rp0</strong></div>
-                    <div><span class="legend-dot legend-transfer"></span><span>Transfer</span><strong id="legendTransfer">(0 trx) Rp0</strong></div>
-                    <div><span class="legend-dot legend-qris"></span><span>QRIS</span><strong id="legendQris">(0 trx) Rp0</strong></div>
+                <div class="trend-summary-card trend-summary-neutral">
+                    <span id="trenTotalLabel">Total 7 hari terakhir</span>
+                    <strong id="trenTotalAktif">Rp0</strong>
+                    <small id="trenTotalSebelumnya">sebelumnya Rp0</small>
+                </div>
+                <div class="trend-summary-card trend-summary-neutral">
+                    <span>Hari tertinggi</span>
+                    <strong id="trenHariTertinggi">Rp0</strong>
+                    <small id="trenHariTertinggiTanggal">Belum ada data</small>
+                </div>
+            </div>
+
+            <!-- GRAFIK SVG LINE DENGAN TOOLTIP -->
+            <div class="line-chart-container">
+                <div class="line-chart" id="dashboardLineChart" aria-label="Grafik tren pemasukan" aria-live="polite">
+                    <div class="chart-empty-state">Memuat grafik pemasukan...</div>
                 </div>
             </div>
         </section>
     </div>
 
-    <!-- AKSI DASHBOARD -->
+    <!-- ======================================== -->
+    <!-- BAGIAN: 2 KOLOM (LAYANAN TERLARIS & DISTRIBUSI PEMBAYARAN) -->
+    <!-- ======================================== -->
     <div class="dashboard-bottom-grid">
+
+        <!-- 1. LAYANAN TERLARIS -->
         <section class="dashboard-section menu-terlaris-section">
             <div class="layanan-terlaris-header">
                 <h2 class="dashboard-card-title">Layanan Terlaris</h2>
@@ -208,20 +238,100 @@ $display_role = ($role === 'owner') ? 'Owner Kataji' : ($nama ?: 'Barber');
                     <button type="button" class="layanan-period-btn active" data-period="minggu">Minggu Ini</button>
                     <button type="button" class="layanan-period-btn" data-period="bulan">Bulan Ini</button>
                     <button type="button" class="layanan-period-btn" data-period="semua">Semua</button>
-                    <button type="button" class="layanan-sort-btn" data-sort="terbanyak">Paling Sering</button>
                 </div>
             </div>
-            <div class="layanan-populer-empty">Memuat data layanan...</div>
+
+            <!-- SUBHEADER SORTING -->
+            <div class="layanan-sort-bar">
+                <span class="layanan-sort-label">Urutkan</span>
+                <div class="layanan-sort-buttons">
+                    <button type="button" class="layanan-sort-btn active" data-sort="terbanyak">Paling Sering</button>
+                    <button type="button" class="layanan-sort-btn" data-sort="tersedikit">Paling Jarang</button>
+                </div>
+            </div>
+
+            <!-- HEADER TABEL MINI LAYANAN -->
+            <div class="layanan-table-head">
+                <span class="col-head-no">No</span>
+                <span class="col-head-nama">Layanan</span>
+                <span class="col-head-qty">Jumlah Terjual</span>
+            </div>
+
+            <!-- LIST LAYANAN POPULER -->
+            <div id="layananPopulerListContainer" class="layanan-populer-container">
+                <div class="layanan-populer-empty">Memuat data layanan...</div>
+            </div>
+
+            <!-- FOOTER INFO LAYANAN -->
+            <div class="layanan-terlaris-footer">
+                <span class="layanan-footer-total" id="layananTotalTerjual">Total layanan terjual: 0</span>
+                <a href="/KELOMPOK-5/pages/laporan.php" class="layanan-footer-link">Rincian per barber ada di Laporan</a>
+            </div>
         </section>
 
-        <section class="dashboard-section reset-section">
-            <h2 class="reset-card-title">Permintaan Reset Password</h2>
+        <!-- 2. DISTRIBUSI PEMBAYARAN -->
+        <section class="dashboard-section payment-chart-card">
+            <div class="payment-card-header">
+                <h2 class="dashboard-card-title">Distribusi Pembayaran</h2>
+                <span class="payment-card-subtitle">Berdasarkan metode, periode terpilih</span>
+            </div>
 
-            <div class="reset-card-body">
-                <span class="reset-api-status">Permintaan reset password belum memiliki API frontend.</span>
+            <div class="payment-chart-content">
+                <!-- DONUT CHART DENGAN CENTER TEXT -->
+                <div class="payment-donut-wrap">
+                    <div class="payment-donut" id="dashboardPaymentDonut" role="img" aria-label="Diagram donat distribusi pembayaran">
+                        <div class="payment-donut-center">
+                            <strong id="dashboardJumlahTransaksi">0</strong>
+                            <span>transaksi</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- LEGEND METODE PEMBAYARAN (2 KOLOM SESUAI FIGMA) -->
+                <div class="payment-legend-grid">
+                    <div class="payment-legend-item">
+                        <span class="legend-dot legend-cash"></span>
+                        <span class="legend-text">Tunai (<span id="legendCashTrx">0</span> Trx)</span>
+                        <strong id="legendCashNominal">Rp0</strong>
+                    </div>
+                    <div class="payment-legend-item">
+                        <span class="legend-dot legend-qris"></span>
+                        <span class="legend-text">QRIS (<span id="legendQrisTrx">0</span> Trx)</span>
+                        <strong id="legendQrisNominal">Rp0</strong>
+                    </div>
+                    <div class="payment-legend-item">
+                        <span class="legend-dot legend-transfer"></span>
+                        <span class="legend-text">Transfer (<span id="legendTransferTrx">0</span> Trx)</span>
+                        <strong id="legendTransferNominal">Rp0</strong>
+                    </div>
+                </div>
+
+                <!-- Fallback elemen untuk kompatibilitas skrip lama -->
+                <div class="d-none" aria-hidden="true">
+                    <span id="legendCash"></span>
+                    <span id="legendTransfer"></span>
+                    <span id="legendQris"></span>
+                    <span id="trenPemasukanIndicator"></span>
+                </div>
             </div>
         </section>
     </div>
+
+    <!-- ======================================== -->
+    <!-- BAGIAN: PERMINTAAN RESET PASSWORD (LEBAR PENUH) -->
+    <!-- ======================================== -->
+    <section class="dashboard-section reset-section-full">
+        <h2 class="reset-card-title">Permintaan Reset Password</h2>
+
+        <div class="reset-card-body" id="resetCardBody">
+            <div class="reset-user-info">
+                <span class="reset-user-name" id="resetUserName">Erik</span>
+            </div>
+            <button type="button" class="btn-reset-password" id="btnActionResetPassword">
+                Reset Password
+            </button>
+        </div>
+    </section>
 
 </div>
 

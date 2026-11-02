@@ -455,12 +455,12 @@ body:has(.login-page) main.container {
 .sidebar-brand-text {
   display: block;
   margin-top: 6px;
-  font-size: 20px;             /* 💡 Sesuaikan ukuran agar pas dengan logo di sampingnya */
+  font-size: 20px;             /* ðŸ’¡ Sesuaikan ukuran agar pas dengan logo di sampingnya */
   font-weight: 900;            /* Buat ketebalan maksimal agar efek garis terlihat tegas */
   letter-spacing: 0.5px;
   font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
 
-  /* ─── EFEK TEXT STROKE (GARIS TEPI) SEPERTI FIGMA ─── */
+  /* â”€â”€â”€ EFEK TEXT STROKE (GARIS TEPI) SEPERTI FIGMA â”€â”€â”€ */
   color: transparent;                   
   -webkit-text-stroke: 1px #FFFFFF;     
   
@@ -1019,16 +1019,15 @@ body:has(.login-page) main.container {
 }
 
 .dashboard-chart-card {
-    height: 215px;
+    min-height: 215px;
 }
 
 .dashboard-chart-card .line-chart {
-    height: 145px;
+    min-height: 145px;
     margin-top: 4px;
 }
-
 .dashboard-chart-card .line-chart svg {
-    height: 145px;
+    min-height: 145px;
 }
 
 .trend-naik {
@@ -1680,14 +1679,25 @@ body:has(.login-page) main.container {
 }
 
 .service-icon {
-    width: 38px;
+    width: 42px;
+    height: 42px;
     flex-shrink: 0;
-
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     color: #111111;
     font-size: 31px;
     line-height: 1;
+    overflow: hidden;
+}
 
-    transform: rotate(-8deg);
+.service-icon img {
+    width: 42px;
+    height: 42px;
+    display: block;
+    object-fit: contain;
+    object-position: center;
+    border-radius: 6px;
 }
 
 .service-info {
@@ -2394,12 +2404,12 @@ body:has(.login-page) main.container {
     justify-content: center;
     box-sizing: border-box;
     min-height: 45px;
-    margin: 2px 3px;
-    padding: 5px 54px;
+    margin: 1px 3px;
+    padding: 0px 40px;
     border: 0;
     border-radius: 7px;
     font-family: inherit;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 600;
     line-height: 1.2;
     vertical-align: middle;
@@ -2925,7 +2935,7 @@ body.layanan-modal-open {
     }
 }
 
-/* Rekap pemasukan dashboard — Desktop seperti Figma */
+/* Rekap pemasukan dashboard â€” Desktop seperti Figma */
 .rekap-pemasukan {
     margin-top: 18px;
     padding: 14px 20px 16px;
@@ -4454,3 +4464,1299 @@ body .pengeluaran-toast[hidden] {
 
 /* ======================================================
    REKAP PEMASUKAN PERIODE (WBS 4.8)
+====================================================== */
+
+.rekap-filter-controls {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.rekap-period-options {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #F3F4F6;
+    padding: 4px;
+    border-radius: 9999px;
+}
+
+.btn-period-filter {
+    min-height: 32px;
+    padding: 5px 16px;
+    border: none;
+    border-radius: 9999px;
+    background: transparent;
+    color: #4B5563;
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+}
+
+.btn-period-filter:hover:not(.active) {
+    color: #111827;
+    background: rgba(0, 0, 0, 0.04);
+}
+
+.btn-period-filter.active {
+    background: var(--primary-navy, #17186B);
+    color: #FFFFFF;
+    font-weight: 600;
+    box-shadow: 0 2px 6px rgba(23, 24, 107, 0.2);
+}
+
+.pemasukan-total > div {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.pemasukan-period-badge {
+    font-size: 11.5px;
+    color: #6B7280;
+    font-weight: 500;
+}
+
+/* Dialog Alert Single Button */
+.kataji-confirm-actions .btn-single-alert {
+    width: 100%;
+}
+
+.riwayat-date-filter {
+    height: 32px;
+    min-width: 132px;
+    padding: 5px 10px;
+    border: 1px solid #d8d9df;
+    border-radius: 7px;
+    background: #ffffff;
+    color: #5f6070;
+    font-family: inherit;
+    font-size: 12px;
+    outline: none;
+}
+
+.riwayat-page {
+    padding-top: 24px; /* Naikkan angkanya jika ingin lebih turun */
+}
+
+.riwayat-date-filter:focus {
+    border-color: var(--primary-navy);
+    box-shadow: 0 0 0 2px rgba(20, 19, 80, 0.08);
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Filter bar riwayat */
+.riwayat-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+}
+
+.riwayat-filter-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn-reset-filter {
+    padding: 6px 14px;
+    border: 1px solid #d5d5d5;
+    border-radius: 6px;
+    background: #FFFFFF;
+    color: #374151;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.btn-reset-filter:hover {
+    background: #F3F4F6;
+    border-color: #9CA3AF;
+}
+
+/* Perbaikan kolom harga dan HPP halaman Layanan */
+.layanan-table th:nth-child(1),
+.layanan-table td:nth-child(1) {
+    width: 24%;
+}
+
+.layanan-table th:nth-child(2),
+.layanan-table td:nth-child(2),
+.layanan-table th:nth-child(3),
+.layanan-table td:nth-child(3) {
+    width: 19%;
+}
+
+.layanan-table th:nth-child(4),
+.layanan-table td:nth-child(4) {
+    width: 10%;
+}
+
+.layanan-table th:nth-child(5),
+.layanan-table td:nth-child(5) {
+    width: 36%;
+}
+
+/* Input harga dan HPP */
+.layanan-table input.layanan-price-input,
+.layanan-table input.layanan-hpp-input {
+    width: 100%;
+    max-width: 110px;
+    min-width: 0;
+    height: 30px;
+    padding: 4px 6px;
+    border: 2px solid #BDBDBD;
+    border-radius: 10px;
+    box-sizing: border-box;
+    font-size: 12px;
+    text-align: center;
+}
+
+/* Prefix Rupiah pada kolom Harga dan HPP */
+.layanan-rupiah-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    width: 100%;
+    min-width: 0;
+}
+
+.layanan-rupiah-prefix {
+    flex-shrink: 0;
+    color: #858585;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.layanan-table input.layanan-price-input,
+.layanan-table input.layanan-hpp-input {
+    flex: 1;
+    width: 100%;
+    max-width: 110px;
+    min-width: 0;
+    height: 30px;
+    padding: 19px 9px;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+
+/* Penyesuaian halaman Pemasukan sesuai Figma */
+.pemasukan-page {
+    padding: 24px;
+    margin-top: -15px;
+    min-height: calc(100vh - 40px);
+    background: #F3F4FA;
+    box-sizing: border-box;
+}
+
+.pemasukan-heading {
+    margin-bottom: 22px;
+}
+
+.pemasukan-heading h1 {
+    margin: 0;
+    color: var(--text-main);
+    font-size: 28px;
+    font-weight: 800;
+}
+
+.pemasukan-heading p {
+    margin: 2px 0 0;
+    color: #858585;
+    font-size: 12px;
+}
+
+.pemasukan-card {
+    min-height: 340px;
+    padding: 12px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px #00000024;
+    box-sizing: border-box;
+}
+
+.pemasukan-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.pemasukan-card-header h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.pemasukan-date input {
+    padding: 6px 8px;
+    border: 1px solid #D5D5D5;
+    border-radius: 8px;
+    font: inherit;
+    font-size: 12px;
+}
+
+.pemasukan-total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin: 12px 0 16px;
+}
+
+.pemasukan-total-row span {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.pemasukan-total-row strong {
+    color: #292929;
+    font-size: 24px;
+    font-weight: 800;
+}
+
+.pemasukan-detail h3 {
+    margin: 0 0 8px;
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.pemasukan-detail #statusPemasukan {
+    margin: 12px 0;
+    color: #858585;
+    font-size: 12px;
+}
+
+.pemasukan-detail .table-responsive {
+    width: 100%;
+    overflow-x: auto;
+}
+
+
+/* Tabel pemasukan - penyesuaian sesuai Figma */
+.pemasukan-table {
+    width: 100%;
+    border-collapse: collapse;
+    border-spacing: 0;
+    table-layout: fixed;
+    font-family: inherit;
+    font-size: 12px;
+    color: #222222;
+}
+
+.pemasukan-table th,
+.pemasukan-table td {
+    padding: 4px 0;
+    text-align: left;
+    vertical-align: middle;
+    border: none;
+    border-bottom: 1px solid #CCCCCC;
+    line-height: 1.35;
+}
+
+.pemasukan-table th {
+    color: #858585;
+    font-size: 12px;
+    font-weight: 500;
+    background: transparent;
+}
+
+.pemasukan-table td {
+    color: #222222;
+    font-size: 12px;
+    font-weight: 400;
+}
+
+.pemasukan-table th:nth-child(1),
+.pemasukan-table td:nth-child(1) {
+    width: 24%;
+}
+
+.pemasukan-table th:nth-child(2),
+.pemasukan-table td:nth-child(2) {
+    width: 24%;
+}
+
+.pemasukan-table th:nth-child(3),
+.pemasukan-table td:nth-child(3) {
+    width: 52%;
+}
+
+@media (max-width: 600px) {
+    .pemasukan-page {
+        padding: 14px;
+    }
+
+    .pemasukan-card {
+        padding: 12px;
+    }
+
+    .pemasukan-total-row strong {
+        font-size: 20px;
+    }
+
+    .pemasukan-table {
+        min-width: 400px;
+    }
+}
+
+/* Tabel pemasukan - penyesuaian akhir sesuai Figma */
+.pemasukan-page .pemasukan-card .table-responsive {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.pemasukan-page .pemasukan-card table.data-table {
+    width: 100% !important;
+    table-layout: fixed !important;
+    border-collapse: collapse !important;
+    border-spacing: 0 !important;
+    margin: 0 !important;
+    background: #fff !important;
+}
+.pemasukan-page .pemasukan-card table.data-table th {
+    /* Jika ada kode bawaan di sini, biarkan saja */
+}
+
+/* 1. Hapus semua garis border bawaan pada seluruh sel tabel */
+.pemasukan-page .pemasukan-card table.data-table th,
+.pemasukan-page .pemasukan-card table.data-table td {
+    border: none !important;
+}
+
+/* 2. Berikan satu garis hanya di bagian bawah header */
+.pemasukan-page .pemasukan-card table.data-table th {
+    border-bottom: 1px solid #E2E8F0 !important;
+    padding-bottom: 8px;
+}
+.pemasukan-page .pemasukan-card table.data-table td:nth-child(3) {
+    width: 43% !important;
+}
+
+/* Header tabel */
+.pemasukan-page .pemasukan-card table.data-table thead th {
+    padding: 2px 4px 4px !important;
+    color: #858585 !important;
+    background: #858585 !important;
+    font-family: inherit !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    line-height: 1.4 !important;
+    text-align: left !important;
+    border: none !important;
+    border-bottom: 1px solid #d0d0d0 !important;
+}
+
+/* Isi tabel */
+.pemasukan-page .pemasukan-card table.data-table tbody td {
+    padding: 3px 4px !important;
+    color: #858585 !important;
+    background: #fff !important;
+    font-family: inherit !important;
+    font-size: 12px !important;
+    font-weight: 400 !important;
+    line-height: 1.4 !important;
+    text-align: left !important;
+    border: none !important;
+    border-bottom: 1px solid #d0d0d0 !important;
+}
+
+/* Hilangkan warna baris selang-seling dari CSS global */
+.pemasukan-page .pemasukan-card table.data-table tbody tr,
+.pemasukan-page .pemasukan-card table.data-table tbody tr:nth-child(odd),
+.pemasukan-page .pemasukan-card table.data-table tbody tr:nth-child(even) {
+    background: #fff !important;
+}
+
+/* ======================================================
+   BAGIAN: TAMPILAN DASHBOARD OWNER PRESISI FIGMA
+   Kataji Barber - Frontend Master Styling
+====================================================== */
+
+.dashboard-page {
+    --dash-primary-navy: #17186B;
+    --dash-navy-hover: #101150;
+    --dash-bg: #F3F4FA;
+    --dash-card-bg: #FFFFFF;
+    --dash-border: #E8EAF2;
+    --dash-text-main: #1A1D2C;
+    --dash-text-muted: #8F92A1;
+    --dash-success-bg: #E8F7EE;
+    --dash-success-text: #0E7B3B;
+    --dash-success-icon-bg: #D1F0DE;
+    --dash-danger-bg: #FEECEB;
+    --dash-danger-text: #B42318;
+    --dash-color-cash: #17186B;
+    --dash-color-qris: #CFEDDF;
+    --dash-color-transfer: #A5B4FC;
+    width: 100%;
+    color: var(--dash-text-main);
+}
+
+/* Reset Default Buttons Pada Dashboard */
+.dashboard-page button {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    background: transparent;
+    font-family: inherit;
+}
+
+/* Header Dashboard */
+.dashboard-page .dashboard-heading {
+    margin-bottom: 22px;
+}
+
+.dashboard-page .dashboard-heading h1 {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--dash-text-main);
+    margin: 0 0 4px;
+    letter-spacing: -0.5px;
+}
+
+.dashboard-page .dashboard-heading p {
+    font-size: 13.5px;
+    color: var(--dash-text-muted);
+    margin: 0;
+    font-weight: 500;
+}
+
+/* 4 Kartu Ringkasan Harian */
+.dashboard-page .dashboard-summary {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 22px;
+}
+
+.dashboard-page .summary-card {
+    background: var(--dash-card-bg);
+    border-radius: 16px;
+    padding: 16px 20px;
+    border: 1px solid var(--dash-border);
+    box-shadow: 0 4px 16px rgba(23, 24, 107, 0.04);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 96px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dashboard-page .summary-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(23, 24, 107, 0.07);
+}
+
+.dashboard-page .summary-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.dashboard-page .summary-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--dash-text-main);
+}
+
+.dashboard-page .summary-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--dash-text-main);
+    white-space: nowrap;
+}
+
+.dashboard-page .summary-value {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--dash-text-main);
+    line-height: 1.2;
+}
+
+/* Card Section Umum */
+.dashboard-page .dashboard-section {
+    background: var(--dash-card-bg);
+    border-radius: 16px;
+    border: 1px solid var(--dash-border);
+    box-shadow: 0 4px 16px rgba(23, 24, 107, 0.04);
+    padding: 22px 28px;
+    margin-bottom: 22px;
+}
+
+.dashboard-page .dashboard-card-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--dash-text-main);
+    margin: 0;
+}
+
+/* Rekap Keuangan */
+.dashboard-page .rekap-pemasukan {
+    padding: 22px 28px;
+}
+
+.dashboard-page .rekap-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.dashboard-page .rekap-header h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--dash-text-main);
+    margin: 0;
+}
+
+.dashboard-page .periode-pemasukan {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.dashboard-page .periode-pemasukan-btn {
+    border: none !important;
+    outline: none !important;
+    padding: 6px 18px !important;
+    border-radius: 999px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    background: transparent !important;
+    color: var(--dash-text-muted) !important;
+    transition: all 0.2s ease !important;
+}
+
+.dashboard-page .periode-pemasukan-btn:hover {
+    color: var(--dash-primary-navy) !important;
+}
+
+.dashboard-page .periode-pemasukan-btn.active {
+    background: var(--dash-primary-navy) !important;
+    color: #FFFFFF !important;
+}
+
+.dashboard-page .rekap-metrics {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+}
+
+.dashboard-page .rekap-metrics .metric-item {
+    text-align: left;
+    padding: 0;
+    border: none;
+}
+
+.dashboard-page .rekap-metrics .metric-label {
+    display: block;
+    font-size: 13px;
+    color: var(--dash-text-muted);
+    margin-bottom: 6px;
+    font-weight: 500;
+}
+
+.dashboard-page .rekap-metrics .metric-val {
+    display: block;
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--dash-text-main);
+    line-height: 1.2;
+}
+
+/* Pemasukan per Barber */
+.dashboard-page .rekap-barber-section {
+    padding: 22px 28px;
+    overflow: hidden;
+}
+
+.dashboard-page .rekap-barber-section .rekap-status {
+    padding: 16px 0;
+    color: var(--dash-text-muted);
+    font-size: 13px;
+}
+
+.dashboard-page .rekap-barber-table .data-table {
+    width: 100%;
+    max-width: 100%;
+    border-collapse: collapse;
+}
+
+.dashboard-page .rekap-barber-table .data-table thead th {
+    border: none !important;
+    border-bottom: 1.5px solid #E8EAF2 !important;
+    padding: 10px 8px 14px !important;
+    color: #4A4D5A !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    background: transparent !important;
+}
+
+.dashboard-page .rekap-barber-table {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+.dashboard-page .rekap-barber-table .data-table tbody tr {
+    position: relative;
+}
+
+.dashboard-page .rekap-barber-table .data-table tbody tr::after {
+    content: none;
+}
+
+.dashboard-page .rekap-barber-table .data-table tbody td {
+    border: none !important;
+    border-bottom: 1px solid #E8EAF2 !important;
+    padding: 14px 8px !important;
+    color: var(--dash-text-main) !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    background: transparent !important;
+}
+
+.dashboard-page .th-barber-nama,
+.dashboard-page .td-barber-nama {
+    text-align: left !important;
+    width: 48% !important;
+}
+
+.dashboard-page .th-barber-trx,
+.dashboard-page .td-barber-trx {
+    text-align: center !important;
+    width: 25% !important;
+}
+
+.dashboard-page .th-barber-total,
+.dashboard-page .td-barber-total {
+    text-align: left !important;
+    width: 27% !important;
+    font-weight: 700 !important;
+}
+
+/* Tren Pemasukan (Lebar Penuh) */
+.dashboard-page .dashboard-chart-grid-single {
+    margin-bottom: 22px;
+}
+
+.dashboard-page .dashboard-chart-card {
+    height: auto !important;
+    min-height: 420px !important;
+    overflow: visible !important;
+    position: relative !important;
+}
+.dashboard-page .trend-chart-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 18px;
+}
+
+.dashboard-page .trend-card-subtitle {
+    display: block;
+    font-size: 12px;
+    color: var(--dash-text-muted);
+    margin-top: 3px;
+    font-weight: 500;
+}
+
+.dashboard-page .trend-period-pill-group {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.dashboard-page .trend-pill-btn {
+    border: none !important;
+    outline: none !important;
+    padding: 6px 18px !important;
+    border-radius: 999px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    background: transparent !important;
+    color: var(--dash-text-muted) !important;
+    transition: all 0.2s ease !important;
+}
+
+.dashboard-page .trend-pill-btn:hover {
+    color: var(--dash-primary-navy) !important;
+}
+
+.dashboard-page .trend-pill-btn.active {
+    background: var(--dash-primary-navy) !important;
+    color: #FFFFFF !important;
+}
+
+/* 3 Kartu Summary Tren */
+.dashboard-page .trend-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.dashboard-page .trend-summary-card {
+    border-radius: 14px;
+    padding: 14px 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 78px;
+}
+
+.dashboard-page .trend-summary-neutral {
+    background: var(--dash-bg);
+}
+
+.dashboard-page .trend-summary-neutral span {
+    font-size: 11px;
+    color: var(--dash-text-muted);
+    margin-bottom: 4px;
+    font-weight: 500;
+}
+
+.dashboard-page .trend-summary-neutral strong {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--dash-text-main);
+    line-height: 1.2;
+}
+
+.dashboard-page .trend-summary-neutral small {
+    font-size: 11px;
+    color: var(--dash-text-muted);
+    margin-top: 2px;
+}
+
+/* Kotak Status Tren Naik/Turun */
+.dashboard-page .trend-summary-status-box {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 14px;
+    background: var(--dash-success-bg);
+    color: var(--dash-success-text);
+}
+
+.dashboard-page .trend-badge-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--dash-success-icon-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--dash-success-text);
+    flex-shrink: 0;
+}
+
+.dashboard-page .trend-badge-info strong {
+    display: block;
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--dash-success-text);
+    line-height: 1.2;
+}
+
+.dashboard-page .trend-badge-info small {
+    display: block;
+    font-size: 11.5px;
+    color: #4B8E65;
+    margin-top: 2px;
+}
+
+/* Status Turun */
+.dashboard-page .trend-summary-status-box.trend-turun {
+    background: var(--dash-danger-bg);
+    color: var(--dash-danger-text);
+}
+
+.dashboard-page .trend-summary-status-box.trend-turun .trend-badge-icon {
+    background: #FBD5D3;
+    color: var(--dash-danger-text);
+    transform: rotate(90deg);
+}
+
+.dashboard-page .trend-summary-status-box.trend-turun .trend-badge-info strong {
+    color: var(--dash-danger-text);
+}
+
+.dashboard-page .trend-summary-status-box.trend-turun .trend-badge-info small {
+    color: #B42318;
+}
+
+/* Status Stabil */
+.dashboard-page .trend-summary-status-box.trend-stabil {
+    background: #EFF1FA;
+    color: var(--dash-primary-navy);
+}
+
+.dashboard-page .trend-summary-status-box.trend-stabil .trend-badge-icon {
+    background: #DCE0F5;
+    color: var(--dash-primary-navy);
+}
+
+.dashboard-page .trend-summary-status-box.trend-stabil .trend-badge-info strong {
+    color: var(--dash-primary-navy);
+}
+
+.dashboard-page .trend-summary-status-box.trend-stabil .trend-badge-info small {
+    color: var(--dash-text-muted);
+}
+
+/* Line Chart Container */
+.dashboard-page .line-chart-container {
+    width: 100% !important;
+    position: relative !important;
+    overflow: visible !important;
+    margin-top: 4px !important;
+}
+
+.dashboard-page .line-chart {
+    width: 100% !important;
+    min-height: 220px !important;
+    height: auto !important;
+}
+
+.dashboard-page .line-chart svg {
+    width: 100% !important;
+    height: auto !important;
+    max-height: 230px !important;
+    display: block !important;
+    overflow: visible !important;
+}
+
+.dashboard-page .chart-point {
+    cursor: pointer;
+    outline: none;
+}
+
+.dashboard-page .chart-point:hover .chart-dot,
+.dashboard-page .chart-point.active .chart-dot {
+    r: 6 !important;
+    fill: var(--dash-primary-navy) !important;
+}
+
+/* Grid 2 Kolom Bawah */
+.dashboard-page .dashboard-bottom-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 16px !important;
+    margin-bottom: 22px !important;
+    align-items: stretch !important;
+}
+
+/* Layanan Terlaris */
+.dashboard-page .menu-terlaris-section {
+    padding: 22px 28px !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.dashboard-page .layanan-terlaris-header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    margin-bottom: 12px !important;
+}
+
+.dashboard-page .layanan-terlaris-controls {
+    display: flex !important;
+    gap: 6px !important;
+}
+
+.dashboard-page .layanan-period-btn {
+    border: none !important;
+    outline: none !important;
+    padding: 5px 14px !important;
+    border-radius: 999px !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    background: transparent !important;
+    color: var(--dash-text-muted) !important;
+    transition: all 0.2s ease !important;
+}
+
+.dashboard-page .layanan-period-btn:hover {
+    color: var(--dash-primary-navy) !important;
+}
+
+.dashboard-page .layanan-period-btn.active {
+    background: var(--dash-primary-navy) !important;
+    color: #FFFFFF !important;
+}
+
+/* Sort Bar */
+.dashboard-page .layanan-sort-bar {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    margin-bottom: 16px !important;
+}
+
+.dashboard-page .layanan-sort-label {
+    font-size: 12px !important;
+    color: var(--dash-text-muted) !important;
+    font-weight: 500 !important;
+}
+
+.dashboard-page .layanan-sort-buttons {
+    display: flex !important;
+    gap: 6px !important;
+}
+
+.dashboard-page .layanan-sort-btn {
+    border: none !important;
+    outline: none !important;
+    padding: 4px 14px !important;
+    border-radius: 999px !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    background: transparent !important;
+    color: var(--dash-text-muted) !important;
+    transition: all 0.2s ease !important;
+}
+
+.dashboard-page .layanan-sort-btn:hover {
+    color: var(--dash-primary-navy) !important;
+}
+
+.dashboard-page .layanan-sort-btn.active {
+    background: var(--dash-primary-navy) !important;
+    color: #FFFFFF !important;
+}
+
+/* Header Tabel Mini Layanan */
+.dashboard-page .layanan-table-head {
+    display: grid !important;
+    grid-template-columns: 24px 130px 1fr 40px !important;
+    gap: 12px !important;
+    padding: 0 4px 8px !important;
+    border-bottom: 1px solid #ECEEF6 !important;
+    font-size: 11.5px !important;
+    font-weight: 600 !important;
+    color: var(--dash-text-muted) !important;
+    margin-bottom: 10px !important;
+}
+
+.dashboard-page .col-head-qty {
+    grid-column: 3 / 5 !important;
+    text-align: right !important;
+}
+
+/* List Item Layanan Terlaris */
+.dashboard-page .layanan-populer-container {
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    padding: 4px 0 !important;
+}
+
+.dashboard-page .layanan-item-row {
+    display: grid !important;
+    grid-template-columns: 24px 130px 1fr 40px !important;
+    gap: 12px !important;
+    align-items: center !important;
+}
+
+.dashboard-page .layanan-row-no {
+    font-size: 12px !important;
+    color: var(--dash-text-muted) !important;
+    font-weight: 500 !important;
+}
+
+.dashboard-page .layanan-row-name {
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: var(--dash-text-main) !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+.dashboard-page .layanan-row-track {
+    width: 100% !important;
+    height: 10px !important;
+    background: #EAEBF4 !important;
+    border-radius: 999px !important;
+    overflow: hidden !important;
+}
+
+.dashboard-page .layanan-row-bar {
+    height: 100% !important;
+    background: var(--dash-primary-navy) !important;
+    border-radius: 999px !important;
+    transition: width 0.4s ease !important;
+}
+
+.dashboard-page .layanan-row-val {
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    color: var(--dash-text-main) !important;
+    text-align: right !important;
+}
+
+.dashboard-page .layanan-terlaris-footer {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding-top: 18px !important;
+    margin-top: 14px !important;
+    border-top: 1px solid #ECEEF6 !important;
+    font-size: 11.5px !important;
+    color: var(--dash-text-muted) !important;
+}
+
+.dashboard-page .layanan-footer-link {
+    color: var(--dash-text-muted) !important;
+    text-decoration: none !important;
+    transition: color 0.2s ease !important;
+}
+
+.dashboard-page .layanan-footer-link:hover {
+    color: var(--dash-primary-navy) !important;
+    text-decoration: underline !important;
+}
+
+/* Distribusi Pembayaran */
+.dashboard-page .payment-chart-card {
+    padding: 22px 28px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+}
+
+.dashboard-page .payment-card-header {
+    margin-bottom: 12px !important;
+}
+
+.dashboard-page .payment-card-subtitle {
+    display: block !important;
+    font-size: 12px !important;
+    color: var(--dash-text-muted) !important;
+    margin-top: 3px !important;
+    font-weight: 500 !important;
+}
+
+.dashboard-page .payment-chart-content {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    margin: auto 0 !important;
+}
+
+.dashboard-page .payment-donut-wrap {
+    width: 100% !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    margin: 8px 0 20px !important;
+}
+
+.dashboard-page .payment-donut {
+    width: 150px !important;
+    height: 150px !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    position: relative !important;
+    box-shadow: 0 4px 16px rgba(23, 24, 107, 0.05) !important;
+}
+
+.dashboard-page .payment-donut::after {
+    content: '' !important;
+    position: absolute !important;
+    width: 100px !important;
+    height: 100px !important;
+    background: #FFFFFF !important;
+    border-radius: 50% !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+}
+
+.dashboard-page .payment-donut-center {
+    position: relative !important;
+    z-index: 2 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+}
+
+.dashboard-page .payment-donut-center strong {
+    font-size: 32px !important;
+    font-weight: 800 !important;
+    color: var(--dash-text-main) !important;
+    line-height: 1.1 !important;
+}
+
+.dashboard-page .payment-donut-center span {
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    color: var(--dash-text-muted) !important;
+}
+
+/* Legend 2 Kolom Sesuai Figma */
+.dashboard-page .payment-legend-grid {
+    width: 100% !important;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px 16px !important;
+    margin-top: 6px !important;
+}
+
+.dashboard-page .payment-legend-item {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    font-size: 12px !important;
+}
+
+.dashboard-page .payment-legend-item .legend-dot {
+    width: 10px !important;
+    height: 10px !important;
+    border-radius: 50% !important;
+    flex-shrink: 0 !important;
+}
+
+.dashboard-page .payment-legend-item .legend-dot.legend-cash {
+    background: var(--dash-color-cash) !important;
+}
+
+.dashboard-page .payment-legend-item .legend-dot.legend-qris {
+    background: var(--dash-color-qris) !important;
+}
+
+.dashboard-page .payment-legend-item .legend-dot.legend-transfer {
+    background: var(--dash-color-transfer) !important;
+}
+
+.dashboard-page .payment-legend-item .legend-text {
+    color: var(--dash-text-main) !important;
+    font-weight: 500 !important;
+}
+
+.dashboard-page .payment-legend-item strong {
+    font-weight: 700 !important;
+    color: var(--dash-text-main) !important;
+    margin-left: auto !important;
+}
+
+/* Permintaan Reset Password (Lebar Penuh) */
+.dashboard-page .reset-section-full {
+    padding: 20px 28px !important;
+    margin-bottom: 24px !important;
+}
+
+.dashboard-page .reset-section-full .reset-card-title {
+    font-size: 17px !important;
+    font-weight: 700 !important;
+    color: var(--dash-text-main) !important;
+    margin: 0 0 16px !important;
+}
+
+.dashboard-page .reset-section-full .reset-card-body {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+}
+
+.dashboard-page .reset-section-full .reset-user-name {
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    color: var(--dash-text-main) !important;
+}
+
+.dashboard-page .reset-section-full .btn-reset-password {
+    background: var(--dash-primary-navy) !important;
+    color: #FFFFFF !important;
+    border: none !important;
+    border-radius: 10px !important;
+    width: calc(25% - 8px) !important;
+    min-width: 170px !important;
+    height: 42px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: background 0.2s ease, transform 0.1s ease !important;
+}
+
+.dashboard-page .reset-section-full .btn-reset-password:hover {
+    background: var(--dash-navy-hover) !important;
+    transform: translateY(-1px) !important;
+}
+
+/* Responsivitas Layar (Tablet & Smartphone) */
+@media (max-width: 992px) {
+    .dashboard-page .dashboard-summary {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+    .dashboard-page .rekap-metrics {
+        grid-template-columns: repeat(3, 1fr) !important;
+    }
+    .dashboard-page .trend-summary-grid {
+        grid-template-columns: 1fr !important;
+    }
+    .dashboard-page .dashboard-bottom-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+@media (max-width: 600px) {
+    .dashboard-page .dashboard-summary {
+        grid-template-columns: 1fr !important;
+    }
+    .dashboard-page .rekap-metrics {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+    .dashboard-page .rekap-header,
+    .dashboard-page .trend-chart-header,
+    .dashboard-page .layanan-terlaris-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 12px !important;
+    }
+    .dashboard-page .payment-legend-grid {
+        grid-template-columns: 1fr !important;
+    }
+}

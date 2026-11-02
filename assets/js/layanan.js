@@ -608,7 +608,7 @@ function buatInputRupiah(className, value, min) {
 
                     tampilkanNotifikasi(
                         result.message || 'Layanan berhasil dihapus.',
-                        'hapus'
+                        result.soft_deleted ? 'nonaktif' : 'hapus'
                     );
 
                     await muatLayanan();
