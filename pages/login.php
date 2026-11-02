@@ -20,7 +20,7 @@ if (isset($_GET['both_empty'])) {
 } elseif (isset($_GET['error'])) {
     $error_message = 'Username atau password salah.';
 } elseif (isset($_GET['expired'])) {
-    $error_message = 'Sesi Anda sudah habis, silakan login kembali.';
+    $error_message = 'Sesi anda sudah habis, silakan login kembali.';
     $error_username = true;
     $error_password = true;
 }

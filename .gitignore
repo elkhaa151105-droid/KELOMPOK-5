@@ -2,8 +2,7 @@
 # Jangan commit kredensial asli
 config/config.php
 
-# Folder API Backend, jangan ikut upload
-/api/
+# API backend ikut dilacak bersama frontend.
 
 # File sistem operasi/editor
 .DS_Store

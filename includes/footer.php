@@ -3,8 +3,8 @@
   <small>       </small>
 </footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="/KELOMPOK-5/assets/js/script.js?v=8"></script>
-<script src="/KELOMPOK-5/assets/js/dashboard.js?v=8"></script>
+<script src="/KELOMPOK-5/assets/js/script.js?v=10"></script>
+<script src="/KELOMPOK-5/assets/js/dashboard.js?v=12"></script>
 <script src="/KELOMPOK-5/assets/js/pemasukan.js?v=2"></script>
 <script src="/KELOMPOK-5/assets/js/laporan.js"></script>
 </body>
