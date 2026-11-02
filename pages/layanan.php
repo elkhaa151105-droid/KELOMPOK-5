@@ -1,7 +1,76 @@
 
 <?php
 require_once __DIR__ . '/../includes/auth_check.php';
+
 require_role(['owner']);
+
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+
+$status = $_GET['status'] ?? '';
+$message = '';
+$message_type = 'success';
+
+switch ($status) {
+    case 'tambah_sukses':
+        $message = 'Layanan berhasil ditambahkan.';
+        break;
+
+    case 'ubah_sukses':
+        $message = 'Layanan berhasil diperbarui.';
+        break;
+
+    case 'nonaktif_sukses':
+        $message = 'Layanan berhasil dinonaktifkan.';
+        break;
+
+    case 'status_sukses':
+        $message = 'Status layanan berhasil diperbarui.';
+        break;
+
+    case 'hapus_sukses':
+        $message = 'Layanan berhasil dihapus.';
+        break;
+
+    case 'layanan_digunakan':
+        $message = 'Layanan yang tercatat pada transaksi tidak dapat dihapus.';
+        $message_type = 'error';
+        break;
+
+    case 'harga_invalid':
+        $message = 'Harga harus lebih dari nol.';
+        $message_type = 'error';
+        break;
+
+    case 'hpp_invalid':
+        $message = 'HPP wajib diisi dengan bilangan bulat nol atau lebih.';
+        $message_type = 'error';
+        break;
+
+    case 'nama_kosong':
+        $message = 'Nama layanan wajib diisi.';
+        $message_type = 'error';
+        break;
+
+    case 'nama_invalid':
+        $message = 'Nama layanan maksimal 100 karakter dan tidak boleh duplikat.';
+        $message_type = 'error';
+        break;
+
+    case 'gagal':
+        $message = 'Terjadi kesalahan. Silakan coba lagi.';
+        $message_type = 'error';
+        break;
+}
+
+$stmt = $pdo->query(
+    'SELECT id_layanan, nama_layanan, harga, hpp, aktif, dibuat_pada
+     FROM layanan
+     ORDER BY id_layanan DESC'
+);
+
+$layanan = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <?php include __DIR__ . '/../includes/header.php'; ?>
@@ -24,7 +93,7 @@ require_role(['owner']);
     <!-- Tabel daftar layanan -->
     <div class="layanan-card">
         <div class="layanan-table-wrapper">
-            <table class="layanan-table">
+            <table class="layanan-table layanan-table-crud">
                 <thead>
                     <tr>
                         <th>Layanan</th>

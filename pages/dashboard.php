@@ -127,6 +127,21 @@ $display_role = ($role === 'owner') ? 'Owner Kataji' : ($nama ?: 'Barber');
                 <strong class="metric-val" id="totalLabaBersih">Rp0</strong>
             </div>
         </div>
+<<<<<<< HEAD
+=======
+
+        <div class="table-responsive" id="tabelPemasukanWrapper" hidden>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Nama Barber</th>
+                        <th>Total Pemasukan</th>
+                    </tr>
+                </thead>
+                <tbody id="tabelPemasukanBody"></tbody>
+            </table>
+        </div>
+>>>>>>> origin/fe_dashboard
     </section>
 
     <!-- ======================================== -->
