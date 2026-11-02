@@ -604,6 +604,8 @@ function buatInputRupiah(className, value, min) {
                         id_layanan: Number(layanan.id_layanan)
                     });
 
+                    localStorage.setItem('kataji:data-changed', String(Date.now()));
+
                     tampilkanNotifikasi(
                         result.message || 'Layanan berhasil dihapus.',
                         'hapus'

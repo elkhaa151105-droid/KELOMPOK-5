@@ -1027,7 +1027,7 @@ function simpanNotifikasiLogin(pesan) {
             if (!namaPelanggan || !namaPelanggan.value.trim()) {
                 showFieldError(
                     'errorNamaKasir',
-                    'Nama wajib diisi',
+                    'Nama pelanggan wajib diisi',
                     namaPelanggan
                 );
                 namaPelanggan?.focus();
@@ -1100,6 +1100,7 @@ function simpanNotifikasiLogin(pesan) {
                     );
                 }
 
+                localStorage.setItem('kataji:data-changed', String(Date.now()));
                 showSuccessNotification('Transaksi berhasil dicatat.', true);
 
                 Object.keys(selectedServices).forEach(id => {
@@ -1162,7 +1163,7 @@ function simpanNotifikasiLogin(pesan) {
             saranPelanggan.replaceChildren();
             saranPelanggan.hidden = true;
 
-            if (kataKunci.length < 2) return;
+            if (kataKunci.length < 1) return;
 
             timerSaran = setTimeout(async function () {
                 permintaanSaran = new AbortController();
@@ -1196,7 +1197,23 @@ function simpanNotifikasiLogin(pesan) {
                         kosong.textContent = 'Pelanggan tidak ditemukan';
                         saranPelanggan.appendChild(kosong);
                     } else {
+                        const pelangganUnik = [];
+                        const namaPelangganSudahAda = new Set();
+
                         result.data.forEach(function (pelanggan) {
+                            const namaUnik = String(pelanggan.nama || '')
+                                .trim()
+                                .toLowerCase();
+
+                            if (!namaUnik || namaPelangganSudahAda.has(namaUnik)) {
+                                return;
+                            }
+
+                            namaPelangganSudahAda.add(namaUnik);
+                            pelangganUnik.push(pelanggan);
+                        });
+
+                        pelangganUnik.forEach(function (pelanggan) {
                             const tombol = document.createElement('button');
 
                             tombol.type = 'button';

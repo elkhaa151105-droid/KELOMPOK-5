@@ -1,5 +1,7 @@
 
 document.addEventListener('DOMContentLoaded', function () {
+    if (!document.querySelector('.pemasukan-page')) return;
+
     const API_URL = '/KELOMPOK-5/api/rekap/pemasukan.php';
     const API_TRANSAKSI = '/KELOMPOK-5/api/transaksi/index.php';
 
